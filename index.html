@@ -7,12 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <title>Shah Family Wealth Dashboard</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>"/>
-
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js" crossorigin></script>
-
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#070a16;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -25,7 +19,6 @@
   </style>
 </head>
 <body>
-
 <div id="loading">
   <div style="font-size:44px">🏛️</div>
   <div class="spin"></div>
@@ -34,68 +27,79 @@
 <div id="root" style="display:none"></div>
 
 <script>
-  // Expose all globals the dashboard needs
-  window.React    = React;
-  window.ReactDOM = ReactDOM;
-  window.Recharts = Recharts;
+// Load all scripts sequentially, then start the app
+function loadScript(src, onload) {
+  var s = document.createElement('script');
+  s.src = src;
+  s.onload = onload;
+  s.onerror = function() { showError('Failed to load: ' + src); };
+  document.head.appendChild(s);
+}
 
-  // Destructure Recharts into global scope so dashboard.jsx can use them directly
-  var _r = Recharts;
-  window.BarChart          = _r.BarChart;
-  window.Bar               = _r.Bar;
-  window.LineChart         = _r.LineChart;
-  window.Line              = _r.Line;
-  window.AreaChart         = _r.AreaChart;
-  window.Area              = _r.Area;
-  window.XAxis             = _r.XAxis;
-  window.YAxis             = _r.YAxis;
-  window.Tooltip           = _r.Tooltip;
-  window.ResponsiveContainer = _r.ResponsiveContainer;
-  window.PieChart          = _r.PieChart;
-  window.Pie               = _r.Pie;
-  window.Cell              = _r.Cell;
-  window.Legend            = _r.Legend;
-  window.CartesianGrid     = _r.CartesianGrid;
-  window.ReferenceLine     = _r.ReferenceLine;
-  window.ScatterChart      = _r.ScatterChart;
-  window.Scatter           = _r.Scatter;
-  window.ComposedChart     = _r.ComposedChart;
-  window.LabelList         = _r.LabelList;
-</script>
+function showError(msg) {
+  document.getElementById('loading').innerHTML =
+    '<div style="font-size:32px">⚠️</div>' +
+    '<div style="color:#f87171;font-weight:700;font-size:15px">Failed to load dashboard</div>' +
+    '<div style="color:#a87070;font-size:12px;max-width:360px;line-height:1.6;margin-top:6px">' + msg + '</div>';
+}
 
-<script>
+function startApp() {
+  // All scripts loaded — now fetch and run dashboard
   fetch('./dashboard.jsx')
     .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status + ' — could not load dashboard.jsx');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.text();
     })
     .then(function(code) {
-      // Compile JSX to JS
-      var compiled = Babel.transform(code, {
+      // Prepend recharts destructure so dashboard can use components directly
+      var rechartsPreamble =
+        'var BarChart=Recharts.BarChart,Bar=Recharts.Bar,' +
+        'LineChart=Recharts.LineChart,Line=Recharts.Line,' +
+        'AreaChart=Recharts.AreaChart,Area=Recharts.Area,' +
+        'XAxis=Recharts.XAxis,YAxis=Recharts.YAxis,' +
+        'Tooltip=Recharts.Tooltip,' +
+        'ResponsiveContainer=Recharts.ResponsiveContainer,' +
+        'PieChart=Recharts.PieChart,Pie=Recharts.Pie,Cell=Recharts.Cell,' +
+        'Legend=Recharts.Legend,CartesianGrid=Recharts.CartesianGrid,' +
+        'ReferenceLine=Recharts.ReferenceLine,' +
+        'ScatterChart=Recharts.ScatterChart,Scatter=Recharts.Scatter,' +
+        'ComposedChart=Recharts.ComposedChart,LabelList=Recharts.LabelList;';
+
+      // Compile JSX
+      var compiled = Babel.transform(rechartsPreamble + '\n' + code, {
         presets: ['react'],
         filename: 'dashboard.jsx',
-        sourceType: 'script'   // ← key: treat as script not module
+        sourceType: 'script'
       }).code;
 
-      // Run in global scope
-      (new Function(compiled))();
+      // Execute
+      (new Function(
+        'React','ReactDOM','Recharts',
+        compiled +
+        '\nwindow.AppWithLock=typeof AppWithLock!=="undefined"?AppWithLock:null;' +
+        '\nwindow.FamilyApp=typeof FamilyApp!=="undefined"?FamilyApp:null;'
+      ))(React, ReactDOM, Recharts);
 
-      // Mount
       var App = window.AppWithLock || window.FamilyApp;
-      if (!App) throw new Error('Dashboard component not found — check dashboard.jsx exports');
+      if (!App) throw new Error('Component not found after execution');
 
       document.getElementById('loading').style.display = 'none';
       document.getElementById('root').style.display   = 'block';
       ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
     })
-    .catch(function(err) {
-      document.getElementById('loading').innerHTML =
-        '<div style="font-size:32px">⚠️</div>' +
-        '<div style="color:#f87171;font-weight:700;font-size:15px">Failed to load dashboard</div>' +
-        '<div style="color:#a87070;font-size:12px;max-width:360px;line-height:1.6;margin-top:4px">' + err.message + '</div>' +
-        '<div style="color:#3a2a2a;font-size:10px;margin-top:8px">Make sure dashboard.jsx is in the same folder as index.html</div>';
-    });
-</script>
+    .catch(function(err) { showError(err.message); });
+}
 
+// Load dependencies one by one in order
+loadScript('https://unpkg.com/react@18/umd/react.production.min.js', function() {
+  loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', function() {
+    loadScript('https://unpkg.com/recharts@2.12.7/umd/Recharts.js', function() {
+      loadScript('https://unpkg.com/@babel/standalone@7.23.10/babel.min.js', function() {
+        startApp();
+      });
+    });
+  });
+});
+</script>
 </body>
 </html>
