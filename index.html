@@ -109,26 +109,29 @@ function startApp() {
     .then(function(code) {
       setStatus('Compiling dashboard...');
 
-      var preamble =
-        'var BarChart=Recharts.BarChart,Bar=Recharts.Bar,' +
-        'LineChart=Recharts.LineChart,Line=Recharts.Line,' +
-        'AreaChart=Recharts.AreaChart,Area=Recharts.Area,' +
-        'XAxis=Recharts.XAxis,YAxis=Recharts.YAxis,' +
-        'Tooltip=Recharts.Tooltip,' +
-        'ResponsiveContainer=Recharts.ResponsiveContainer,' +
-        'PieChart=Recharts.PieChart,Pie=Recharts.Pie,Cell=Recharts.Cell,' +
-        'Legend=Recharts.Legend,CartesianGrid=Recharts.CartesianGrid,' +
-        'ReferenceLine=Recharts.ReferenceLine,' +
-        'ScatterChart=Recharts.ScatterChart,Scatter=Recharts.Scatter,' +
-        'ComposedChart=Recharts.ComposedChart,LabelList=Recharts.LabelList;\n';
-
-      var compiled = Babel.transform(preamble + code, {
+      // Compile dashboard JSX (no preamble - recharts passed as function args)
+      var compiled = Babel.transform(code, {
         presets: ['react'],
         filename: 'dashboard.jsx',
         sourceType: 'script'
       }).code;
 
-      (new Function('React','ReactDOM','Recharts', compiled))(React, ReactDOM, Recharts);
+      // Pass all recharts components as named arguments so they are in scope
+      var R = Recharts;
+      (new Function(
+        'React','ReactDOM','Recharts',
+        'BarChart','Bar','LineChart','Line','AreaChart','Area',
+        'XAxis','YAxis','Tooltip','ResponsiveContainer',
+        'PieChart','Pie','Cell','Legend','CartesianGrid','ReferenceLine',
+        'ScatterChart','Scatter','ComposedChart','LabelList',
+        compiled
+      ))(
+        React, ReactDOM, Recharts,
+        R.BarChart, R.Bar, R.LineChart, R.Line, R.AreaChart, R.Area,
+        R.XAxis, R.YAxis, R.Tooltip, R.ResponsiveContainer,
+        R.PieChart, R.Pie, R.Cell, R.Legend, R.CartesianGrid, R.ReferenceLine,
+        R.ScatterChart, R.Scatter, R.ComposedChart, R.LabelList
+      );
 
       var App = window.AppWithLock || window.FamilyApp;
       if (!App) throw new Error('Dashboard component not found');
