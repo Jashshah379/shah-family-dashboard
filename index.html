@@ -4,13 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Shah Family Wealth Dashboard</title>
-
-<!-- These load SYNCHRONOUSLY in order. React must be first, Recharts third. -->
-<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.1.16/umd/Recharts.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0}
@@ -29,7 +26,6 @@ body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0}
   <div id="msg" style="font-size:13px;color:#3a4a6a">Starting...</div>
 </div>
 <div id="root"></div>
-
 <script>
 function showError(msg) {
   document.getElementById('spinner').style.display='none';
@@ -41,7 +37,6 @@ function showError(msg) {
     msg.slice(0,800)+'</div>'+
     '<div style="font-size:10px;color:#3a4a6a;margin-top:8px">Screenshot and send to developer</div>';
 }
-
 try {
   if (!window.React)    throw new Error('React failed to load');
   if (!window.ReactDOM) throw new Error('ReactDOM failed to load');
@@ -52,25 +47,30 @@ try {
   Object.keys(Recharts).forEach(function(k){ window[k]=Recharts[k]; });
 
   var code = document.getElementById('jsx').textContent;
+
+  /* Patch React 17 — replace createRoot with render */
   var compiled;
   try {
     compiled = Babel.transform(code, {presets:['react'], sourceType:'script'}).code;
   } catch(e) { throw new Error('Babel: ' + e.message); }
 
-  try {
-    (new Function(compiled))();
-  } catch(e) { throw new Error('Runtime: ' + e.message); }
+  /* React 17 uses ReactDOM.render not createRoot */
+  compiled = compiled.replace(
+    /ReactDOM\.createRoot\(([^)]+)\)\.render\(([^;]+)\);/g,
+    'ReactDOM.render($2, $1);'
+  );
+
+  try { (new Function(compiled))(); }
+  catch(e) { throw new Error('Runtime: ' + e.message); }
 
   var App = window.AppWithLock || window.FamilyApp;
   if (!App) throw new Error('App not found');
 
   document.getElementById('loading').style.display = 'none';
-  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-} catch(e) {
-  showError(e.message);
-}
+  var rootEl = document.getElementById('root');
+  ReactDOM.render(React.createElement(App), rootEl);
+} catch(e) { showError(e.message); }
 </script>
-
 <script type="text/plain" id="jsx">
 const _tag = (arr, member, custodian) =>
   (arr||[]).map(h => ({...h, _member: member, _custodian: custodian}));
