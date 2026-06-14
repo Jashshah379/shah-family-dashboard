@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <meta name="theme-color" content="#070a16"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>Shah Family Wealth Dashboard</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>"/>
 
@@ -19,7 +18,7 @@
     body{background:#070a16;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
     #loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
       background:radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%);
-      color:#3a4a6a;gap:14px}
+      color:#3a4a6a;gap:14px;text-align:center;padding:20px}
     .spin{width:32px;height:32px;border:3px solid #1d2545;border-top-color:#7eb8ff;
       border-radius:50%;animation:spin .8s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -30,54 +29,71 @@
 <div id="loading">
   <div style="font-size:44px">🏛️</div>
   <div class="spin"></div>
-  <div style="font-size:13px">Loading Shah Family Dashboard...</div>
+  <div style="font-size:13px;color:#3a4a6a">Loading Shah Family Dashboard...</div>
 </div>
 <div id="root" style="display:none"></div>
 
 <script>
-  // Make globals available to dashboard code
+  // Expose all globals the dashboard needs
   window.React    = React;
   window.ReactDOM = ReactDOM;
   window.Recharts = Recharts;
+
+  // Destructure Recharts into global scope so dashboard.jsx can use them directly
+  var _r = Recharts;
+  window.BarChart          = _r.BarChart;
+  window.Bar               = _r.Bar;
+  window.LineChart         = _r.LineChart;
+  window.Line              = _r.Line;
+  window.AreaChart         = _r.AreaChart;
+  window.Area              = _r.Area;
+  window.XAxis             = _r.XAxis;
+  window.YAxis             = _r.YAxis;
+  window.Tooltip           = _r.Tooltip;
+  window.ResponsiveContainer = _r.ResponsiveContainer;
+  window.PieChart          = _r.PieChart;
+  window.Pie               = _r.Pie;
+  window.Cell              = _r.Cell;
+  window.Legend            = _r.Legend;
+  window.CartesianGrid     = _r.CartesianGrid;
+  window.ReferenceLine     = _r.ReferenceLine;
+  window.ScatterChart      = _r.ScatterChart;
+  window.Scatter           = _r.Scatter;
+  window.ComposedChart     = _r.ComposedChart;
+  window.LabelList         = _r.LabelList;
 </script>
 
 <script>
   fetch('./dashboard.jsx')
     .then(function(r) {
-      if (!r.ok) throw new Error('Could not load dashboard.jsx — HTTP ' + r.status);
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' — could not load dashboard.jsx');
       return r.text();
     })
     .then(function(code) {
-      // Strip export default — not valid outside ES modules
-      code = code.replace(/^export default \w+;?\s*$/m, '');
-
-      // Compile JSX → JS via Babel
+      // Compile JSX to JS
       var compiled = Babel.transform(code, {
         presets: ['react'],
-        filename: 'dashboard.jsx'
+        filename: 'dashboard.jsx',
+        sourceType: 'script'   // ← key: treat as script not module
       }).code;
 
-      // Execute in window scope so components become globals
-      var fn = new Function(compiled);
-      fn();
+      // Run in global scope
+      (new Function(compiled))();
 
-      // Mount — try AppWithLock first (has PIN), fallback to FamilyApp
+      // Mount
       var App = window.AppWithLock || window.FamilyApp;
-      if (!App) throw new Error('AppWithLock / FamilyApp not found after execution');
+      if (!App) throw new Error('Dashboard component not found — check dashboard.jsx exports');
 
       document.getElementById('loading').style.display = 'none';
       document.getElementById('root').style.display   = 'block';
-
-      ReactDOM.createRoot(document.getElementById('root'))
-              .render(React.createElement(App));
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
     })
     .catch(function(err) {
       document.getElementById('loading').innerHTML =
         '<div style="font-size:32px">⚠️</div>' +
-        '<div style="color:#f87171;font-weight:700;font-size:14px">Failed to load dashboard</div>' +
-        '<div style="color:#6a4a4a;font-size:11px;max-width:380px;text-align:center;line-height:1.6">' +
-          err.message + '</div>' +
-        '<div style="color:#3a2a2a;font-size:10px;margin-top:6px">Make sure dashboard.jsx is in the same folder</div>';
+        '<div style="color:#f87171;font-weight:700;font-size:15px">Failed to load dashboard</div>' +
+        '<div style="color:#a87070;font-size:12px;max-width:360px;line-height:1.6;margin-top:4px">' + err.message + '</div>' +
+        '<div style="color:#3a2a2a;font-size:10px;margin-top:8px">Make sure dashboard.jsx is in the same folder as index.html</div>';
     });
 </script>
 

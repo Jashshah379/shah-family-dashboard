@@ -1,8 +1,3 @@
-/* Recharts — available as global window.Recharts when loaded via CDN */
-const { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend, CartesianGrid, ReferenceLine,
-  ScatterChart, Scatter, ComposedChart, LabelList } = Recharts;
-
 const _tag = (arr, member, custodian) =>
   (arr||[]).map(h => ({...h, _member: member, _custodian: custodian}));
 const cr = n => {
@@ -15704,4 +15699,6 @@ function AppWithLock() {
   return <FamilyApp />;
 }
 
-export default AppWithLock;
+/* Expose to global scope for index.html */
+window.AppWithLock = AppWithLock;
+window.FamilyApp = FamilyApp;
