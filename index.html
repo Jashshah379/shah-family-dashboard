@@ -2,50 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#070a16"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <title>Shah Family Wealth Dashboard</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#070a16;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-    #loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      background:radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%);
-      color:#3a4a6a;gap:14px;text-align:center;padding:20px}
+    body{background:#070a16;font-family:system-ui,sans-serif}
+    #loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;background:radial-gradient(ellipse 80% 50% at 50% -10%,
+      #141b3a 0%,#0a0e1f 50%,#070a16 100%);color:#3a4a6a;gap:14px;text-align:center;padding:20px}
     .spin{width:32px;height:32px;border:3px solid #1d2545;border-top-color:#7eb8ff;
       border-radius:50%;animation:spin .8s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-
 <div id="loading">
-  <div style="font-size:44px">🏛️</div>
+  <div style="font-size:44px">&#127963;</div>
   <div class="spin"></div>
-  <div style="font-size:13px;color:#3a4a6a">Loading Shah Family Dashboard...</div>
+  <div id="msg" style="font-size:13px">Loading...</div>
 </div>
 <div id="root"></div>
 
-<!-- React -->
-<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Recharts -->
-<script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
-<!-- Babel -->
-<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js"></script>
 
 <script>
-// Make recharts components available as globals BEFORE dashboard script runs
-window.addEventListener('load', function() {
-  if (window.Recharts) {
-    Object.keys(Recharts).forEach(function(k) { window[k] = Recharts[k]; });
-  }
+document.addEventListener('DOMContentLoaded', function() {
+  var attempts = 0;
+  var interval = setInterval(function() {
+    attempts++;
+    if (window.React && window.ReactDOM && window.Recharts && window.Babel) {
+      clearInterval(interval);
+      startApp();
+    }
+    if (attempts > 150) {
+      clearInterval(interval);
+      showError('Libraries failed to load. Check internet connection and refresh.');
+    }
+  }, 100);
 });
+
+function showError(msg) {
+  document.getElementById('loading').innerHTML =
+    '<div style="font-size:28px">&#9888;&#65039;</div>' +
+    '<div style="color:#f87171;font-weight:700;font-size:14px;margin-top:4px">Error</div>' +
+    '<div style="color:#a87070;font-size:11px;margin-top:8px;max-width:360px;line-height:1.6">' + msg + '</div>';
+}
+
+function startApp() {
+  document.getElementById('msg').textContent = 'Compiling...';
+  try {
+    // Expose all Recharts components as window globals
+    Object.keys(Recharts).forEach(function(k) { window[k] = Recharts[k]; });
+
+    var code = document.getElementById('jsx').textContent;
+    var compiled = Babel.transform(code, {
+      presets: ['react'],
+      sourceType: 'script'
+    }).code;
+
+    (new Function(compiled))();
+
+    var App = window.AppWithLock || window.FamilyApp;
+    if (!App) throw new Error('App not found after compile');
+
+    document.getElementById('loading').style.display = 'none';
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      React.createElement(App)
+    );
+  } catch(e) {
+    showError(e.message.slice(0, 300));
+  }
+}
 </script>
 
-<!-- Dashboard — compiled by Babel in the browser -->
-<script type="text/babel" data-presets="react" data-type="module">
+<script type="text/plain" id="jsx">
 const _tag = (arr, member, custodian) =>
   (arr||[]).map(h => ({...h, _member: member, _custodian: custodian}));
 const cr = n => {
@@ -15732,6 +15767,38 @@ function PinLockScreen({ onUnlock }) {
   );
 }
 
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {hasError:false, error:null};
+  }
+  static getDerivedStateFromError(error) {
+    return {hasError:true, error};
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{minHeight:"100vh",background:"#070a16",display:"flex",flexDirection:"column",
+          alignItems:"center",justifyContent:"center",color:"#e8eaf0",padding:20,fontFamily:"system-ui"}}>
+          <div style={{fontSize:32,marginBottom:12}}>⚠️</div>
+          <div style={{fontSize:16,fontWeight:700,color:"#f87171",marginBottom:8}}>Dashboard Error</div>
+          <div style={{fontSize:11,color:"#6a4a4a",maxWidth:500,textAlign:"center",lineHeight:1.6,
+            fontFamily:"monospace",background:"#1a0808",padding:"12px 16px",borderRadius:8}}>
+            {this.state.error && this.state.error.toString()}
+          </div>
+          <button onClick={()=>this.setState({hasError:false,error:null})}
+            style={{marginTop:16,padding:"8px 20px",borderRadius:8,border:"none",
+              background:"#1e3a5f",color:"#7eb8ff",cursor:"pointer",fontSize:12}}>
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AppWithLock() {
   /* Check if already unlocked this session */
   const [unlocked, setUnlocked] = React.useState(() => {
@@ -15744,20 +15811,12 @@ function AppWithLock() {
   });
 
   if (!unlocked) return <PinLockScreen onUnlock={() => setUnlocked(true)} />;
-  return <FamilyApp />;
+  return <ErrorBoundary><FamilyApp /></ErrorBoundary>;
 }
 
 /* Expose to global scope for index.html */
 window.AppWithLock = AppWithLock;
 window.FamilyApp = FamilyApp;
-
-
-// Mount
-const root = ReactDOM.createRoot(document.getElementById('root'));
-const App = typeof AppWithLock !== 'undefined' ? AppWithLock : FamilyApp;
-document.getElementById('loading').style.display = 'none';
-root.render(<App/>);
 </script>
-
 </body>
 </html>
