@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#070a16"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Shah Family Wealth Dashboard</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>"/>
+
+  <!-- Dependencies -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js" crossorigin></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #070a16;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+    #root { min-height: 100vh; }
+    #loading {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%);
+      color: #3a4a6a;
+      font-size: 14px;
+      gap: 12px;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #1d2545;
+      border-top-color: #7eb8ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Loading screen shown while Babel compiles -->
+  <div id="loading">
+    <div style="font-size:40px">🏛️</div>
+    <div class="spinner"></div>
+    <div>Loading Shah Family Dashboard...</div>
+    <div style="font-size:11px;margin-top:4px;color:#1d2535">Compiling dashboard...</div>
+  </div>
+
+  <div id="root" style="display:none"></div>
+
+  <!-- Load and compile dashboard -->
+  <script>
+    // Make dependencies available globally (required by dashboard JSX)
+    window.React = React;
+    window.ReactDOM = ReactDOM;
+    window.Recharts = Recharts;
+  </script>
+
+  <script>
+    // Load dashboard.jsx, compile with Babel, then mount
+    fetch('./dashboard.jsx')
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to load dashboard.jsx: ' + r.status);
+        return r.text();
+      })
+      .then(code => {
+        // Compile JSX
+        const compiled = Babel.transform(code, {
+          presets: ['react'],
+          filename: 'dashboard.jsx',
+        }).code;
+
+        // Execute compiled code
+        const fn = new Function(compiled);
+        fn();
+
+        // Mount
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('root').style.display = 'block';
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(window.AppWithLock || window.FamilyApp));
+      })
+      .catch(err => {
+        document.getElementById('loading').innerHTML =
+          '<div style="font-size:32px">⚠️</div>' +
+          '<div style="color:#f87171;font-weight:700">Failed to load dashboard</div>' +
+          '<div style="font-size:11px;color:#6a4a4a;max-width:400px;text-align:center">' + err.message + '</div>' +
+          '<div style="font-size:10px;color:#3a2a2a;margin-top:8px">Make sure dashboard.jsx is in the same folder as index.html</div>';
+      });
+  </script>
+
+</body>
+</html>
