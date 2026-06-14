@@ -13,8 +13,6 @@ body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0}
 .spin{width:32px;height:32px;border:3px solid #1d2545;border-top-color:#7eb8ff;
   border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-pre{background:#1a0808;color:#f87171;padding:16px;border-radius:8px;font-size:10px;
-  max-width:90vw;overflow:auto;text-align:left;line-height:1.5;white-space:pre-wrap;word-break:break-all}
 </style>
 </head>
 <body>
@@ -24,20 +22,14 @@ pre{background:#1a0808;color:#f87171;padding:16px;border-radius:8px;font-size:10
   <div id="msg" style="font-size:13px;color:#3a4a6a">Loading...</div>
 </div>
 <div id="root"></div>
+
 <script>
-var SETS = [
-  ['https://unpkg.com/react@18.2.0/umd/react.production.min.js',
-   'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js',
-   'https://unpkg.com/recharts@2.12.7/umd/Recharts.js',
-   'https://unpkg.com/@babel/standalone@7.23.10/babel.min.js'],
-  ['https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
-   'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js',
-   'https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js',
-   'https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js'],
-  ['https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
-   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
-   'https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js',
-   'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.10/babel.min.js']
+// Load scripts ONE AT A TIME — Recharts requires React already on window
+var scripts = [
+  'https://unpkg.com/react@18.2.0/umd/react.production.min.js',
+  'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js',
+  'https://unpkg.com/recharts@2.12.7/umd/Recharts.js',
+  'https://unpkg.com/@babel/standalone@7.23.10/babel.min.js'
 ];
 
 function showError(msg) {
@@ -45,68 +37,62 @@ function showError(msg) {
   document.getElementById('loading').innerHTML=
     '<div style="font-size:28px">&#9888;</div>'+
     '<div style="color:#f87171;font-weight:700;font-size:14px;margin-top:4px">Error</div>'+
-    '<pre style="background:#1a0808;color:#f87171;padding:12px 16px;border-radius:8px;'+
-    'font-size:10px;max-width:90vw;overflow:auto;text-align:left;line-height:1.5;white-space:pre-wrap">'+
-    msg.slice(0,600)+'</pre>'+
+    '<div style="background:#1a0808;color:#f87171;padding:12px;border-radius:8px;font-size:10px;'+
+    'max-width:90vw;overflow:auto;text-align:left;line-height:1.5;margin-top:8px;white-space:pre-wrap">'+
+    msg.slice(0,600)+'</div>'+
     '<div style="font-size:10px;color:#3a4a6a;margin-top:8px">Screenshot and send to developer</div>';
 }
 
-function loadScript(src) {
-  return new Promise(function(res,rej){
-    var s=document.createElement('script');
-    s.src=src;
-    s.onload=res;
-    s.onerror=function(){rej(new Error('Failed: '+src));};
-    document.head.appendChild(s);
-  });
-}
-
-function trySet(setIdx) {
-  if (setIdx >= SETS.length) {
-    showError('All CDNs failed. Try opening on a different network or browser.');
-    return;
-  }
-  var urls = SETS[setIdx];
-  document.getElementById('msg').textContent = 'Trying CDN '+(setIdx+1)+' of '+SETS.length+'...';
-  
-  loadScript(urls[0])
-  .then(function(){ return loadScript(urls[1]); })
-  .then(function(){ return loadScript(urls[2]); })
-  .then(function(){ return loadScript(urls[3]); })
-  .then(function(){
-    if (!window.React || !window.ReactDOM || !window.Recharts || !window.Babel) {
-      throw new Error('Script loaded but variable missing');
-    }
-    startApp();
-  })
-  .catch(function(e){
-    console.warn('CDN set '+setIdx+' failed:',e.message);
-    trySet(setIdx+1);
-  });
+function loadNext(i) {
+  if (i >= scripts.length) { startApp(); return; }
+  document.getElementById('msg').textContent = 'Loading '+(i+1)+'/'+scripts.length+'...';
+  var s = document.createElement('script');
+  s.src = scripts[i];
+  s.onload = function() { loadNext(i+1); };
+  s.onerror = function() {
+    // Try jsdelivr as fallback for this specific script
+    var fallback = scripts[i].replace('unpkg.com','cdn.jsdelivr.net/npm');
+    document.getElementById('msg').textContent = 'Retrying '+(i+1)+'/'+scripts.length+'...';
+    var s2 = document.createElement('script');
+    s2.src = fallback;
+    s2.onload = function() { loadNext(i+1); };
+    s2.onerror = function() { showError('Failed to load: '+scripts[i]+'\nAlso tried: '+fallback); };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
 }
 
 function startApp() {
-  document.getElementById('msg').textContent='Compiling...';
+  document.getElementById('msg').textContent = 'Compiling dashboard...';
   try {
+    if (!window.React)    throw new Error('React not loaded');
+    if (!window.ReactDOM) throw new Error('ReactDOM not loaded');
+    if (!window.Recharts) throw new Error('Recharts not loaded');
+    if (!window.Babel)    throw new Error('Babel not loaded');
+
     Object.keys(Recharts).forEach(function(k){ window[k]=Recharts[k]; });
+
     var code = document.getElementById('jsx').textContent;
     var compiled;
     try {
-      compiled = Babel.transform(code,{presets:['react'],sourceType:'script'}).code;
-    } catch(e) { throw new Error('Babel: '+e.message); }
+      compiled = Babel.transform(code, {presets:['react'], sourceType:'script'}).code;
+    } catch(e) { throw new Error('Babel compile error:\n'+e.message); }
+
     try {
       (new Function(compiled))();
-    } catch(e) { throw new Error('Execute: '+e.message); }
+    } catch(e) { throw new Error('Runtime error:\n'+e.message); }
+
     var App = window.AppWithLock || window.FamilyApp;
-    if (!App) throw new Error('App component not found');
+    if (!App) throw new Error('App component not found after execution');
+
     document.getElementById('loading').style.display='none';
     ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
   } catch(e) {
-    showError(e.message+(e.stack?'\n'+e.stack.slice(0,400):''));
+    showError(e.message);
   }
 }
 
-trySet(0);
+loadNext(0);
 </script>
 
 <script type="text/plain" id="jsx">
