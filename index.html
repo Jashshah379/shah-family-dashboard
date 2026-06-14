@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#070a16"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <title>Shah Family Wealth Dashboard</title>
@@ -21,38 +21,95 @@
 <body>
 <div id="loading">
   <div style="font-size:44px">🏛️</div>
-  <div class="spin"></div>
-  <div style="font-size:13px;color:#3a4a6a">Loading Shah Family Dashboard...</div>
+  <div class="spin" id="spinner"></div>
+  <div id="status" style="font-size:13px;color:#3a4a6a">Loading dependencies...</div>
 </div>
 <div id="root" style="display:none"></div>
 
 <script>
-// Load all scripts sequentially, then start the app
-function loadScript(src, onload) {
-  var s = document.createElement('script');
-  s.src = src;
-  s.onload = onload;
-  s.onerror = function() { showError('Failed to load: ' + src); };
-  document.head.appendChild(s);
+var CDNS = [
+  {
+    react:    'https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js',
+    reactdom: 'https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js',
+    recharts: 'https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js',
+    babel:    'https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js',
+  },
+  {
+    react:    'https://unpkg.com/react@18/umd/react.production.min.js',
+    reactdom: 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
+    recharts: 'https://unpkg.com/recharts@2.12.7/umd/Recharts.js',
+    babel:    'https://unpkg.com/@babel/standalone@7.23.10/babel.min.js',
+  },
+  {
+    react:    'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
+    reactdom: 'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
+    recharts: 'https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js',
+    babel:    'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.10/babel.min.js',
+  }
+];
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
 }
 
 function showError(msg) {
+  document.getElementById('spinner').style.display = 'none';
   document.getElementById('loading').innerHTML =
     '<div style="font-size:32px">⚠️</div>' +
     '<div style="color:#f87171;font-weight:700;font-size:15px">Failed to load dashboard</div>' +
-    '<div style="color:#a87070;font-size:12px;max-width:360px;line-height:1.6;margin-top:6px">' + msg + '</div>';
+    '<div style="color:#a87070;font-size:12px;max-width:380px;line-height:1.7;margin-top:8px">' + msg + '</div>' +
+    '<div style="color:#3a2020;font-size:10px;margin-top:10px">Try opening the page while connected to the internet</div>';
+}
+
+function loadScript(src) {
+  return new Promise(function(resolve, reject) {
+    // Check if already loaded
+    if (src.includes('react.production') && window.React) return resolve();
+    if (src.includes('react-dom') && window.ReactDOM) return resolve();
+    if (src.includes('Recharts') && window.Recharts) return resolve();
+    if (src.includes('babel') && window.Babel) return resolve();
+
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function tryLoadFrom(cdn) {
+  return loadScript(cdn.react)
+    .then(function() { return loadScript(cdn.reactdom); })
+    .then(function() { return loadScript(cdn.recharts); })
+    .then(function() { return loadScript(cdn.babel); });
+}
+
+function loadWithFallbacks(cdnList, index) {
+  if (index >= cdnList.length) {
+    showError('Could not load libraries from any CDN. Make sure you are connected to the internet and try refreshing.');
+    return;
+  }
+  setStatus('Loading libraries (attempt ' + (index+1) + ')...');
+  tryLoadFrom(cdnList[index])
+    .then(function() {
+      setStatus('Starting dashboard...');
+      startApp();
+    })
+    .catch(function() {
+      loadWithFallbacks(cdnList, index + 1);
+    });
 }
 
 function startApp() {
-  // All scripts loaded — now fetch and run dashboard
   fetch('./dashboard.jsx')
     .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) throw new Error('Could not load dashboard.jsx (HTTP ' + r.status + ')');
       return r.text();
     })
     .then(function(code) {
-      // Prepend recharts destructure so dashboard can use components directly
-      var rechartsPreamble =
+      setStatus('Compiling dashboard...');
+
+      var preamble =
         'var BarChart=Recharts.BarChart,Bar=Recharts.Bar,' +
         'LineChart=Recharts.LineChart,Line=Recharts.Line,' +
         'AreaChart=Recharts.AreaChart,Area=Recharts.Area,' +
@@ -63,43 +120,30 @@ function startApp() {
         'Legend=Recharts.Legend,CartesianGrid=Recharts.CartesianGrid,' +
         'ReferenceLine=Recharts.ReferenceLine,' +
         'ScatterChart=Recharts.ScatterChart,Scatter=Recharts.Scatter,' +
-        'ComposedChart=Recharts.ComposedChart,LabelList=Recharts.LabelList;';
+        'ComposedChart=Recharts.ComposedChart,LabelList=Recharts.LabelList;\n';
 
-      // Compile JSX
-      var compiled = Babel.transform(rechartsPreamble + '\n' + code, {
+      var compiled = Babel.transform(preamble + code, {
         presets: ['react'],
         filename: 'dashboard.jsx',
         sourceType: 'script'
       }).code;
 
-      // Execute
-      (new Function(
-        'React','ReactDOM','Recharts',
-        compiled +
-        '\nwindow.AppWithLock=typeof AppWithLock!=="undefined"?AppWithLock:null;' +
-        '\nwindow.FamilyApp=typeof FamilyApp!=="undefined"?FamilyApp:null;'
-      ))(React, ReactDOM, Recharts);
+      (new Function('React','ReactDOM','Recharts', compiled))(React, ReactDOM, Recharts);
 
       var App = window.AppWithLock || window.FamilyApp;
-      if (!App) throw new Error('Component not found after execution');
+      if (!App) throw new Error('Dashboard component not found');
 
       document.getElementById('loading').style.display = 'none';
-      document.getElementById('root').style.display   = 'block';
+      document.getElementById('root').style.display = 'block';
       ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
     })
-    .catch(function(err) { showError(err.message); });
+    .catch(function(err) {
+      showError(err.message);
+    });
 }
 
-// Load dependencies one by one in order
-loadScript('https://unpkg.com/react@18/umd/react.production.min.js', function() {
-  loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', function() {
-    loadScript('https://unpkg.com/recharts@2.12.7/umd/Recharts.js', function() {
-      loadScript('https://unpkg.com/@babel/standalone@7.23.10/babel.min.js', function() {
-        startApp();
-      });
-    });
-  });
-});
+// Start loading
+loadWithFallbacks(CDNS, 0);
 </script>
 </body>
 </html>
