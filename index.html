@@ -4,6 +4,13 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Shah Family Wealth Dashboard</title>
+
+<!-- These load SYNCHRONOUSLY in order. React must be first, Recharts third. -->
+<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0}
@@ -19,19 +26,11 @@ body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0}
 <div id="loading">
   <div style="font-size:44px">&#127963;</div>
   <div class="spin" id="spinner"></div>
-  <div id="msg" style="font-size:13px;color:#3a4a6a">Loading...</div>
+  <div id="msg" style="font-size:13px;color:#3a4a6a">Starting...</div>
 </div>
 <div id="root"></div>
 
 <script>
-// Load scripts ONE AT A TIME — Recharts requires React already on window
-var scripts = [
-  'https://unpkg.com/react@18.2.0/umd/react.production.min.js',
-  'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js',
-  'https://unpkg.com/recharts@2.12.7/umd/Recharts.js',
-  'https://unpkg.com/@babel/standalone@7.23.10/babel.min.js'
-];
-
 function showError(msg) {
   document.getElementById('spinner').style.display='none';
   document.getElementById('loading').innerHTML=
@@ -39,60 +38,37 @@ function showError(msg) {
     '<div style="color:#f87171;font-weight:700;font-size:14px;margin-top:4px">Error</div>'+
     '<div style="background:#1a0808;color:#f87171;padding:12px;border-radius:8px;font-size:10px;'+
     'max-width:90vw;overflow:auto;text-align:left;line-height:1.5;margin-top:8px;white-space:pre-wrap">'+
-    msg.slice(0,600)+'</div>'+
+    msg.slice(0,800)+'</div>'+
     '<div style="font-size:10px;color:#3a4a6a;margin-top:8px">Screenshot and send to developer</div>';
 }
 
-function loadNext(i) {
-  if (i >= scripts.length) { startApp(); return; }
-  document.getElementById('msg').textContent = 'Loading '+(i+1)+'/'+scripts.length+'...';
-  var s = document.createElement('script');
-  s.src = scripts[i];
-  s.onload = function() { loadNext(i+1); };
-  s.onerror = function() {
-    // Try jsdelivr as fallback for this specific script
-    var fallback = scripts[i].replace('unpkg.com','cdn.jsdelivr.net/npm');
-    document.getElementById('msg').textContent = 'Retrying '+(i+1)+'/'+scripts.length+'...';
-    var s2 = document.createElement('script');
-    s2.src = fallback;
-    s2.onload = function() { loadNext(i+1); };
-    s2.onerror = function() { showError('Failed to load: '+scripts[i]+'\nAlso tried: '+fallback); };
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s);
-}
+try {
+  if (!window.React)    throw new Error('React failed to load');
+  if (!window.ReactDOM) throw new Error('ReactDOM failed to load');
+  if (!window.Recharts) throw new Error('Recharts failed to load');
+  if (!window.Babel)    throw new Error('Babel failed to load');
 
-function startApp() {
-  document.getElementById('msg').textContent = 'Compiling dashboard...';
+  document.getElementById('msg').textContent = 'Compiling...';
+  Object.keys(Recharts).forEach(function(k){ window[k]=Recharts[k]; });
+
+  var code = document.getElementById('jsx').textContent;
+  var compiled;
   try {
-    if (!window.React)    throw new Error('React not loaded');
-    if (!window.ReactDOM) throw new Error('ReactDOM not loaded');
-    if (!window.Recharts) throw new Error('Recharts not loaded');
-    if (!window.Babel)    throw new Error('Babel not loaded');
+    compiled = Babel.transform(code, {presets:['react'], sourceType:'script'}).code;
+  } catch(e) { throw new Error('Babel: ' + e.message); }
 
-    Object.keys(Recharts).forEach(function(k){ window[k]=Recharts[k]; });
+  try {
+    (new Function(compiled))();
+  } catch(e) { throw new Error('Runtime: ' + e.message); }
 
-    var code = document.getElementById('jsx').textContent;
-    var compiled;
-    try {
-      compiled = Babel.transform(code, {presets:['react'], sourceType:'script'}).code;
-    } catch(e) { throw new Error('Babel compile error:\n'+e.message); }
+  var App = window.AppWithLock || window.FamilyApp;
+  if (!App) throw new Error('App not found');
 
-    try {
-      (new Function(compiled))();
-    } catch(e) { throw new Error('Runtime error:\n'+e.message); }
-
-    var App = window.AppWithLock || window.FamilyApp;
-    if (!App) throw new Error('App component not found after execution');
-
-    document.getElementById('loading').style.display='none';
-    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-  } catch(e) {
-    showError(e.message);
-  }
+  document.getElementById('loading').style.display = 'none';
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+} catch(e) {
+  showError(e.message);
 }
-
-loadNext(0);
 </script>
 
 <script type="text/plain" id="jsx">
