@@ -1,83 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#070a16"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <title>Shah Family Wealth Dashboard</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#070a16;font-family:system-ui,sans-serif}
-    #loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;background:radial-gradient(ellipse 80% 50% at 50% -10%,
-      #141b3a 0%,#0a0e1f 50%,#070a16 100%);color:#3a4a6a;gap:14px;text-align:center;padding:20px}
-    .spin{width:32px;height:32px;border:3px solid #1d2545;border-top-color:#7eb8ff;
-      border-radius:50%;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shah Family Wealth Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0}
+#loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:radial-gradient(ellipse 80% 50% at 50% -10%,
+  #141b3a,#0a0e1f 50%,#070a16);gap:14px;text-align:center;padding:20px}
+.spin{width:32px;height:32px;border:3px solid #1d2545;border-top-color:#7eb8ff;
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+pre{background:#1a0808;color:#f87171;padding:16px;border-radius:8px;font-size:10px;
+  max-width:90vw;overflow:auto;text-align:left;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+</style>
 </head>
 <body>
 <div id="loading">
   <div style="font-size:44px">&#127963;</div>
-  <div class="spin"></div>
-  <div id="msg" style="font-size:13px">Loading...</div>
+  <div class="spin" id="spinner"></div>
+  <div id="msg" style="font-size:13px;color:#3a4a6a">Loading libraries...</div>
 </div>
 <div id="root"></div>
 
-<script defer src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.10/babel.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  var attempts = 0;
-  var interval = setInterval(function() {
-    attempts++;
-    if (window.React && window.ReactDOM && window.Recharts && window.Babel) {
-      clearInterval(interval);
-      startApp();
-    }
-    if (attempts > 150) {
-      clearInterval(interval);
-      showError('Libraries failed to load. Check internet connection and refresh.');
-    }
-  }, 100);
-});
-
-function showError(msg) {
-  document.getElementById('loading').innerHTML =
-    '<div style="font-size:28px">&#9888;&#65039;</div>' +
-    '<div style="color:#f87171;font-weight:700;font-size:14px;margin-top:4px">Error</div>' +
-    '<div style="color:#a87070;font-size:11px;margin-top:8px;max-width:360px;line-height:1.6">' + msg + '</div>';
+function showError(title, detail) {
+  document.getElementById('spinner').style.display='none';
+  document.getElementById('loading').innerHTML=
+    '<div style="font-size:28px">&#9888;</div>'+
+    '<div style="color:#f87171;font-weight:700;font-size:14px">'+title+'</div>'+
+    '<pre>'+detail.slice(0,800)+'</pre>'+
+    '<div style="font-size:10px;color:#3a4a6a;margin-top:8px">Screenshot this and send to developer</div>';
 }
 
-function startApp() {
-  document.getElementById('msg').textContent = 'Compiling...';
+window.onload = function() {
+  document.getElementById('msg').textContent='Compiling dashboard...';
   try {
-    // Expose all Recharts components as window globals
-    Object.keys(Recharts).forEach(function(k) { window[k] = Recharts[k]; });
+    if (!window.React)    throw new Error('React not loaded');
+    if (!window.ReactDOM) throw new Error('ReactDOM not loaded');
+    if (!window.Recharts) throw new Error('Recharts not loaded');
+    if (!window.Babel)    throw new Error('Babel not loaded');
+
+    // Expose Recharts components as globals
+    Object.keys(Recharts).forEach(function(k){ window[k]=Recharts[k]; });
 
     var code = document.getElementById('jsx').textContent;
-    var compiled = Babel.transform(code, {
-      presets: ['react'],
-      sourceType: 'script'
-    }).code;
+    document.getElementById('msg').textContent='Running Babel transform...';
 
-    (new Function(compiled))();
+    var compiled;
+    try {
+      compiled = Babel.transform(code, {presets:['react'],sourceType:'script'}).code;
+    } catch(babelErr) {
+      throw new Error('Babel error: ' + babelErr.message);
+    }
+
+    document.getElementById('msg').textContent='Executing dashboard code...';
+    try {
+      (new Function(compiled))();
+    } catch(execErr) {
+      throw new Error('Execution error: ' + execErr.message);
+    }
 
     var App = window.AppWithLock || window.FamilyApp;
-    if (!App) throw new Error('App not found after compile');
+    if (!App) throw new Error('AppWithLock and FamilyApp both undefined after execution');
 
-    document.getElementById('loading').style.display = 'none';
+    document.getElementById('loading').style.display='none';
     ReactDOM.createRoot(document.getElementById('root')).render(
       React.createElement(App)
     );
   } catch(e) {
-    showError(e.message.slice(0, 300));
+    showError('Dashboard Error', e.message + (e.stack ? '\n\n' + e.stack : ''));
   }
-}
+};
 </script>
 
 <script type="text/plain" id="jsx">
