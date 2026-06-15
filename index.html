@@ -215,7 +215,7 @@ function LabelList(p){return null;}
 function useLivePrices() {
   /* ── Live price hook — fetches from Render.com backend ─────────────────── */
   /* After deploying server.py, replace PRICE_SERVER_URL with your Render URL */
-  const PRICE_SERVER_URL = "https://shah-prices.onrender.com/prices";
+  const PRICE_SERVER_URL = "https://noisy-sea-5936.jashshah379.workers.dev/prices";
 
   const [prices, setPrices] = React.useState({});
   const [indices, setIndices] = React.useState({});
@@ -225,7 +225,7 @@ function useLivePrices() {
   const fetchPrices = React.useCallback(async () => {
     setStatus("loading");
     try {
-      const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(15000)});
+      const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(60000)});
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       const all = data.prices || {};
@@ -246,6 +246,8 @@ function useLivePrices() {
     } catch(e) {
       console.warn("Price fetch failed:", e.message);
       setStatus("error");
+      /* Auto-retry after 15s in case server was sleeping */
+      setTimeout(fetchPrices, 15000);
     }
   }, []);
 
@@ -286,12 +288,12 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
       )}
       {status === "error" && (
         <span style={{fontSize:10,color:"#f87171"}}>
-          ⚠ Price fetch failed — NSE/Yahoo may be rate-limiting. Try again in 60s.
+          ⚠ Connecting to price server... (first load may take 60s)
         </span>
       )}
       {status === "idle" && (
         <span style={{fontSize:10,color:"#3a4a6a"}}>
-          CMPs from last uploaded data · click to fetch live from NSE/Yahoo Finance
+          CMPs from last uploaded data · click ↻ to fetch live prices
         </span>
       )}
 
