@@ -3873,7 +3873,54 @@ function MutualFundsTab() {
 
 function FamilyApp() {
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
+
+  /* ── Patch live prices into holdings data ─────────────────────────────── */
+  React.useEffect(function() {
+    if (!livePrices || Object.keys(livePrices).length === 0) return;
+    var symMap = typeof SYMBOL_MAP !== "undefined" ? SYMBOL_MAP : {};
+    /* Build reverse map: NSE symbol → stock name variants */
+    var nseToName = {};
+    Object.entries(symMap).forEach(function(e) { 
+      if (!nseToName[e[1]]) nseToName[e[1]] = e[0]; 
+    });
+    /* Patch FAMILY_TOP */
+    if (typeof FAMILY_TOP !== "undefined") {
+      FAMILY_TOP.forEach(function(h) {
+        var nseSym = symMap[h.s] || h.s;
+        var lp = livePrices[nseSym] || livePrices[h.s];
+        if (lp && lp.p > 0) {
+          h.cmp = lp.p;
+          h.chg = lp.c;
+          h.chgPct = lp.pct;
+          h.val = Math.round(lp.p * (h.qty || 0));
+          h.unreal = h.val - (h.inv || 0);
+        }
+      });
+    }
+    /* Patch MEMBER_HOLDINGS */
+    if (typeof MEMBER_HOLDINGS !== "undefined") {
+      Object.values(MEMBER_HOLDINGS).forEach(function(arr) {
+        if (!Array.isArray(arr)) return;
+        arr.forEach(function(h) {
+          var nseSym = symMap[h.s] || h.s;
+          var lp = livePrices[nseSym] || livePrices[h.s];
+          if (lp && lp.p > 0) {
+            h.cmp = lp.p;
+            h.chg = lp.c;
+            h.chgPct = lp.pct;
+            h.val = Math.round(lp.p * (h.qty || 0));
+            h.unreal = h.val - (h.inv || 0);
+          }
+        });
+      });
+    }
+    /* Force re-render by updating a counter */
+    setPriceVersion(function(v) { return v + 1; });
+    console.log("Live prices patched into holdings:", Object.keys(livePrices).length);
+  }, [livePrices]);
+
   const [tab,setTab]=React.useState("Overview");
+  const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
   const [bBankSubTab,setBBankSubTab]=React.useState("accounts");
   const [stockDetail,setStockDetail]=React.useState(null);
   React.useEffect(()=>{ window._openStockDetail = s => setStockDetail(s); return ()=>{ delete window._openStockDetail; }; },[]);
@@ -5300,7 +5347,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Holdings"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus}/>}
+      {tab==="Holdings"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
       {tab==="Tax"&&<TaxTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
