@@ -5300,7 +5300,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Holdings"&&<AllHoldingsTab/>}
+      {tab==="Holdings"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus}/>}
       {tab==="Tax"&&<TaxTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
@@ -12177,6 +12177,12 @@ function PortfolioDetailTab() {
 function InCredTab() {
   const [view, setView] = React.useState("holdings");
   const [sortCol, setSortCol] = React.useState("sym");
+  /* Live price lookup — uses Cloudflare worker prices when available */
+  const getLivePrice = React.useCallback(function(stockName) {
+    if (!livePrices || !livePrices[stockName]) return null;
+    return livePrices[stockName].p;
+  }, [livePrices]);
+  const liveCount = livePrices ? Object.keys(livePrices).length : 0;
   const [sortDir, setSortDir] = React.useState(1);
 
   const fC = (n) => {
@@ -12683,7 +12689,7 @@ function KarishmaTab() {
    Consolidates every member's equity holdings into one sortable, filterable table.
    Each row shows stock, member, custodian, qty, avg, CMP, value, P&L, P&L%.
    - */
-function AllHoldingsTab() {
+function AllHoldingsTab({livePrices, priceStatus}) {
   const [sortCol, setSortCol] = React.useState("sym");
   const [sortDir, setSortDir] = React.useState(1);
   const [filterMember, setFilterMember] = React.useState("All");
