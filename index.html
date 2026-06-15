@@ -5909,41 +5909,6 @@ const MEMBERS = [
 }));
 
 
-
-/* ── FAMILY_TOP — combined family equity holdings (derived from MEMBER_HOLDINGS) ── */
-const FAMILY_TOP = (function() {
-  var all = [];
-  var sources = [
-    {arr: typeof VASUMATI_SUSHIL_HOLDINGS!=="undefined"?VASUMATI_SUSHIL_HOLDINGS:[], m:"Vasumati Shah",    c:"Sushil Financial"},
-    {arr: typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[], m:"Vasumati Shah",    c:"ICICI Direct"},
-    {arr: typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[], m:"Vasumati Shah", c:"Zerodha"},
-    {arr: typeof RASIKLAL_HUF_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_HUF_SUSHIL_HOLDINGS:[], m:"Rasiklal HUF",    c:"Sushil Financial"},
-    {arr: typeof RASIKLAL_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_SUSHIL_HOLDINGS:[], m:"Rasiklal Shah",   c:"Sushil Financial"},
-    {arr: typeof RM_ICICI_HOLDINGS!=="undefined"?RM_ICICI_HOLDINGS:[], m:"Rasiklal Shah",   c:"ICICI Direct"},
-    {arr: typeof CHETAN_HUF_SUSHIL_HOLDINGS!=="undefined"?CHETAN_HUF_SUSHIL_HOLDINGS:[], m:"Chetan Shah HUF", c:"Sushil Financial"},
-    {arr: typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[], m:"Chetan Shah",      c:"Sushil Financial"},
-    {arr: typeof CHETAN_V60_SUSHIL_HOLDINGS!=="undefined"?CHETAN_V60_SUSHIL_HOLDINGS:[], m:"Chetan Shah",  c:"Sushil Financial"},
-    {arr: typeof ASHA_SUSHIL_HOLDINGS!=="undefined"?ASHA_SUSHIL_HOLDINGS:[], m:"Asha Shah",       c:"Sushil Financial"},
-    {arr: typeof MAYA_SUSHIL_HOLDINGS!=="undefined"?MAYA_SUSHIL_HOLDINGS:[], m:"Maya Shah",       c:"Sushil Financial"},
-    {arr: typeof PRAFUL_HUF_SUSHIL!=="undefined"?PRAFUL_HUF_SUSHIL:[], m:"Praful Shah HUF",  c:"Sushil Financial"},
-    {arr: typeof PRAFUL_HUF_SUSHIL_P71!=="undefined"?PRAFUL_HUF_SUSHIL_P71:[], m:"Praful Shah HUF", c:"Sushil Financial"},
-    {arr: typeof INCRED_HOLDINGS!=="undefined"?INCRED_HOLDINGS:[], m:"InCred PMS",      c:"InCred"},
-    {arr: typeof AARYA_HOLDINGS!=="undefined"?AARYA_HOLDINGS:[], m:"Aarya Shah",      c:"Sushil Financial"},
-    {arr: typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], m:"Karishma Shah",   c:"Zerodha"},
-    {arr: typeof JASH_PORTFOLIO_HOLDINGS!=="undefined"?JASH_PORTFOLIO_HOLDINGS:[], m:"Jash Shah",       c:"Zerodha"},
-  ];
-  sources.forEach(function(src) {
-    src.arr.forEach(function(h) {
-      all.push(Object.assign({}, h, {_member:src.m, _custodian:src.c, unreal:(h.val||0)-(h.inv||0)}));
-    });
-  });
-  return all;
-})();
-
-const FAMILY_EQ_TOTAL_COST = FAMILY_TOP.reduce((s,h)=>s+h.inv, 0);
-
-const FAMILY_EQ_TOTAL_MKT  = FAMILY_TOP.reduce((s,h)=>s+h.val, 0);
-
 const totalBank  = BANK.reduce((s,r)=>s+r.b, 0);
 
 const totalMF    = MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.mf||0), 0);
@@ -7430,6 +7395,41 @@ const PRAFUL_HUF_SUSHIL_P71 = [
   {s:"Voltas",qty:270,cmp:1285.4,val:347058,avg:0,inv:0,unreal:0},
   {s:"Yes Bank",qty:1000,cmp:23.02,val:23020,avg:0,inv:0,unreal:0},
 ];
+
+
+/* ── FAMILY_TOP — combined family equity holdings (derived from MEMBER_HOLDINGS) ── */
+const FAMILY_TOP = (function() {
+  var all = [];
+  var sources = [
+    {arr: typeof VASUMATI_SUSHIL_HOLDINGS!=="undefined"?VASUMATI_SUSHIL_HOLDINGS:[], m:"Vasumati Shah",    c:"Sushil Financial"},
+    {arr: typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[], m:"Vasumati Shah",    c:"ICICI Direct"},
+    {arr: typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[], m:"Vasumati Shah", c:"Zerodha"},
+    {arr: typeof RASIKLAL_HUF_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_HUF_SUSHIL_HOLDINGS:[], m:"Rasiklal HUF",    c:"Sushil Financial"},
+    {arr: typeof RASIKLAL_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_SUSHIL_HOLDINGS:[], m:"Rasiklal Shah",   c:"Sushil Financial"},
+    {arr: typeof RM_ICICI_HOLDINGS!=="undefined"?RM_ICICI_HOLDINGS:[], m:"Rasiklal Shah",   c:"ICICI Direct"},
+    {arr: typeof CHETAN_HUF_SUSHIL_HOLDINGS!=="undefined"?CHETAN_HUF_SUSHIL_HOLDINGS:[], m:"Chetan Shah HUF", c:"Sushil Financial"},
+    {arr: typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[], m:"Chetan Shah",      c:"Sushil Financial"},
+    {arr: typeof CHETAN_V60_SUSHIL_HOLDINGS!=="undefined"?CHETAN_V60_SUSHIL_HOLDINGS:[], m:"Chetan Shah",  c:"Sushil Financial"},
+    {arr: typeof ASHA_SUSHIL_HOLDINGS!=="undefined"?ASHA_SUSHIL_HOLDINGS:[], m:"Asha Shah",       c:"Sushil Financial"},
+    {arr: typeof MAYA_SUSHIL_HOLDINGS!=="undefined"?MAYA_SUSHIL_HOLDINGS:[], m:"Maya Shah",       c:"Sushil Financial"},
+    {arr: typeof PRAFUL_HUF_SUSHIL!=="undefined"?PRAFUL_HUF_SUSHIL:[], m:"Praful Shah HUF",  c:"Sushil Financial"},
+    {arr: typeof PRAFUL_HUF_SUSHIL_P71!=="undefined"?PRAFUL_HUF_SUSHIL_P71:[], m:"Praful Shah HUF", c:"Sushil Financial"},
+    {arr: typeof INCRED_HOLDINGS!=="undefined"?INCRED_HOLDINGS:[], m:"InCred PMS",      c:"InCred"},
+    {arr: typeof AARYA_HOLDINGS!=="undefined"?AARYA_HOLDINGS:[], m:"Aarya Shah",      c:"Sushil Financial"},
+    {arr: typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], m:"Karishma Shah",   c:"Zerodha"},
+    {arr: typeof JASH_PORTFOLIO_HOLDINGS!=="undefined"?JASH_PORTFOLIO_HOLDINGS:[], m:"Jash Shah",       c:"Zerodha"},
+  ];
+  sources.forEach(function(src) {
+    src.arr.forEach(function(h) {
+      all.push(Object.assign({}, h, {_member:src.m, _custodian:src.c, unreal:(h.val||0)-(h.inv||0)}));
+    });
+  });
+  return all;
+})();
+
+const FAMILY_EQ_TOTAL_COST = FAMILY_TOP.reduce((s,h)=>s+h.inv, 0);
+
+const FAMILY_EQ_TOTAL_MKT  = FAMILY_TOP.reduce((s,h)=>s+h.val, 0);
 
 
 const MEMBER_HOLDINGS = {
