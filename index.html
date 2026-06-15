@@ -2419,170 +2419,340 @@ function ChangelogTab() {
 ═══════════════════════════════════════════════════════════ */
 function DailyDigest() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
-  const bank = (typeof BANK!=="undefined"?BANK:[]);
+  const pct = v => (v>=0?"+":"")+v.toFixed(2)+"%";
+
+  /* ── Data ── */
+  const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
+  const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const bank  = (typeof BANK!=="undefined"?BANK:[]);
+  const ppf   = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]);
+  const mfReg = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
 
   /* ── Totals ── */
-  const totalEquity = realMembers.reduce((s,m)=>s+(m.stocks||0),0);
-  const totalMF     = realMembers.reduce((s,m)=>s+(m.mf||0),0);
-  const totalBank   = bank.reduce((s,b)=>s+(b.b||0),0);
-  const totalPPF = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]).reduce((s,p)=>s+p.bal,0);
-  const grandTotal  = totalEquity+totalMF+totalBank+totalPPF;
-  const totalUnreal = allH.reduce((s,h)=>s+(h.unreal||0),0);
-  const totalInv    = allH.filter(h=>h.val>0).reduce((s,h)=>s+(h.inv||0),0);
+  const totalEq   = mems.reduce((s,m)=>s+(m.stocks||0),0);
+  const totalMF   = mems.reduce((s,m)=>s+(m.mf||0),0);
+  const totalBank = bank.reduce((s,b)=>s+(b.b||0),0);
+  const totalPPF  = ppf.reduce((s,p)=>s+(p.bal||0),0);
+  const totalWealth = totalEq+totalMF+totalBank+totalPPF;
+  const totalInv  = allH.reduce((s,h)=>s+(h.inv||0),0);
+  const totalVal  = allH.reduce((s,h)=>s+(h.val||0),0);
+  const totalPL   = totalVal-totalInv;
+  const retPct    = totalInv>0?(totalPL/totalInv*100):0;
 
-  /* ── MTF interest eroding daily ── */
-  const MTF_BORROWED = 24528000;
-  const dailyInterest = Math.round(MTF_BORROWED * 0.18 / 365);
+  /* ── Best / Worst ── */
+  const withRet = allH.filter(h=>h.inv>1000);
+  const topGain = [...withRet].sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,5);
+  const topLoss = [...withRet].sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,5);
 
-  /* ── Best/Worst by return % ── */
-  const withReturn = allH.filter(h=>h.val>0&&h.inv>1000);
-  const best5 = [...withReturn].sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,3);
-  const worst5 = [...withReturn].sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,3);
+  /* ── Member wealth ranking ── */
+  const memberRanked = [...mems].sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0))).slice(0,6);
 
-  /* ── Loss harvest candidates (down >15%) ── */
-  const lossHarvest = withReturn.filter(h=>(h.val-h.inv)/h.inv < -0.15).sort((a,b)=>(a.val-a.inv)-(b.val-b.inv)).slice(0,3);
+  /* ── Today's total dividend income ── */
+  const allDivs = [
+    ...(typeof R75_DIVIDENDS!=="undefined"?(R75_DIVIDENDS.history||[]):[]),
+    ...(typeof V129_DIVIDENDS!=="undefined"?(V129_DIVIDENDS.history||[]):[]),
+    ...(typeof P71_DIVIDENDS!=="undefined"?(P71_DIVIDENDS.history||[]):[]),
+    ...(typeof C31_DIVIDENDS!=="undefined"?(C31_DIVIDENDS.history||[]):[]),
+  ];
+  const totalDivLifetime = allDivs.reduce((s,d)=>s+(d.amt||0),0);
 
-  /* ── LTCG candidates (up >50%) ── */
-  const ltcgCandidates = withReturn.filter(h=>(h.val-h.inv)/h.inv > 0.50).sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,3);
-
-  /* ── Concentration alerts ── */
+  /* ── Top stocks by value ── */
   const stockTotals = {};
-  allH.forEach(h=>{ if(h.s&&h.val>0) stockTotals[h.s]=(stockTotals[h.s]||0)+h.val; });
-  const topStock = Object.entries(stockTotals).sort((a,b)=>b[1]-a[1])[0];
-  const topStockPct = topStock&&grandTotal>0?(topStock[1]/grandTotal*100):0;
+  allH.forEach(h=>{ if(h.s) stockTotals[h.s]=(stockTotals[h.s]||0)+(h.val||0); });
+  const topStocks = Object.entries(stockTotals).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const topStockPct = topStocks[0]&&totalWealth>0?(topStocks[0][1]/totalWealth*100):0;
 
-  /* ── Upcoming corp actions (from CorporateActionsTab data) ── */
-  const upcoming7 = [
-    {stock:"BSE",date:"2026-06-30",type:"dividend",amount:22},
-    {stock:"SBI",date:"2026-07-05",type:"dividend",amount:13.7},
-    {stock:"Federal Bank",date:"2026-07-12",type:"dividend",amount:3},
-    {stock:"Linde India",date:"2026-07-20",type:"dividend",amount:28},
-  ].filter(a=>{
-    const d = new Date(a.date);
-    const now = new Date();
-    const diff = (d-now)/(1000*60*60*24);
-    return diff >= 0 && diff <= 30;
-  });
+  /* ── Health score ── */
+  let score=100;
+  if(topStockPct>20) score-=15; if(topStockPct>35) score-=10;
+  if(retPct<0) score-=10; if(retPct<-10) score-=10;
+  score=Math.max(0,Math.min(100,score));
+  const scoreColor=score>=75?"#10b981":score>=50?"#f0b429":"#ef4444";
 
-  /* ── Portfolio health score ── */
-  let score = 100;
-  if(topStockPct > 15) score -= 15;
-  if(topStockPct > 25) score -= 10;
-  const mtfPct = grandTotal>0?(MTF_BORROWED/grandTotal*100):0;
-  if(mtfPct > 20) score -= 10;
-  if(mtfPct > 35) score -= 15;
-  const retPct = totalInv>0?(totalUnreal/totalInv*100):0;
-  if(retPct < 0) score -= 10;
-  score = Math.max(0, Math.min(100, score));
-  const scoreColor = score>=75?"#34d399":score>=50?"#f0b429":"#f87171";
-  const scoreLabel = score>=75?"Good":score>=50?"Fair":"Needs Attention";
+  /* ── Animated number ── */
+  const [shown,setShown]=React.useState(false);
+  React.useEffect(()=>{ const t=setTimeout(()=>setShown(true),100); return()=>clearTimeout(t); },[]);
 
-  const today = new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+  const today = new Date();
+  const timeStr = today.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+  const dateStr = today.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
+
+  /* ── Asset allocation for donut ── */
+  const assets = [
+    {l:"Equity",  v:totalEq,   c:"#6366f1"},
+    {l:"Mutual Funds",v:totalMF,  c:"#10b981"},
+    {l:"Bank",    v:totalBank, c:"#f0b429"},
+    {l:"PPF",     v:totalPPF,  c:"#3b82f6"},
+  ].filter(a=>a.v>0);
+  const assetTotal = assets.reduce((s,a)=>s+a.v,0)||1;
+
+  /* Donut chart SVG */
+  const DonutChart = () => {
+    const cx=60,cy=60,r=50,ri=32;
+    let angle=-Math.PI/2;
+    return (
+      <svg width={120} height={120} viewBox="0 0 120 120">
+        {assets.map((a,i)=>{
+          const sweep=(a.v/assetTotal)*2*Math.PI;
+          const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+          angle+=sweep;
+          const x2=cx+r*Math.cos(angle),y2=cy+r*Math.sin(angle);
+          const ix1=cx+ri*Math.cos(angle-sweep),iy1=cy+ri*Math.sin(angle-sweep);
+          const ix2=cx+ri*Math.cos(angle),iy2=cy+ri*Math.sin(angle);
+          const lg=sweep>Math.PI?1:0;
+          return <path key={i} d={`M${x1},${y1} A${r},${r} 0 ${lg},1 ${x2},${y2} L${ix2},${iy2} A${ri},${ri} 0 ${lg},0 ${ix1},${iy1} Z`} fill={a.c} stroke="#0a0e1e" strokeWidth={2}/>;
+        })}
+        <text x={60} y={56} textAnchor="middle" fill="#e8eaf0" fontSize={9} fontWeight={700}>{cr(totalWealth).split("₹")[1]}</text>
+        <text x={60} y={68} textAnchor="middle" fill="#3a4a6a" fontSize={7}>Total</text>
+      </svg>
+    );
+  };
 
   return (
-    <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
+    <div style={{display:"flex",flexDirection:"column",gap:14,paddingBottom:8}}>
 
-      {/* ── Header ── */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div>
-          <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>Good morning, Shah Family 👋</div>
-          <div style={{fontSize:9,color:"#3a4a6a"}}>{today}</div>
-        </div>
-        {/* Health Score */}
-        <div style={{display:"flex",alignItems:"center",gap:8,background:"#080b18",borderRadius:10,padding:"6px 12px",border:"1px solid #1d2545"}}>
-          <div style={{fontSize:20,fontWeight:900,color:scoreColor,fontFamily:"monospace"}}>{score}</div>
+      {/* ══ HERO BANNER ══ */}
+      <div style={{
+        background:"linear-gradient(135deg,#0f0c29,#302b63,#24243e)",
+        borderRadius:20,padding:"24px 28px",position:"relative",overflow:"hidden",
+        border:"1px solid #2a2a5a",
+      }}>
+        {/* Background glow orbs */}
+        <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle,#6366f133,transparent 70%)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:-60,left:20,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,#10b98122,transparent 70%)",pointerEvents:"none"}}/>
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16,position:"relative"}}>
+          {/* Left: Greeting + Wealth */}
           <div>
-            <div style={{fontSize:9,fontWeight:700,color:scoreColor}}>{scoreLabel}</div>
-            <div style={{fontSize:8,color:"#2a3a50"}}>Portfolio Health</div>
+            <div style={{fontSize:11,color:"#6366f1",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:6}}>
+              Shah Family Office
+            </div>
+            <div style={{fontSize:12,color:"#6a7a9a",marginBottom:12}}>{dateStr} · {timeStr}</div>
+            <div style={{fontSize:13,color:"#a0aabb",marginBottom:4}}>Total Family Wealth</div>
+            <div style={{
+              fontSize:42,fontWeight:900,letterSpacing:"-0.02em",
+              background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
+              fontFamily:"'JetBrains Mono',monospace",
+              transform:shown?"translateY(0)":"translateY(10px)",
+              opacity:shown?1:0,transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)",
+            }}>
+              {cr(totalWealth)}
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginTop:8,flexWrap:"wrap"}}>
+              <span style={{fontSize:13,color:retPct>=0?"#10b981":"#ef4444",fontWeight:700,fontFamily:"monospace"}}>
+                {retPct>=0?"▲":"▼"} {Math.abs(retPct).toFixed(2)}% on equity
+              </span>
+              <span style={{fontSize:11,color:"#3a4a6a"}}>·</span>
+              <span style={{fontSize:11,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                {totalPL>=0?"+":""}{cr(totalPL)} unrealised
+              </span>
+            </div>
           </div>
-          <svg width="36" height="36" viewBox="0 0 36 36">
-            <circle cx="18" cy="18" r="15" fill="none" stroke="#1d2545" strokeWidth="3"/>
-            <circle cx="18" cy="18" r="15" fill="none" stroke={scoreColor} strokeWidth="3"
-              strokeDasharray={`${score*0.942} 94.2`} strokeLinecap="round"
-              transform="rotate(-90 18 18)"/>
-          </svg>
+
+          {/* Right: Donut + Health */}
+          <div style={{display:"flex",gap:20,alignItems:"center"}}>
+            <DonutChart/>
+            {/* Health score ring */}
+            <div style={{textAlign:"center"}}>
+              <svg width={80} height={80} viewBox="0 0 80 80">
+                <circle cx={40} cy={40} r={34} fill="none" stroke="#1d2545" strokeWidth={6}/>
+                <circle cx={40} cy={40} r={34} fill="none" stroke={scoreColor} strokeWidth={6}
+                  strokeDasharray={`${score*2.136} 213.6`} strokeLinecap="round"
+                  transform="rotate(-90 40 40)" style={{transition:"stroke-dasharray 1s ease"}}/>
+                <text x={40} y={37} textAnchor="middle" fill={scoreColor} fontSize={16} fontWeight={900}>{score}</text>
+                <text x={40} y={50} textAnchor="middle" fill="#3a4a6a" fontSize={7}>Health</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Asset breakdown pills */}
+        <div style={{display:"flex",gap:8,marginTop:16,flexWrap:"wrap"}}>
+          {assets.map(a=>(
+            <div key={a.l} style={{background:"rgba(255,255,255,0.05)",borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:6,border:`1px solid ${a.c}33`}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:a.c,flexShrink:0}}/>
+              <span style={{fontSize:9,color:"#8899bb"}}>{a.l}</span>
+              <span style={{fontSize:10,fontWeight:700,color:"#c8d0e8",fontFamily:"monospace"}}>{cr(a.v)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── KPI Strip ── */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+      {/* ══ METRICS ROW ══ */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:10}}>
         {[
-          {l:"Total Wealth",v:cr(grandTotal),c:"#7eb8ff",sub:"equity+MF+bank"},
-          {l:"Unrealised P&L",v:cr(totalUnreal),c:totalUnreal>=0?"#34d399":"#f87171",sub:(totalInv>0?(totalUnreal/totalInv*100).toFixed(1):0)+"% on invested"},
-          {l:"MTF Cost Today",v:"-"+cr(dailyInterest),c:"#f87171",sub:"₹"+Math.round(dailyInterest*30/1000)+"K/mo @ 18%"},
-          {l:"Cash in Bank",v:cr(totalBank),c:"#f0b429",sub:bank.length+" accounts"},
-          {l:"PPF Corpus",v:cr(totalPPF),c:"#34d399",sub:"8 accounts · 7.1% p.a."},
-        ].map(({l,v,c,sub})=>(
-          <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:10,padding:"10px 12px"}}>
-            <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>{l}</div>
-            <div style={{fontSize:15,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
-            <div style={{fontSize:8,color:"#2a3a50",marginTop:2}}>{sub}</div>
+          {l:"Equity Portfolio",v:cr(totalEq),sub:(totalInv>0?(retPct>=0?"+":"")+retPct.toFixed(1)+"%":""),c:"#6366f1",icon:"📈"},
+          {l:"Mutual Funds",    v:cr(totalMF),  sub:Object.keys(mfReg).length+" members",c:"#10b981",icon:"💼"},
+          {l:"Cash & Bank",     v:cr(totalBank), sub:bank.length+" accounts",c:"#f0b429",icon:"🏦"},
+          {l:"PPF Corpus",      v:cr(totalPPF),  sub:"7.1% tax-free",c:"#3b82f6",icon:"📘"},
+          {l:"Lifetime Div.",   v:cr(Math.round(totalDivLifetime)),sub:"received",c:"#a78bfa",icon:"💰"},
+          {l:"Family Members",  v:mems.length,  sub:"tracked",c:"#f87171",icon:"👨‍👩‍👧"},
+        ].map(({l,v,sub,c,icon})=>(
+          <div key={l} style={{
+            background:"linear-gradient(155deg,#11152c,#0d1020)",
+            border:`1px solid ${c}22`,borderTop:`2px solid ${c}`,
+            borderRadius:14,padding:"14px 16px",position:"relative",overflow:"hidden",
+          }}>
+            <div style={{position:"absolute",top:8,right:10,fontSize:20,opacity:0.15}}>{icon}</div>
+            <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{l}</div>
+            <div style={{fontSize:18,fontWeight:800,color:c,fontFamily:"monospace",letterSpacing:"-0.02em"}}>{v}</div>
+            {sub&&<div style={{fontSize:9,color:"#3a4a6a",marginTop:4}}>{sub}</div>}
           </div>
         ))}
       </div>
 
-      {/* ── Notification Bell ── */}
-      {(()=>{
-        const [showAlerts, setShowAlerts] = React.useState(false);
-        const alerts = [];
-        if(dailyInterest>0) alerts.push({icon:"⚠️",color:"#f87171",title:"MTF Interest",desc:"₹"+Math.round(dailyInterest).toLocaleString("en-IN")+"/day eroding · ₹"+Math.round(dailyInterest*30/1000)+"K/month"});
-        if(topStockPct>10&&topStock) alerts.push({icon:"📊",color:"#f0b429",title:"Concentration: "+topStock[0],desc:topStockPct.toFixed(1)+"% of portfolio in one stock"});
-        if(ltcgCandidates.length>0) alerts.push({icon:"💰",color:"#34d399",title:"LTCG Harvest",desc:ltcgCandidates.length+" candidates — book ₹1.25L tax-free before Mar 31"});
-        if(lossHarvest.length>0) alerts.push({icon:"📉",color:"#a78bfa",title:"Loss Harvest",desc:lossHarvest.length+" positions down >15% — offset gains"});
-        if(upcoming7.length>0) alerts.push({icon:"💵",color:"#7eb8ff",title:"Upcoming Dividends",desc:upcoming7.length+" payouts this month"});
-        return (
-          <div style={{position:"relative",marginBottom:12}}>
-            <button onClick={()=>setShowAlerts(s=>!s)} style={{display:"flex",alignItems:"center",gap:7,background:"#080b18",border:"1px solid #1d2545",borderRadius:9,padding:"7px 14px",cursor:"pointer",color:"#c8d0e8",fontSize:11,fontWeight:600}}>
-              <span style={{fontSize:16}}>🔔</span>
-              <span>Alerts</span>
-              {alerts.length>0&&<span style={{background:"#f87171",color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700}}>{alerts.length}</span>}
-              <span style={{fontSize:10,color:"#3a4a6a",marginLeft:4}}>{showAlerts?"▲":"▼"}</span>
-            </button>
-            {showAlerts&&(
-              <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"#0d1020",border:"1px solid #1d2545",borderRadius:12,zIndex:100,padding:"8px",boxShadow:"0 8px 32px #00000066",minWidth:320}}>
-                {alerts.length===0&&<div style={{padding:"12px",fontSize:11,color:"#3a4a6a",textAlign:"center"}}>No alerts — portfolio looks good ✓</div>}
-                {alerts.map((a,i)=>(
-                  <div key={i} style={{display:"flex",gap:10,padding:"9px 10px",borderRadius:8,marginBottom:4,background:"#080b18",alignItems:"flex-start"}}>
-                    <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
-                    <div>
-                      <div style={{fontSize:11,fontWeight:700,color:a.color}}>{a.title}</div>
-                      <div style={{fontSize:10,color:"#4a5a7a",marginTop:2}}>{a.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+      {/* ══ MAIN CONTENT GRID ══ */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+
+        {/* ── Top Performers ── */}
+        <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:16,overflow:"hidden"}}>
+          <div style={{padding:"12px 16px",borderBottom:"1px solid #1a3a1a",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#10b981",display:"flex",alignItems:"center",gap:6}}>
+              <span>📈</span> Top Performers
+            </div>
+            <div style={{fontSize:9,color:"#2a4a2a"}}>{topGain.length} stocks</div>
           </div>
-        );
-      })()}
-            {/* ── Quick Actions ── */}
-      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-        <div style={{fontSize:9,color:"#3a4a6a",alignSelf:"center",fontWeight:600}}>QUICK:</div>
+          {topGain.map((h,i)=>{
+            const r=((h.val-h.inv)/h.inv*100);
+            const w=Math.min(100,Math.abs(r)/2);
+            return (
+              <div key={i} style={{padding:"10px 16px",borderBottom:i<4?"1px solid #0d1f0d":"none",position:"relative"}}>
+                <div style={{position:"absolute",left:0,top:0,bottom:0,width:w+"%",background:"linear-gradient(90deg,#10b98108,transparent)",borderRadius:"0 8px 8px 0"}}/>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8",marginBottom:1}}>{h.s}</div>
+                    <div style={{fontSize:9,color:"#2a4a2a"}}>{cr(h.val)}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:13,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>+{r.toFixed(1)}%</div>
+                    <div style={{fontSize:9,color:"#10b981",fontFamily:"monospace"}}>+{cr(h.val-h.inv)}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Under Pressure ── */}
+        <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:16,overflow:"hidden"}}>
+          <div style={{padding:"12px 16px",borderBottom:"1px solid #3a1a1a",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#ef4444",display:"flex",alignItems:"center",gap:6}}>
+              <span>📉</span> Under Pressure
+            </div>
+            <div style={{fontSize:9,color:"#4a2a2a"}}>{topLoss.length} stocks</div>
+          </div>
+          {topLoss.map((h,i)=>{
+            const r=((h.val-h.inv)/h.inv*100);
+            const w=Math.min(100,Math.abs(r)/2);
+            return (
+              <div key={i} style={{padding:"10px 16px",borderBottom:i<4?"1px solid #1f0d0d":"none",position:"relative"}}>
+                <div style={{position:"absolute",right:0,top:0,bottom:0,width:w+"%",background:"linear-gradient(270deg,#ef444408,transparent)",borderRadius:"8px 0 0 8px"}}/>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8",marginBottom:1}}>{h.s}</div>
+                    <div style={{fontSize:9,color:"#4a2a2a"}}>{cr(h.val)}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:13,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>{r.toFixed(1)}%</div>
+                    <div style={{fontSize:9,color:"#ef4444",fontFamily:"monospace"}}>{cr(h.val-h.inv)}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ══ MEMBER WEALTH BARS ══ */}
+      <div style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:"1px solid #1d2545",borderRadius:16,padding:"16px"}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#a5b4fc",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span>👨‍👩‍👧 Family Wealth Distribution</span>
+          <span style={{fontSize:9,color:"#3a4a6a"}}>{mems.length} members</span>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {memberRanked.map((m,i)=>{
+            const w=(m.stocks||0)+(m.mf||0);
+            const maxW=memberRanked[0]?((memberRanked[0].stocks||0)+(memberRanked[0].mf||0)):1;
+            const barPct=maxW>0?(w/maxW*100):0;
+            return (
+              <div key={m.n}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div style={{width:24,height:24,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
+                    <span style={{fontSize:11,color:"#c8d0e8",fontWeight:600}}>{m.n}</span>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <span style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(w)}</span>
+                    <span style={{fontSize:9,color:"#3a4a6a",marginLeft:6}}>{totalWealth>0?(w/totalWealth*100).toFixed(1):0}%</span>
+                  </div>
+                </div>
+                <div style={{height:5,background:"#0d1020",borderRadius:3,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:barPct+"%",background:`linear-gradient(90deg,${m.c||"#6366f1"},${m.c||"#6366f1"}88)`,borderRadius:3,transition:"width 1s cubic-bezier(0.34,1.56,0.64,1)"}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ══ TOP HOLDINGS ══ */}
+      <div style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:"1px solid #1d2545",borderRadius:16,padding:"16px"}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",marginBottom:14}}>🏆 Top Holdings by Value</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:8}}>
+          {topStocks.map(([sym,val],i)=>{
+            const holding = allH.find(h=>h.s===sym);
+            const ret = holding&&holding.inv>0?((holding.val-holding.inv)/holding.inv*100):null;
+            const MEDALS=["🥇","🥈","🥉"];
+            return (
+              <div key={sym} style={{
+                background:"#080b18",borderRadius:10,padding:"10px 12px",
+                border:`1px solid ${ret!=null?(ret>=0?"#10b98122":"#ef444422"):"#1d2545"}`,
+                position:"relative",
+              }}>
+                {i<3&&<div style={{position:"absolute",top:6,right:8,fontSize:14}}>{MEDALS[i]}</div>}
+                <div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",marginBottom:4,paddingRight:20}}>{sym}</div>
+                <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(val)}</div>
+                {ret!=null&&(
+                  <div style={{fontSize:9,color:ret>=0?"#10b981":"#ef4444",fontFamily:"monospace",marginTop:3}}>
+                    {ret>=0?"▲":"▼"}{Math.abs(ret).toFixed(1)}%
+                  </div>
+                )}
+                <div style={{marginTop:6,height:2,background:"#1d2545",borderRadius:1}}>
+                  <div style={{height:"100%",width:Math.min(100,(val/topStocks[0][1])*100)+"%",background:ret!=null?(ret>=0?"#10b981":"#ef4444"):"#6366f1",borderRadius:1}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ══ QUICK ACTIONS ══ */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {[
-          {l:"↻ Refresh Prices",tab:null,action:"refresh"},
-          {l:"📋 MTF Detail",tab:"MTF"},
-          {l:"💰 Tax Optimiser",tab:"Tax Optimiser"},
-          {l:"🎯 What-If",tab:"What-If"},
-          {l:"📂 Upload Data",tab:"Upload"},
-        ].map(({l,tab,action})=>(
-          <button key={l}
-            style={{padding:"5px 11px",borderRadius:7,border:"1px solid #1d2545",background:"#080b18",color:"#7eb8ff",fontSize:10,fontWeight:600,cursor:"pointer"}}
-            onClick={()=>{ if(tab&&window._setDashTab) window._setDashTab(tab); }}>
+          {l:"📊 Holdings",   tab:"Holdings"},
+          {l:"💰 P&L",        tab:"P&L"},
+          {l:"🏦 Bank",       tab:"Bank"},
+          {l:"💼 Funds",      tab:"Funds"},
+          {l:"⚡ Tax",        tab:"Tax"},
+          {l:"🎯 What-If",    tab:"What-If"},
+          {l:"👥 Advisors",   tab:"Advisors"},
+          {l:"📂 Upload",     tab:"Upload"},
+        ].map(({l,tab})=>(
+          <button key={tab} onClick={()=>window._setDashTab&&window._setDashTab(tab)}
+            style={{padding:"8px 16px",borderRadius:20,border:"1px solid #1d2545",
+              background:"linear-gradient(155deg,#11152c,#0d1020)",
+              color:"#8899bb",fontSize:10,fontWeight:600,cursor:"pointer",
+              transition:"all 0.15s",whiteSpace:"nowrap"}}>
             {l}
           </button>
         ))}
       </div>
+
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BANK STATEMENT PARSER TAB
-   Parses ICICI / HDFC / Axis / SBI PDF/CSV statements
-   Extracts: balance, transactions, income, expenses, patterns
-═══════════════════════════════════════════════════════════ */
 function BankStatementTab() {
   const [files, setFiles] = React.useState([]);
   const [parsed, setParsed] = React.useState([]);
