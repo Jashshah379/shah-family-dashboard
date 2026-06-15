@@ -263,50 +263,60 @@ function useLivePrices() {
 
 
 function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const total = prices ? Object.keys(prices).length : 0;
+  const isLive = status === "live" && total > 0;
+  const isLoading = status === "loading";
+  const isError = status === "error";
 
   return (
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 14px",background:"#080b18",borderRadius:8,marginBottom:12,flexWrap:"wrap"}}>
-      <button
-        onClick={onRefresh}
-        disabled={status === "loading"}
-        style={{padding:"6px 14px",borderRadius:7,border:"none",cursor:status==="loading"?"not-allowed":"pointer",
-          background:status==="loading"?"#1a2a40":"#1e3a5f",
-          color:status==="loading"?"#3a5a7a":"#7eb8ff",
-          fontSize:11,fontWeight:700,display:"flex",alignItems:"center",gap:6}}
-      >
-        <span style={{display:"inline-block",animation:status==="loading"?"spin 1s linear infinite":"none"}}>
-          {status === "loading" ? "⟳" : "↻"}
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"5px 14px",
+      background:"#070a16",borderBottom:"1px solid #1a2035",fontSize:10,flexWrap:"wrap"}}>
+      
+      {/* Status indicator */}
+      <div style={{display:"flex",alignItems:"center",gap:5}}>
+        {isLive&&<span style={{width:6,height:6,borderRadius:"50%",background:"#34d399",
+          display:"inline-block",boxShadow:"0 0 6px #34d399",animation:"pulse 2s infinite"}}/>}
+        {isLoading&&<span style={{width:6,height:6,borderRadius:"50%",background:"#f0b429",
+          display:"inline-block"}}/>}
+        {isError&&<span style={{width:6,height:6,borderRadius:"50%",background:"#f87171",
+          display:"inline-block"}}/>}
+        <span style={{color:isLive?"#34d399":isError?"#f87171":"#f0b429",fontWeight:600}}>
+          {isLive?"● LIVE":isLoading?"○ Updating...":isError?"● Offline":"○ Connecting..."}
         </span>
-        {status === "loading" ? "Fetching prices..." : "Refresh Live Prices"}
+      </div>
+
+      {/* Stock count */}
+      {isLive&&<span style={{color:"#3a4a6a"}}>{total} stocks · {updatedCount||0} updated</span>}
+
+      {/* Last updated time */}
+      {lastUpdate&&(
+        <span style={{color:"#2a3a5a"}}>
+          Updated {lastUpdate}
+        </span>
+      )}
+
+      {/* Spacer */}
+      <div style={{flex:1}}/>
+
+      {/* Refresh button */}
+      <button onClick={onRefresh} disabled={isLoading}
+        title="Refresh live prices"
+        style={{display:"flex",alignItems:"center",gap:4,background:"none",
+          border:"1px solid #1d2545",borderRadius:6,color:isLoading?"#1d2545":"#7eb8ff",
+          fontSize:9,padding:"3px 10px",cursor:isLoading?"not-allowed":"pointer",fontWeight:600}}>
+        <span style={{display:"inline-block",animation:isLoading?"spin 1s linear infinite":"none"}}>↻</span>
+        {isLoading?"Fetching...":"Refresh Prices"}
       </button>
 
-      {status === "done" && (
-        <span style={{fontSize:10,color:"#34d399"}}>
-          ✓ {updatedCount} prices updated · {lastUpdate}
-        </span>
-      )}
-      {status === "error" && (
-        <span style={{fontSize:10,color:"#f87171"}}>
-          ⚠ Connecting to price server... (first load may take 60s)
-        </span>
-      )}
-      {status === "idle" && (
-        <span style={{fontSize:10,color:"#3a4a6a"}}>
-          CMPs from last uploaded data · click ↻ to fetch live prices
-        </span>
-      )}
-
-      {updatedCount > 0 && (
-        <span style={{marginLeft:"auto",fontSize:10,color:"#3a4a6a"}}>
-          {updatedCount} of {Object.keys(prices).length + "+"} symbols live
-        </span>
-      )}
+      <style>{`
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+      `}</style>
     </div>
   );
 }
 
-/* ═══════════════ BREEZE API SETTINGS + LIVE DATA FETCHER */
+
 function BreezeImportTab() {
   const [breezeData, setBreezeData] = React.useState(null);
   const [importing, setImporting] = React.useState(false);
@@ -3888,12 +3898,13 @@ function FamilyApp() {
       FAMILY_TOP.forEach(function(h) {
         var nseSym = symMap[h.s] || h.s;
         var lp = livePrices[nseSym] || livePrices[h.s];
-        if (lp && lp.p > 0) {
-          h.cmp = lp.p;
-          h.chg = lp.c;
-          h.chgPct = lp.pct;
-          h.val = Math.round(lp.p * (h.qty || 0));
-          h.unreal = h.val - (h.inv || 0);
+        if (lp && typeof lp.p === "number" && lp.p > 0) {
+          var qty = parseInt(h.qty) || 0;
+          h.cmp  = lp.p;
+          h.chg  = lp.c || 0;
+          h.chgPct = lp.pct || 0;
+          h.val  = Math.round(lp.p * qty);
+          h.unreal = h.val - (parseInt(h.inv) || 0);
         }
       });
     }
@@ -3904,12 +3915,13 @@ function FamilyApp() {
         arr.forEach(function(h) {
           var nseSym = symMap[h.s] || h.s;
           var lp = livePrices[nseSym] || livePrices[h.s];
-          if (lp && lp.p > 0) {
-            h.cmp = lp.p;
-            h.chg = lp.c;
-            h.chgPct = lp.pct;
-            h.val = Math.round(lp.p * (h.qty || 0));
-            h.unreal = h.val - (h.inv || 0);
+          if (lp && typeof lp.p === "number" && lp.p > 0) {
+            var qty = parseInt(h.qty) || 0;
+            h.cmp  = lp.p;
+            h.chg  = lp.c || 0;
+            h.chgPct = lp.pct || 0;
+            h.val  = Math.round(lp.p * qty);
+            h.unreal = h.val - (parseInt(h.inv) || 0);
           }
         });
       });
@@ -13595,7 +13607,7 @@ function LiveIndicesWidget() {
           );
         })}
       </div>
-      {status==="idle"&&<div style={{fontSize:9,color:"#2a3a50",marginTop:4}}>Deploy backend to enable live prices</div>}
+      {status==="idle"&&<div style={{fontSize:9,color:"#2a3a50",marginTop:4}}>Connecting to live price server...</div>}
       {status==="error"&&<div style={{fontSize:9,color:"#3a2a2a",marginTop:4}}>Start your Render.com price server</div>}
     </div>
   );
