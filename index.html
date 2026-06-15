@@ -213,85 +213,50 @@ function LabelList(p){return null;}
 /* ── End recharts stub ── */
 
 function useLivePrices() {
+  /* ── Live price hook — fetches from Render.com backend ─────────────────── */
+  /* After deploying server.py, replace PRICE_SERVER_URL with your Render URL */
+  const PRICE_SERVER_URL = "https://shah-prices.onrender.com/prices";
+
   const [prices, setPrices] = React.useState({});
+  const [indices, setIndices] = React.useState({});
   const [status, setStatus] = React.useState("idle");
   const [lastUpdate, setLastUpdate] = React.useState(null);
-  const [updatedCount, setUpdatedCount] = React.useState(0);
 
   const fetchPrices = React.useCallback(async () => {
     setStatus("loading");
+    try {
+      const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(15000)});
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const all = data.prices || {};
 
-    /* Build list of NSE symbols to fetch — top 50 family holdings by value */
-    const allH = (typeof MEMBER_HOLDINGS !== "undefined" ? MEMBER_HOLDINGS["ALL_FAMILY"] : null) || [];
-    const stockValMap = {};
-    allH.forEach(h => {
-      if (!h || !h.s || !(h.val > 0)) return;
-      /* Resolve NSE symbol: use sym field if available, else SYMBOL_MAP, else check if already a symbol */
-      const nseSym = (h.sym) ||
-        (typeof SYMBOL_MAP !== "undefined" ? SYMBOL_MAP[h.s] : null) ||
-        (h.s.match(/^[A-Z0-9&-]{2,15}$/) ? h.s : null);
-      if (!nseSym || nseSym.includes(" ")) return;
-      if (!stockValMap[nseSym]) stockValMap[nseSym] = 0;
-      stockValMap[nseSym] += h.val;
-    });
+      /* Split into indices and stocks */
+      const idx = {};
+      const stocks = {};
+      const INDEX_KEYS = ["NIFTY50","SENSEX","BANKNIFTY","USDINR","GOLD","CRUDEOIL"];
+      Object.entries(all).forEach(function(entry) {
+        if (INDEX_KEYS.includes(entry[0])) idx[entry[0]] = entry[1];
+        else stocks[entry[0]] = entry[1];
+      });
 
-    /* Sort by value, take top 60 */
-    const symbols = Object.entries(stockValMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 60)
-      .map(([sym]) => sym);
-
-    if (symbols.length === 0) { setStatus("error"); return; }
-
-    const priceData = {};
-    let fetched = 0;
-
-    /* Fetch in batches of 8 via Yahoo Finance v7 quotes API */
-    const PROXY = "https://api.allorigins.win/raw?url=";
-    const batchSize = 8;
-
-    for (let i = 0; i < symbols.length; i += batchSize) {
-      const batch = symbols.slice(i, i + batchSize);
-      const yahooSyms = batch.map(s => encodeURIComponent(s + ".NS")).join("%2C");
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooSyms}&fields=regularMarketPrice,regularMarketChangePercent,symbol,shortName`;
-
-      try {
-        const res = await fetch(PROXY + encodeURIComponent(
-          `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${batch.map(s=>s+".NS").join(",")}&fields=regularMarketPrice,regularMarketChangePercent,symbol,shortName`
-        ), { signal: AbortSignal.timeout(10000) });
-
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        const quotes = (data.quoteResponse && data.quoteResponse.result) || [];
-
-        quotes.forEach(q => {
-          if (q.regularMarketPrice) {
-            const sym = q.symbol.replace(".NS", "");
-            priceData[sym] = q.regularMarketPrice;
-            fetched++;
-          }
-        });
-      } catch (batchErr) {
-        /* silent — try next batch */
-      }
-
-      /* Small delay to avoid rate limiting */
-      if (i + batchSize < symbols.length) {
-        await new Promise(r => setTimeout(r, 400));
-      }
-    }
-
-    if (fetched > 0) {
-      setPrices(priceData);
-      setUpdatedCount(fetched);
-      setLastUpdate(new Date().toLocaleTimeString("en-IN", {hour:"2-digit",minute:"2-digit"}));
-      setStatus("done");
-    } else {
+      setPrices(stocks);
+      setIndices(idx);
+      setLastUpdate(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}));
+      setStatus("live");
+    } catch(e) {
+      console.warn("Price fetch failed:", e.message);
       setStatus("error");
     }
   }, []);
 
-  return { prices, status, lastUpdate, updatedCount, fetchPrices };
+  React.useEffect(function() {
+    fetchPrices();
+    /* Refresh every 3 minutes */
+    var t = setInterval(fetchPrices, 3 * 60 * 1000);
+    return function() { clearInterval(t); };
+  }, [fetchPrices]);
+
+  return {prices, indices, status, lastUpdate, refresh: fetchPrices};
 }
 
 
@@ -13525,65 +13490,58 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
 
 
 function LiveIndicesWidget() {
-  const [manual, setManual] = React.useState({
-    nifty:24650, sensex:81200, banknifty:53100, usdinr:84.20, gold:3300
-  });
-  const [editing, setEditing] = React.useState(false);
-  const [draft, setDraft] = React.useState({});
-
-  const fmt = (v, fx) => v==null?"—": fx ? v.toFixed(2) : Math.round(v).toLocaleString("en-IN");
+  const {indices, status, lastUpdate, refresh} = useLivePrices();
 
   const ITEMS = [
-    {l:"NIFTY 50",   k:"nifty",     fx:false},
-    {l:"SENSEX",     k:"sensex",    fx:false},
-    {l:"BANK NIFTY", k:"banknifty", fx:false},
-    {l:"USD/INR",    k:"usdinr",    fx:true},
-    {l:"GOLD $/oz",  k:"gold",      fx:true},
+    {l:"NIFTY 50",   k:"NIFTY50",   fx:false},
+    {l:"SENSEX",     k:"SENSEX",    fx:false},
+    {l:"BANK NIFTY", k:"BANKNIFTY", fx:false},
+    {l:"USD/INR",    k:"USDINR",    fx:true},
+    {l:"GOLD $/oz",  k:"GOLD",      fx:true},
   ];
 
-  const startEdit = () => { setDraft({...manual}); setEditing(true); };
-  const save = () => { setManual({...draft}); setEditing(false); };
+  const fmt = function(d, fx) {
+    if (!d || !d.p) return "—";
+    return fx ? d.p.toFixed(2) : Math.round(d.p).toLocaleString("en-IN");
+  };
 
   return (
     <div style={{background:"linear-gradient(135deg,#090c18,#0d1020)",border:"1px solid #1a2035",borderRadius:12,padding:"10px 14px",marginBottom:14}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-        <span style={{fontSize:9,fontWeight:700,color:"#2a3a5a",textTransform:"uppercase",letterSpacing:"0.1em"}}>Markets</span>
-        <div style={{display:"flex",gap:6}}>
-          <span style={{fontSize:7,color:"#2a3a50"}}>Manual · update daily</span>
-          {!editing
-            ? <button onClick={startEdit} style={{background:"none",border:"1px solid #1a2035",borderRadius:4,color:"#3a4a6a",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>✏ Edit</button>
-            : <button onClick={save} style={{background:"#1e3a5f",border:"none",borderRadius:4,color:"#7eb8ff",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>✓ Save</button>
-          }
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:9,fontWeight:700,color:"#2a3a5a",textTransform:"uppercase",letterSpacing:"0.1em"}}>Markets</span>
+          {status==="loading"&&<span style={{fontSize:9,color:"#3a5a7a"}}>⟳</span>}
+          {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#34d399",display:"inline-block",boxShadow:"0 0 4px #34d399"}}/>}
+          {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠ offline</span>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
+          <button onClick={refresh} disabled={status==="loading"}
+            style={{background:"none",border:"1px solid #1a2035",borderRadius:4,color:"#3a4a6a",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>↻</button>
         </div>
       </div>
-
-      {!editing ? (
-        <div style={{display:"flex",gap:12,overflowX:"auto"}}>
-          {ITEMS.map(item=>(
-            <div key={item.k} style={{flexShrink:0,minWidth:82}}>
+      <div style={{display:"flex",gap:12,overflowX:"auto"}}>
+        {ITEMS.map(function(item) {
+          var d = indices[item.k];
+          var isUp = d && d.pct >= 0;
+          return (
+            <div key={item.l} style={{flexShrink:0,minWidth:82}}>
               <div style={{fontSize:8,color:"#2a3a5a",marginBottom:2}}>{item.l}</div>
-              <div style={{fontSize:13,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:"#c8d0e8"}}>
-                {fmt(manual[item.k], item.fx)}
+              <div style={{fontSize:13,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:d?(isUp?"#34d399":"#f87171"):"#1d2535"}}>
+                {fmt(d, item.fx)}
               </div>
+              {d&&d.pct!=null&&(
+                <div style={{fontSize:9,color:isUp?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                  {isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%
+                </div>
+              )}
+              {!d&&status!=="error"&&<div style={{fontSize:9,color:"#1d2535"}}>—</div>}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
-          {ITEMS.map(item=>(
-            <div key={item.k}>
-              <div style={{fontSize:7,color:"#2a3a5a",marginBottom:2}}>{item.l}</div>
-              <input
-                type="number"
-                value={draft[item.k]||""}
-                onChange={e=>setDraft(d=>({...d,[item.k]:parseFloat(e.target.value)||0}))}
-                style={{width:"100%",background:"#0d1020",border:"1px solid #3a5a7a",borderRadius:4,
-                  padding:"3px 6px",color:"#7eb8ff",fontSize:10,fontFamily:"monospace",boxSizing:"border-box"}}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
+      {status==="idle"&&<div style={{fontSize:9,color:"#2a3a50",marginTop:4}}>Deploy backend to enable live prices</div>}
+      {status==="error"&&<div style={{fontSize:9,color:"#3a2a2a",marginTop:4}}>Start your Render.com price server</div>}
     </div>
   );
 }
