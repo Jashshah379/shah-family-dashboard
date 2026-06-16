@@ -14174,7 +14174,20 @@ function LiveStocksTab() {
         <div style={{background:"linear-gradient(155deg,#0f1a35,#0a0e1f)",border:"1px solid #3a6abf",borderRadius:14,padding:"16px",marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
             <div>
-              <div style={{fontSize:18,fontWeight:800,color:"#e8eaf0"}}>{stockDetail.s}</div>
+              <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                <div style={{fontSize:18,fontWeight:800,color:"#e8eaf0"}}>{stockDetail.s}</div>
+                {stockDetail.cmp>0&&(
+                  <div style={{display:"flex",alignItems:"baseline",gap:4,background:"#0d1a2e",border:"1px solid #1e3a5f",borderRadius:8,padding:"3px 10px"}}>
+                    <span style={{fontSize:10,color:"#3a4a6a"}}>CMP</span>
+                    <span style={{fontSize:16,fontWeight:800,color:"#7eb8ff",fontFamily:"monospace"}}>₹{stockDetail.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
+                    {stockDetail.chgPct!=null&&(
+                      <span style={{fontSize:10,fontWeight:700,color:stockDetail.chgPct>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                        {stockDetail.chgPct>=0?"▲":"▼"}{Math.abs(stockDetail.chgPct).toFixed(2)}%
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               <div style={{display:"flex",gap:8,marginTop:4}}>
                 <span style={{fontSize:9,background:getSC(stockDetail.sector)+"22",color:getSC(stockDetail.sector),padding:"2px 7px",borderRadius:4}}>{stockDetail.sector}</span>
                 <span style={{fontSize:9,color:"#3a4a6a"}}>{stockDetail.memberCount} member{stockDetail.memberCount!==1?"s":""} · {stockDetail.holders.length} position{stockDetail.holders.length!==1?"s":""}</span>
