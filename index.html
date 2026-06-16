@@ -1463,7 +1463,11 @@ function GlobalSearchTab() {
     const m = {};
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
-      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:0,members:[],custodians:[],sector:h.sector||""};
+      if(!m[h.s]){
+        var symMap2=typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP:{};
+        var nseCode=symMap2[h.s]||h.sym||"";
+        m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:0,nse:nseCode,members:[],custodians:[],sector:h.sector||""};
+      }
       m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
       if(h._member&&!m[h.s].members.includes(h._member)) m[h.s].members.push(h._member);
       if(h._custodian&&!m[h.s].custodians.includes(h._custodian)) m[h.s].custodians.push(h._custodian);
@@ -1497,7 +1501,7 @@ function GlobalSearchTab() {
 
     /* Stock search */
     let stocks = Object.values(stockMap).filter(s=>{
-      const nameMatch = s.s.toLowerCase().includes(lq);
+      const nameMatch = s.s.toLowerCase().includes(lq) || (s.nse&&s.nse.toLowerCase().includes(lq));
       const sectorMatch = s.sector.toLowerCase().includes(lq);
       const memberMatch = s.members.some(m=>m.toLowerCase().includes(lq));
       /* Match by NSE symbol - e.g. search "FLUOROCHEM" finds "Gujarat Fluoroch" */
@@ -2541,16 +2545,7 @@ function DailyDigest() {
   ].filter(a=>a.v>0);
   const assetTotal = assets.reduce((s,a)=>s+a.v,0)||1;
 
-  /* Health score */
-  const stockTotals = {};
-  allH.forEach(h=>{ if(h.s) stockTotals[h.s]=(stockTotals[h.s]||0)+(h.val||0); });
-  const topStock = Object.entries(stockTotals).sort((a,b)=>b[1]-a[1])[0];
-  const topStockPct = topStock&&totalWealth>0?(topStock[1]/totalWealth*100):0;
-  let score=100;
-  if(topStockPct>20) score-=15; if(topStockPct>35) score-=10;
-  if(retPct<0) score-=10; if(retPct<-10) score-=10;
-  score=Math.max(0,Math.min(100,score));
-  const scoreColor=score>=75?"#10b981":score>=50?"#f0b429":"#ef4444";
+
 
   const [shown,setShown]=React.useState(false);
   React.useEffect(()=>{ const t=setTimeout(()=>setShown(true),100); return()=>clearTimeout(t); },[]);
@@ -2605,14 +2600,7 @@ function DailyDigest() {
           </div>
           <div style={{display:"flex",gap:16,alignItems:"center"}}>
             <DonutChart/>
-            <div style={{textAlign:"center"}}>
-              <svg width={70} height={70} viewBox="0 0 70 70">
-                <circle cx={35} cy={35} r={29} fill="none" stroke="#1d2545" strokeWidth={5}/>
-                <circle cx={35} cy={35} r={29} fill="none" stroke={scoreColor} strokeWidth={5} strokeDasharray={`${score*1.822} 182.2`} strokeLinecap="round" transform="rotate(-90 35 35)"/>
-                <text x={35} y={32} textAnchor="middle" fill={scoreColor} fontSize={14} fontWeight={900}>{score}</text>
-                <text x={35} y={43} textAnchor="middle" fill="#3a4a6a" fontSize={6}>Health</text>
-              </svg>
-            </div>
+            
           </div>
         </div>
 
@@ -5030,7 +5018,19 @@ function FamilyApp() {
                   const plPct=h.inv>0?(pl2/h.inv*100):0; const isUp=pl2>=0;
                   const impact=totalFamilyVal>0?(h.val/totalFamilyVal*100):0;
                   return (
-                    <div key={h.sym} style={{background:"#090c0a",border:"1px solid "+(isUp?"#1a3a20":"#3a1a1a"),borderRadius:8,padding:"10px 12px",minWidth:130,flexShrink:0,position:"relative"}}>
+                    <div key={h.sym} onClick={function(){
+                        var sym = h.sym||h.s;
+                        var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
+                        var rows = allH.filter(function(x){return (x.sym||x.s)===sym;});
+                        if(rows.length>0){
+                          var members=new Set(rows.map(function(x){return x._member;}));
+                          var holders=rows.map(function(r){return {member:r._member,custodian:r._custodian,qty:r.qty,avg:r.avg||r.avgCost,cmp:r.cmp,val:r.val,inv:r.inv,unreal:r.unreal};});
+                          setStockDetail({s:sym,sym:sym,sector:rows[0].sector||"",cmp:rows[0].cmp||0,chgPct:rows[0].chgPct||0,memberCount:members.size,holders:holders,totalVal:rows.reduce(function(s,r){return s+(r.val||0);},0),totalInv:rows.reduce(function(s,r){return s+(r.inv||0);},0),totalQty:rows.reduce(function(s,r){return s+(r.qty||0);},0)});
+                        }
+                      }}
+                      style={{background:"#090c0a",border:"1px solid "+(isUp?"#1a3a20":"#3a1a1a"),borderRadius:8,padding:"10px 12px",minWidth:130,flexShrink:0,position:"relative",cursor:"pointer",transition:"border-color 0.15s"}}
+                      onMouseEnter={function(e){e.currentTarget.style.borderColor=isUp?"#34d399":"#ef4444";}}
+                      onMouseLeave={function(e){e.currentTarget.style.borderColor=isUp?"#1a3a20":"#3a1a1a";}}>
                       <div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:100}}>
                         {h.sym}
                       </div>
@@ -14174,21 +14174,33 @@ function LiveStocksTab() {
         <div style={{background:"linear-gradient(155deg,#0f1a35,#0a0e1f)",border:"1px solid #3a6abf",borderRadius:14,padding:"16px",marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
             <div>
-              <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-                <div style={{fontSize:18,fontWeight:800,color:"#e8eaf0"}}>{stockDetail.s}</div>
+              <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
+                <div style={{fontSize:20,fontWeight:800,color:"#e8eaf0"}}>{stockDetail.s}</div>
                 {stockDetail.cmp>0&&(
-                  <div style={{display:"flex",alignItems:"baseline",gap:4,background:"#0d1a2e",border:"1px solid #1e3a5f",borderRadius:8,padding:"3px 10px"}}>
-                    <span style={{fontSize:10,color:"#3a4a6a"}}>CMP</span>
-                    <span style={{fontSize:16,fontWeight:800,color:"#7eb8ff",fontFamily:"monospace"}}>₹{stockDetail.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:6,background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:"4px 12px"}}>
+                    <span style={{fontSize:9,color:"#3a4a6a"}}>CMP</span>
+                    <span style={{fontSize:18,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace",letterSpacing:"-0.02em"}}>₹{stockDetail.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
                     {stockDetail.chgPct!=null&&(
-                      <span style={{fontSize:10,fontWeight:700,color:stockDetail.chgPct>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                      <span style={{fontSize:11,fontWeight:700,color:stockDetail.chgPct>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>
                         {stockDetail.chgPct>=0?"▲":"▼"}{Math.abs(stockDetail.chgPct).toFixed(2)}%
                       </span>
                     )}
                   </div>
                 )}
               </div>
-              <div style={{display:"flex",gap:8,marginTop:4}}>
+              <div style={{display:"flex",gap:8,marginTop:4,flexWrap:"wrap",alignItems:"center"}}>
+                {(()=>{
+                  var symMap = typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP:{};
+                  var nseSym = symMap[stockDetail.s]||stockDetail.sym||null;
+                  /* Also reverse lookup */
+                  if(!nseSym){
+                    var revEntry = Object.entries(symMap).find(function(e){return e[1]===(stockDetail.s||stockDetail.sym);});
+                    if(revEntry) nseSym = revEntry[1];
+                  }
+                  return nseSym&&nseSym!==stockDetail.s?(
+                    <span style={{fontSize:9,background:"#1e3a5f",color:"#7eb8ff",padding:"2px 8px",borderRadius:4,fontFamily:"monospace",fontWeight:700}}>NSE: {nseSym}</span>
+                  ):null;
+                })()}
                 <span style={{fontSize:9,background:getSC(stockDetail.sector)+"22",color:getSC(stockDetail.sector),padding:"2px 7px",borderRadius:4}}>{stockDetail.sector}</span>
                 <span style={{fontSize:9,color:"#3a4a6a"}}>{stockDetail.memberCount} member{stockDetail.memberCount!==1?"s":""} · {stockDetail.holders.length} position{stockDetail.holders.length!==1?"s":""}</span>
               </div>
