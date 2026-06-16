@@ -14130,8 +14130,8 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                                       color:rret!=null&&rret>=0?"#34d399":"#f87171",fontWeight:600,fontSize:9}}>
                                       {rret!=null?(rret>=0?"+":"")+rret.toFixed(1)+"%":"—"}
                                     </td>
-                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:s.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>
-                                      {s.xirr!=null?s.xirr.toFixed(1)+"%":"—"}
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:(r.xirr||0)>=0?"#10b981":"#ef4444",fontWeight:700}}>
+                                      {r.xirr!=null?r.xirr.toFixed(1)+"%":"—"}
                                     </td>
                                   </tr>
                                 );
