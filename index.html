@@ -2417,6 +2417,146 @@ function ChangelogTab() {
 /* ═══════════════════════════════════════════════════════════
    SMART DAILY DIGEST — Overview Feed Component
 ═══════════════════════════════════════════════════════════ */
+function GlobalIndicesWidget() {
+  const PRICE_SERVER_URL = "https://noisy-sea-5936.jashshah379.workers.dev/prices";
+  const [data, setData] = React.useState({});
+  const [status, setStatus] = React.useState("idle");
+  const [lastUpdate, setLastUpdate] = React.useState(null);
+
+  const fetch_data = React.useCallback(async function() {
+    setStatus("loading");
+    try {
+      const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(20000)});
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const json = await res.json();
+      setData(json.prices || {});
+      setLastUpdate(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}));
+      setStatus("live");
+    } catch(e) {
+      setStatus("error");
+    }
+  }, []);
+
+  React.useEffect(function() {
+    fetch_data();
+    var t = setInterval(fetch_data, 3*60*1000);
+    return function() { clearInterval(t); };
+  }, [fetch_data]);
+
+  var fmt = function(v, isFx) {
+    if (!v || !v.p) return "—";
+    if (isFx) return v.p.toFixed(2);
+    if (v.p >= 10000) return Math.round(v.p).toLocaleString("en-IN");
+    return v.p.toFixed(2);
+  };
+
+  var chgColor = function(v) { return (!v || v.pct >= 0) ? "#10b981" : "#ef4444"; };
+  var chgStr = function(v) {
+    if (!v || v.pct == null) return "";
+    return (v.pct >= 0 ? "▲" : "▼") + Math.abs(v.pct).toFixed(2) + "%";
+  };
+
+  /* Two rows: Indian indices + Global */
+  var INDIAN = [
+    {l:"NIFTY 50",    k:"NIFTY50",    fx:false},
+    {l:"SENSEX",      k:"SENSEX",     fx:false},
+    {l:"BANK NIFTY",  k:"BANKNIFTY",  fx:false},
+    {l:"NIFTY IT",    k:"NIFTYIT",    fx:false},
+    {l:"NIFTY MID",   k:"NIFTYMID100",fx:false},
+    {l:"VIX",         k:"VIX",        fx:false},
+  ];
+  var GLOBAL = [
+    {l:"USD/INR",   k:"USDINR",  fx:true},
+    {l:"EUR/INR",   k:"EURINR",  fx:true},
+    {l:"GOLD $/oz", k:"GOLD",    fx:true},
+    {l:"CRUDE OIL", k:"CRUDEOIL",fx:true},
+    {l:"S&P 500",   k:"SP500",   fx:false},
+    {l:"NASDAQ",    k:"NASDAQ",  fx:false},
+    {l:"DOW",       k:"DOW",     fx:false},
+    {l:"NIKKEI",    k:"NIKKEI",  fx:false},
+    {l:"FTSE 100",  k:"FTSE100", fx:false},
+  ];
+
+  return (
+    <div style={{background:"linear-gradient(135deg,#080b18,#0d1020)",border:"1px solid #1a2035",borderRadius:14,padding:"14px 16px",marginBottom:14}}>
+      {/* Header */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:9,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.12em"}}>Live Markets</span>
+          {status==="live"&&<span style={{display:"flex",alignItems:"center",gap:3}}>
+            <span style={{width:5,height:5,borderRadius:"50%",background:"#10b981",display:"inline-block",boxShadow:"0 0 6px #10b981"}}/>
+            <span style={{fontSize:8,color:"#10b981"}}>LIVE</span>
+          </span>}
+          {status==="loading"&&<span style={{fontSize:9,color:"#f0b429"}}>⟳</span>}
+          {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠ offline</span>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
+          <button onClick={fetch_data} disabled={status==="loading"}
+            style={{background:"none",border:"1px solid #1a2035",borderRadius:5,color:"#3a4a6a",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>↻</button>
+        </div>
+      </div>
+
+      {/* Indian indices */}
+      <div style={{marginBottom:10}}>
+        <div style={{fontSize:8,color:"#2a3a50",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>🇮🇳 India</div>
+        <div style={{display:"flex",gap:0,overflowX:"auto",flexWrap:"nowrap"}}>
+          {INDIAN.map(function(item, i) {
+            var d = data[item.k];
+            var isUp = !d || d.pct >= 0;
+            return (
+              <div key={item.k} style={{
+                flexShrink:0,minWidth:90,padding:"6px 12px",
+                borderRight:i<INDIAN.length-1?"1px solid #1a2035":"none",
+              }}>
+                <div style={{fontSize:8,color:"#3a4a6a",marginBottom:3,whiteSpace:"nowrap"}}>{item.l}</div>
+                <div style={{fontSize:13,fontWeight:800,fontFamily:"monospace",color:d?(isUp?"#10b981":"#ef4444"):"#1d2535"}}>
+                  {fmt(d, item.fx)}
+                </div>
+                {d&&d.pct!=null&&(
+                  <div style={{fontSize:9,color:isUp?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                    {chgStr(d)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{borderTop:"1px solid #1a2035",marginBottom:10}}/>
+
+      {/* Global / FX / Commodities */}
+      <div>
+        <div style={{fontSize:8,color:"#2a3a50",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>🌍 Global</div>
+        <div style={{display:"flex",gap:0,flexWrap:"nowrap",overflowX:"auto"}}>
+          {GLOBAL.map(function(item, i) {
+            var d = data[item.k];
+            var isUp = !d || d.pct >= 0;
+            return (
+              <div key={item.k} style={{
+                flexShrink:0,minWidth:90,padding:"6px 12px",
+                borderRight:i<GLOBAL.length-1?"1px solid #1a2035":"none",
+              }}>
+                <div style={{fontSize:8,color:"#3a4a6a",marginBottom:3,whiteSpace:"nowrap"}}>{item.l}</div>
+                <div style={{fontSize:13,fontWeight:800,fontFamily:"monospace",color:d?(isUp?"#10b981":"#ef4444"):"#1d2535"}}>
+                  {fmt(d, item.fx)}
+                </div>
+                {d&&d.pct!=null&&(
+                  <div style={{fontSize:9,color:isUp?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                    {chgStr(d)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DailyDigest() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const pct = v => (v>=0?"+":"")+v.toFixed(2)+"%";
@@ -4426,9 +4566,10 @@ function FamilyApp() {
         border:"1px solid #1c2440",borderRadius:18,boxShadow:"0 4px 32px #00000044, inset 0 1px 0 #ffffff08"}}>
         <div>
           <div style={{display:"flex",alignItems:"baseline",gap:12}}>
-              <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.03em",
+              <div onClick={()=>setTab("Overview")} style={{fontSize:22,fontWeight:800,letterSpacing:"-0.03em",
                 background:"linear-gradient(90deg,#e8eaf0 0%,#7eb8ff 55%,#a78bfa 100%)",
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                cursor:"pointer"}} title="Go to Overview">
                 Shah Family Finance
               </div>
               <div style={{fontSize:10,color:"#46557a",fontFamily:"'JetBrains Mono',monospace",
@@ -4620,8 +4761,8 @@ function FamilyApp() {
       {tab==="Overview"&&<div>
         <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
         {/* - LIVE INDICES TICKER - */}
+        <GlobalIndicesWidget/>
         <DailyDigest/>
-        <LiveIndicesWidget/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
           <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff"/>
@@ -5556,7 +5697,7 @@ function FamilyApp() {
       {tab==="Watchlist"&&<WatchlistTab/>}
       {tab==="Profiles"&&<ProfilesTab/>}
        {tab==="Funds"&&<MutualFundsTab/>}
-       {tab==="P&L"&&<PLTab/>}
+       {tab==="P&L"&&<PLTab plCol={plCol} setPlCol={setPlCol} plDir={plDir} setPlDir={setPlDir} plView={plView} setPlView={setPlView} plFilter={plFilter} setPlFilter={setPlFilter}/>}
        
        {tab==="MTF"&&<MTFTab/>}
        {tab==="Advisors"&&<AdvisorTrackerTab/>}
@@ -13441,29 +13582,156 @@ function AllHoldingsTab({livePrices, priceStatus}) {
    - */
 /* ═══════════════════════════════════════════════ TAX P/L TAB (REBUILD) */
 function TaxTab() {
-  const [taxView,setTaxView]=React.useState("pnl");
-  const [txView, setTxView] = React.useState("overview");
-  const cr  = v => { if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const pct = v => v==null?"--":(v>=0?"+":"")+v.toFixed(1)+"%";
-  const tax = typeof R75_TAX!=="undefined"?R75_TAX:{total_st:0,total_lt:0,total_spec:0,fy:{},top_st:[],top_lt:[],losses:[]};
-  const fyData = Object.entries(tax.fy||{}).sort((a,b)=>a[0].localeCompare(b[0]));
-  const maxFY = Math.max(...fyData.map(([,v])=>v.st+v.lt+v.spec),1);
-  const ltcgRate=0.125, stcgRate=0.20, specRate=0.30;
-  const estTaxLT = tax.total_lt>125000?(tax.total_lt-125000)*ltcgRate:0;
-  const estTaxST = tax.total_st*stcgRate;
-  const estTaxSp = tax.total_spec*specRate;
+  const [taxView,setTaxView] = React.useState("summary");
+  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+
+  /* ── Collect tax data from all accounts ── */
+  const ACCOUNTS = [
+    {name:"Rasiklal HUF", key:"R75",  data:typeof R75_TAX!=="undefined"?R75_TAX:null},
+    {name:"Vasumati",     key:"V129", data:typeof V129_TAX!=="undefined"?V129_TAX:null},
+    {name:"Asha Shah",    key:"A46",  data:typeof A46_TAX!=="undefined"?A46_TAX:null},
+    {name:"Chetan HUF",   key:"C31",  data:null}, /* C31_TAX not yet uploaded */
+    {name:"Praful HUF",   key:"P71",  data:typeof P71_TAX!=="undefined"?P71_TAX:null},
+    {name:"Maya Shah",    key:"M34",  data:typeof M34_TAX!=="undefined"?M34_TAX:null},
+  ].filter(a=>a.data);
+
+  const totalSTCG = ACCOUNTS.reduce((s,a)=>s+(a.data.stcg||a.data.total_st||0),0);
+  const totalLTCG = ACCOUNTS.reduce((s,a)=>s+(a.data.ltcg||a.data.total_lt||0),0);
+  const LTCG_EXEMPT = 125000;
+  const taxableLTCG = Math.max(0, totalLTCG - LTCG_EXEMPT);
+  const estTaxLTCG = Math.round(taxableLTCG * 0.125);
+  const estTaxSTCG = Math.round(totalSTCG * 0.20);
+  const totalTax = estTaxLTCG + estTaxSTCG;
+
+  const VIEWS = [{k:"summary",l:"📊 Summary"},{k:"optimiser",l:"⚡ Optimiser"},{k:"accounts",l:"📋 By Account"}];
 
   return (
     <div style={{paddingBottom:24}}>
+      {/* Sub-nav */}
       <div style={{display:"flex",gap:6,marginBottom:14,borderBottom:"1px solid #1d2545",paddingBottom:10,flexWrap:"wrap"}}>
-        {[{k:"pnl",l:"📊 P&L Summary"},{k:"optimiser",l:"⚡ Tax Optimiser"},{k:"detail",l:"📋 Lot Detail"}].map(({k,l})=>(
-          <button key={k} onClick={()=>setTaxView(k)} style={{padding:"5px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,background:taxView===k?"#1e3a5f":"#080b18",color:taxView===k?"#7eb8ff":"#3a4a6a"}}>
+        {VIEWS.map(({k,l})=>(
+          <button key={k} onClick={()=>setTaxView(k)}
+            style={{padding:"6px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,
+              background:taxView===k?"#1e3a5f":"#080b18",color:taxView===k?"#7eb8ff":"#3a4a6a"}}>
             {l}
           </button>
         ))}
       </div>
+
+      {taxView==="summary"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {/* KPI tiles */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:9}}>
+            {[
+              {l:"Total STCG",v:cr(totalSTCG),c:"#f0b429",sub:"@ 20% tax"},
+              {l:"Total LTCG",v:cr(totalLTCG),c:"#7eb8ff",sub:"@ 12.5% above ₹1.25L"},
+              {l:"LTCG Exempt",v:cr(LTCG_EXEMPT),c:"#34d399",sub:"₹1.25L per year"},
+              {l:"Est. STCG Tax",v:cr(estTaxSTCG),c:"#f87171",sub:"@20%"},
+              {l:"Est. LTCG Tax",v:cr(estTaxLTCG),c:"#f87171",sub:"@12.5%"},
+              {l:"Total Tax Liability",v:cr(totalTax),c:"#ef4444",sub:"FY2025-26 estimate"},
+            ].map(({l,v,c,sub})=>(
+              <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderTop:"2px solid "+c,borderRadius:12,padding:"12px 14px"}}>
+                <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{l}</div>
+                <div style={{fontSize:16,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
+                <div style={{fontSize:9,color:"#2a3a50",marginTop:3}}>{sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Per-account breakdown */}
+          <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
+            <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
+              Tax by Account
+            </div>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <thead><tr style={{background:"#0a0e1e"}}>
+                {["Account","Lots","STCG","LTCG","Est. Tax","Taxable LTCG"].map(h=>(
+                  <th key={h} style={{padding:"7px 14px",textAlign:h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {ACCOUNTS.map((acct,i)=>{
+                  const stcg = acct.data.stcg||acct.data.total_st||0;
+                  const ltcg = acct.data.ltcg||acct.data.total_lt||0;
+                  const lots = acct.data.lots||(acct.data.detail||[]).length||0;
+                  const txblLT = Math.max(0,ltcg-LTCG_EXEMPT/ACCOUNTS.length);
+                  const tax = Math.round(stcg*0.20 + txblLT*0.125);
+                  return (
+                    <tr key={acct.key} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                      <td style={{padding:"9px 14px",fontWeight:600,color:"#c8d0e8"}}>{acct.name}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",color:"#3a4a6a",fontFamily:"monospace"}}>{lots}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#f0b429",fontWeight:600}}>{cr(stcg)}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{cr(ltcg)}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#f87171",fontWeight:700}}>{cr(tax)}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(txblLT)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot><tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
+                <td colSpan={2} style={{padding:"9px 14px",color:"#3a4a6a",fontWeight:700,fontSize:10}}>TOTAL</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#f0b429"}}>{cr(totalSTCG)}</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalLTCG)}</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#ef4444"}}>{cr(totalTax)}</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(taxableLTCG)}</td>
+              </tr></tfoot>
+            </table>
+          </div>
+
+          {/* Note */}
+          <div style={{background:"#0a1218",border:"1px solid #1a2a38",borderRadius:8,padding:"10px 14px",fontSize:10,color:"#3a5a7a",lineHeight:1.6}}>
+            💡 LTCG exemption of ₹1.25L per year (Budget 2024). LTCG rate 12.5%, STCG rate 20%. C31 tax data not yet uploaded — add c31_TaxImplication.xls to complete the picture.
+          </div>
+        </div>
+      )}
+
       {taxView==="optimiser"&&<TaxOptimiserTab/>}
-      {taxView==="detail"&&<div style={{padding:"20px",color:"#3a4a6a",textAlign:"center"}}>Detailed tax lots — see Tax P&L in planning tab</div>}
+
+      {taxView==="accounts"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {ACCOUNTS.map(acct=>{
+            const detail = acct.data.detail||[];
+            const stcg = acct.data.stcg||acct.data.total_st||0;
+            const ltcg = acct.data.ltcg||acct.data.total_lt||0;
+            return (
+              <div key={acct.key} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{acct.name}</div>
+                  <div style={{display:"flex",gap:16}}>
+                    <span style={{fontSize:10,color:"#f0b429",fontFamily:"monospace"}}>STCG {cr(stcg)}</span>
+                    <span style={{fontSize:10,color:"#7eb8ff",fontFamily:"monospace"}}>LTCG {cr(ltcg)}</span>
+                    <span style={{fontSize:9,color:"#3a4a6a"}}>{detail.length} lots</span>
+                  </div>
+                </div>
+                {detail.length>0&&(
+                  <div style={{maxHeight:250,overflowY:"auto"}}>
+                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                      <thead><tr style={{background:"#0a0e1e",position:"sticky",top:0}}>
+                        {["Stock","Qty","Sale Date","Sale Val","Buy Val","STCG","LTCG"].map(h=>(
+                          <th key={h} style={{padding:"5px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
+                        ))}
+                      </tr></thead>
+                      <tbody>
+                        {detail.slice(0,50).map((t,i)=>(
+                          <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                            <td style={{padding:"5px 12px",color:"#c8d0e8",fontWeight:600}}>{t.s}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{t.qty}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",color:"#3a4a6a",fontSize:9}}>{t.sale_date}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff"}}>{cr(t.sale_val)}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#3a4a6a"}}>{cr(t.buy_val)}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#f0b429",fontWeight:600}}>{t.stcg>0?cr(t.stcg):"—"}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{t.ltcg>0?cr(t.ltcg):"—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
