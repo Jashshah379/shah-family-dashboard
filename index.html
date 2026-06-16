@@ -8320,6 +8320,9 @@ const R75_BOND_HOLDINGS = [
 ];
 
 
+/* KARI_HOLDINGS — Karishma Shah Zerodha (data not yet uploaded) */
+const KARI_HOLDINGS = [];
+
 var FAMILY_TOP = (function() {
   var all = [];
   var sources = [
@@ -8415,7 +8418,7 @@ const MEMBER_HOLDINGS = {
     ..._tag(AARYA_HOLDINGS, "Aarya Shah", "ICICI Direct"),
     ..._tag(typeof AARYA_SUSHIL_HOLDINGS!=="undefined"?AARYA_SUSHIL_HOLDINGS:[], "Aarya Shah", "Sushil Financial"),
   ],
-  "KARI":  _tag(KARI_HOLDINGS,           "Karishma Shah",  "Zerodha"),
+  "KARI":  _tag(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], "Karishma Shah", "Zerodha"),
   "AARYA": _tag(AARYA_HOLDINGS,          "Aarya Shah",     "ICICI Direct"),
   "ALL_FAMILY": [
     ..._tag(VASUMATI_SUSHIL_HOLDINGS,    "Vasumati Shah",  "Sushil Financial"),
@@ -8432,7 +8435,7 @@ const MEMBER_HOLDINGS = {
     ..._tag(CHETAN_HOLDINGS,             "Chetan Shah",    "Zerodha"),
     ..._tag(CHETAN_V60_SUSHIL_HOLDINGS,  "Chetan Shah",    "Sushil Financial"),
     ..._tag(JASH_PORTFOLIO_HOLDINGS,     "Jash Shah",      "Zerodha"),
-    ..._tag(KARI_HOLDINGS,               "Karishma Shah",  "Zerodha"),
+    ..._tag(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], "Karishma Shah", "Zerodha"),
     ..._tag(AARYA_HOLDINGS,              "Aarya Shah",     "ICICI Direct"),
     ..._tag(INCRED_HOLDINGS,             "Praful Shah HUF","InCred PMS"),
   ],
@@ -13510,7 +13513,7 @@ function KarishmaTab() {
     return sign+"₹"+Math.round(abs).toLocaleString("en-IN");
   };
 
-  const sorted = KARI_HOLDINGS.slice().sort((a,b)=>b.val-a.val);
+  const sorted = (typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[]).slice().sort(function(a,b){return b.val-a.val;});
   const winners = sorted.filter(h=>h.pl>0).sort((a,b)=>b.pl-a.pl);
   const losers  = sorted.filter(h=>h.pl<0).sort((a,b)=>a.pl-b.pl);
 
@@ -13557,7 +13560,7 @@ function KarishmaTab() {
       {view==="holdings"&&(
         <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",fontSize:11,fontWeight:600,color:"#3a4a6a",display:"flex",justifyContent:"space-between"}}>
-            <span>Live Holdings · {KARI_HOLDINGS.length} stocks</span>
+            <span>Live Holdings · {(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[]).length} stocks</span>
             <span style={{color:"#7eb8ff"}}>{fC(KARI_SUMMARY.totalValue)} · {(KARI_SUMMARY.totalPL>=0?"+":"")+KARI_SUMMARY.plPct}% overall</span>
           </div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
