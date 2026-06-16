@@ -213,133 +213,110 @@ function LabelList(p){return null;}
 /* ── End recharts stub ── */
 
 function useLivePrices() {
+  /* ── Live price hook — fetches from Render.com backend ─────────────────── */
+  /* After deploying server.py, replace PRICE_SERVER_URL with your Render URL */
+  const PRICE_SERVER_URL = "https://noisy-sea-5936.jashshah379.workers.dev/prices";
+
   const [prices, setPrices] = React.useState({});
+  const [indices, setIndices] = React.useState({});
   const [status, setStatus] = React.useState("idle");
   const [lastUpdate, setLastUpdate] = React.useState(null);
-  const [updatedCount, setUpdatedCount] = React.useState(0);
 
   const fetchPrices = React.useCallback(async () => {
     setStatus("loading");
+    try {
+      const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(60000)});
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const all = data.prices || {};
 
-    /* Build list of NSE symbols to fetch — top 50 family holdings by value */
-    const allH = (typeof MEMBER_HOLDINGS !== "undefined" ? MEMBER_HOLDINGS["ALL_FAMILY"] : null) || [];
-    const stockValMap = {};
-    allH.forEach(h => {
-      if (!h || !h.s || !(h.val > 0)) return;
-      /* Resolve NSE symbol: use sym field if available, else SYMBOL_MAP, else check if already a symbol */
-      const nseSym = (h.sym) ||
-        (typeof SYMBOL_MAP !== "undefined" ? SYMBOL_MAP[h.s] : null) ||
-        (h.s.match(/^[A-Z0-9&-]{2,15}$/) ? h.s : null);
-      if (!nseSym || nseSym.includes(" ")) return;
-      if (!stockValMap[nseSym]) stockValMap[nseSym] = 0;
-      stockValMap[nseSym] += h.val;
-    });
+      /* Split into indices and stocks */
+      const idx = {};
+      const stocks = {};
+      const INDEX_KEYS = ["NIFTY50","SENSEX","BANKNIFTY","USDINR","GOLD","CRUDEOIL"];
+      Object.entries(all).forEach(function(entry) {
+        if (INDEX_KEYS.includes(entry[0])) idx[entry[0]] = entry[1];
+        else stocks[entry[0]] = entry[1];
+      });
 
-    /* Sort by value, take top 60 */
-    const symbols = Object.entries(stockValMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 60)
-      .map(([sym]) => sym);
-
-    if (symbols.length === 0) { setStatus("error"); return; }
-
-    const priceData = {};
-    let fetched = 0;
-
-    /* Fetch in batches of 8 via Yahoo Finance v7 quotes API */
-    const PROXY = "https://api.allorigins.win/raw?url=";
-    const batchSize = 8;
-
-    for (let i = 0; i < symbols.length; i += batchSize) {
-      const batch = symbols.slice(i, i + batchSize);
-      const yahooSyms = batch.map(s => encodeURIComponent(s + ".NS")).join("%2C");
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooSyms}&fields=regularMarketPrice,regularMarketChangePercent,symbol,shortName`;
-
-      try {
-        const res = await fetch(PROXY + encodeURIComponent(
-          `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${batch.map(s=>s+".NS").join(",")}&fields=regularMarketPrice,regularMarketChangePercent,symbol,shortName`
-        ), { signal: AbortSignal.timeout(10000) });
-
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        const quotes = (data.quoteResponse && data.quoteResponse.result) || [];
-
-        quotes.forEach(q => {
-          if (q.regularMarketPrice) {
-            const sym = q.symbol.replace(".NS", "");
-            priceData[sym] = q.regularMarketPrice;
-            fetched++;
-          }
-        });
-      } catch (batchErr) {
-        /* silent — try next batch */
-      }
-
-      /* Small delay to avoid rate limiting */
-      if (i + batchSize < symbols.length) {
-        await new Promise(r => setTimeout(r, 400));
-      }
-    }
-
-    if (fetched > 0) {
-      setPrices(priceData);
-      setUpdatedCount(fetched);
-      setLastUpdate(new Date().toLocaleTimeString("en-IN", {hour:"2-digit",minute:"2-digit"}));
-      setStatus("done");
-    } else {
+      setPrices(stocks);
+      setIndices(idx);
+      setLastUpdate(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}));
+      setStatus("live");
+    } catch(e) {
+      console.warn("Price fetch failed:", e.message);
       setStatus("error");
+      /* Auto-retry after 15s in case server was sleeping */
+      setTimeout(fetchPrices, 15000);
     }
   }, []);
 
-  return { prices, status, lastUpdate, updatedCount, fetchPrices };
+  React.useEffect(function() {
+    fetchPrices();
+    /* Refresh every 3 minutes */
+    var t = setInterval(fetchPrices, 3 * 60 * 1000);
+    return function() { clearInterval(t); };
+  }, [fetchPrices]);
+
+  return {prices, indices, status, lastUpdate, refresh: fetchPrices};
 }
 
 
 function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const total = prices ? Object.keys(prices).length : 0;
+  const isLive = status === "live" && total > 0;
+  const isLoading = status === "loading";
+  const isError = status === "error";
 
   return (
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 14px",background:"#080b18",borderRadius:8,marginBottom:12,flexWrap:"wrap"}}>
-      <button
-        onClick={onRefresh}
-        disabled={status === "loading"}
-        style={{padding:"6px 14px",borderRadius:7,border:"none",cursor:status==="loading"?"not-allowed":"pointer",
-          background:status==="loading"?"#1a2a40":"#1e3a5f",
-          color:status==="loading"?"#3a5a7a":"#7eb8ff",
-          fontSize:11,fontWeight:700,display:"flex",alignItems:"center",gap:6}}
-      >
-        <span style={{display:"inline-block",animation:status==="loading"?"spin 1s linear infinite":"none"}}>
-          {status === "loading" ? "⟳" : "↻"}
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"5px 14px",
+      background:"#070a16",borderBottom:"1px solid #1a2035",fontSize:10,flexWrap:"wrap"}}>
+      
+      {/* Status indicator */}
+      <div style={{display:"flex",alignItems:"center",gap:5}}>
+        {isLive&&<span style={{width:6,height:6,borderRadius:"50%",background:"#34d399",
+          display:"inline-block",boxShadow:"0 0 6px #34d399",animation:"pulse 2s infinite"}}/>}
+        {isLoading&&<span style={{width:6,height:6,borderRadius:"50%",background:"#f0b429",
+          display:"inline-block"}}/>}
+        {isError&&<span style={{width:6,height:6,borderRadius:"50%",background:"#f87171",
+          display:"inline-block"}}/>}
+        <span style={{color:isLive?"#34d399":isError?"#f87171":"#f0b429",fontWeight:600}}>
+          {isLive?"● LIVE":isLoading?"○ Updating...":isError?"● Offline":"○ Connecting..."}
         </span>
-        {status === "loading" ? "Fetching prices..." : "Refresh Live Prices"}
+      </div>
+
+      {/* Stock count */}
+      {isLive&&<span style={{color:"#3a4a6a"}}>{total} stocks · {updatedCount||0} updated</span>}
+
+      {/* Last updated time */}
+      {lastUpdate&&(
+        <span style={{color:"#2a3a5a"}}>
+          Updated {lastUpdate}
+        </span>
+      )}
+
+      {/* Spacer */}
+      <div style={{flex:1}}/>
+
+      {/* Refresh button */}
+      <button onClick={onRefresh} disabled={isLoading}
+        title="Refresh live prices"
+        style={{display:"flex",alignItems:"center",gap:4,background:"none",
+          border:"1px solid #1d2545",borderRadius:6,color:isLoading?"#1d2545":"#7eb8ff",
+          fontSize:9,padding:"3px 10px",cursor:isLoading?"not-allowed":"pointer",fontWeight:600}}>
+        <span style={{display:"inline-block",animation:isLoading?"spin 1s linear infinite":"none"}}>↻</span>
+        {isLoading?"Fetching...":"Refresh Prices"}
       </button>
 
-      {status === "done" && (
-        <span style={{fontSize:10,color:"#34d399"}}>
-          ✓ {updatedCount} prices updated · {lastUpdate}
-        </span>
-      )}
-      {status === "error" && (
-        <span style={{fontSize:10,color:"#f87171"}}>
-          ⚠ Price fetch failed — NSE/Yahoo may be rate-limiting. Try again in 60s.
-        </span>
-      )}
-      {status === "idle" && (
-        <span style={{fontSize:10,color:"#3a4a6a"}}>
-          CMPs from last uploaded data · click to fetch live from NSE/Yahoo Finance
-        </span>
-      )}
-
-      {updatedCount > 0 && (
-        <span style={{marginLeft:"auto",fontSize:10,color:"#3a4a6a"}}>
-          {updatedCount} of {Object.keys(prices).length + "+"} symbols live
-        </span>
-      )}
+      <style>{`
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+      `}</style>
     </div>
   );
 }
 
-/* ═══════════════ BREEZE API SETTINGS + LIVE DATA FETCHER */
+
 function BreezeImportTab() {
   const [breezeData, setBreezeData] = React.useState(null);
   const [importing, setImporting] = React.useState(false);
@@ -831,7 +808,7 @@ function WhatIfTab() {
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
       if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:h.cmp||0,holders:[]};
-      m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0); if(h.cmp>0) m[h.s].cmp=h.cmp;
+      m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
       if(h.cmp) m[h.s].cmp=h.cmp;
       if(h._member) m[h.s].holders.push({member:h._member,custodian:h._custodian,qty:h.qty||0,avg:h.avg||0,val:h.val});
     });
@@ -1153,7 +1130,7 @@ function FamilyMeetingTab() {
   const totalEquity = realMembers.reduce((s,m)=>s+(m.stocks||0),0);
   const totalMF = realMembers.reduce((s,m)=>s+(m.mf||0),0);
   const totalBank = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0),0);
-  const grandTotal = totalEquity+totalMF+totalBank+totalPPF;
+  const grandTotal = totalEquity+totalMF+totalBank;
 
   const topGainers = [...allH].filter(h=>h.val>0&&h.inv>0).sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,5);
   const topLosers = [...allH].filter(h=>h.val>0&&h.inv>0&&h.val<h.inv).sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,5);
@@ -1486,7 +1463,7 @@ function GlobalSearchTab() {
     const m = {};
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
-      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:0,members:[],custodians:[],sector:h.sector||""};
+      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,members:[],custodians:[],sector:h.sector||""};
       m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
       if(h._member&&!m[h.s].members.includes(h._member)) m[h.s].members.push(h._member);
       if(h._custodian&&!m[h.s].custodians.includes(h._custodian)) m[h.s].custodians.push(h._custodian);
@@ -1697,7 +1674,6 @@ function GlobalSearchTab() {
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:14,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(s.val)}</div>
-                  {s.cmp>0&&<div style={{fontSize:9,color:"#7eb8ff",fontFamily:"monospace",marginBottom:2}}>CMP ₹{s.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</div>}
                   <div style={{fontSize:10,color:ret>=0?"#34d399":"#f87171",fontFamily:"monospace",fontWeight:600}}>
                     {ret>=0?"▲":"▼"}{Math.abs(ret).toFixed(1)}% · {cr(pl)}
                   </div>
@@ -2441,159 +2417,312 @@ function ChangelogTab() {
 /* ═══════════════════════════════════════════════════════════
    SMART DAILY DIGEST — Overview Feed Component
 ═══════════════════════════════════════════════════════════ */
-function DailyDigest() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
-  const bank = (typeof BANK!=="undefined"?BANK:[]);
+function GlobalIndicesWidget() {
+  const PRICE_SERVER_URL = "https://noisy-sea-5936.jashshah379.workers.dev/prices";
+  const [data, setData] = React.useState({});
+  const [status, setStatus] = React.useState("idle");
+  const [lastUpdate, setLastUpdate] = React.useState(null);
 
-  /* ── Totals ── */
-  const totalEquity = realMembers.reduce((s,m)=>s+(m.stocks||0),0);
-  const totalMF     = realMembers.reduce((s,m)=>s+(m.mf||0),0);
-  const totalBank   = bank.reduce((s,b)=>s+(b.b||0),0);
-  const totalPPF = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]).reduce((s,p)=>s+p.bal,0);
-  const grandTotal  = totalEquity+totalMF+totalBank+totalPPF;
-  const totalUnreal = allH.reduce((s,h)=>s+(h.unreal||0),0);
-  const totalInv    = allH.filter(h=>h.val>0).reduce((s,h)=>s+(h.inv||0),0);
+  const fetch_data = React.useCallback(async function() {
+    setStatus("loading");
+    try {
+      const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(20000)});
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const json = await res.json();
+      setData(json.prices || {});
+      setLastUpdate(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}));
+      setStatus("live");
+    } catch(e) { setStatus("error"); }
+  }, []);
 
-  /* ── MTF interest eroding daily ── */
-  const MTF_BORROWED = 24528000;
-  const dailyInterest = Math.round(MTF_BORROWED * 0.18 / 365);
+  React.useEffect(function() {
+    fetch_data();
+    var t = setInterval(fetch_data, 3*60*1000);
+    return function() { clearInterval(t); };
+  }, [fetch_data]);
 
-  /* ── Best/Worst by return % ── */
-  const withReturn = allH.filter(h=>h.val>0&&h.inv>1000);
-  const best5 = [...withReturn].sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,3);
-  const worst5 = [...withReturn].sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,3);
+  var fmt = function(v, fx) {
+    if (!v || !v.p) return "—";
+    if (fx) return v.p.toFixed(2);
+    if (v.p >= 10000) return Math.round(v.p).toLocaleString("en-IN");
+    return v.p.toFixed(2);
+  };
 
-  /* ── Loss harvest candidates (down >15%) ── */
-  const lossHarvest = withReturn.filter(h=>(h.val-h.inv)/h.inv < -0.15).sort((a,b)=>(a.val-a.inv)-(b.val-b.inv)).slice(0,3);
-
-  /* ── LTCG candidates (up >50%) ── */
-  const ltcgCandidates = withReturn.filter(h=>(h.val-h.inv)/h.inv > 0.50).sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,3);
-
-  /* ── Concentration alerts ── */
-  const stockTotals = {};
-  allH.forEach(h=>{ if(h.s&&h.val>0) stockTotals[h.s]=(stockTotals[h.s]||0)+h.val; });
-  const topStock = Object.entries(stockTotals).sort((a,b)=>b[1]-a[1])[0];
-  const topStockPct = topStock&&grandTotal>0?(topStock[1]/grandTotal*100):0;
-
-  /* ── Upcoming corp actions (from CorporateActionsTab data) ── */
-  const upcoming7 = [
-    {stock:"BSE",date:"2026-06-30",type:"dividend",amount:22},
-    {stock:"SBI",date:"2026-07-05",type:"dividend",amount:13.7},
-    {stock:"Federal Bank",date:"2026-07-12",type:"dividend",amount:3},
-    {stock:"Linde India",date:"2026-07-20",type:"dividend",amount:28},
-  ].filter(a=>{
-    const d = new Date(a.date);
-    const now = new Date();
-    const diff = (d-now)/(1000*60*60*24);
-    return diff >= 0 && diff <= 30;
-  });
-
-  /* ── Portfolio health score ── */
-  let score = 100;
-  if(topStockPct > 15) score -= 15;
-  if(topStockPct > 25) score -= 10;
-  const mtfPct = grandTotal>0?(MTF_BORROWED/grandTotal*100):0;
-  if(mtfPct > 20) score -= 10;
-  if(mtfPct > 35) score -= 15;
-  const retPct = totalInv>0?(totalUnreal/totalInv*100):0;
-  if(retPct < 0) score -= 10;
-  score = Math.max(0, Math.min(100, score));
-  const scoreColor = score>=75?"#34d399":score>=50?"#f0b429":"#f87171";
-  const scoreLabel = score>=75?"Good":score>=50?"Fair":"Needs Attention";
-
-  const today = new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+  /* All indices in one row */
+  var ALL = [
+    {l:"NIFTY",      k:"NIFTY50",   fx:false, flag:"🇮🇳"},
+    {l:"SENSEX",     k:"SENSEX",    fx:false, flag:"🇮🇳"},
+    {l:"BNKN",       k:"BANKNIFTY", fx:false, flag:"🇮🇳"},
+    {l:"USD/INR",    k:"USDINR",    fx:true,  flag:"💱"},
+    {l:"GOLD",       k:"GOLD",      fx:true,  flag:"🥇"},
+    {l:"OIL",        k:"CRUDEOIL",  fx:true,  flag:"🛢"},
+    {l:"S&P 500",    k:"SP500",     fx:false, flag:"🇺🇸"},
+    {l:"NASDAQ",     k:"NASDAQ",    fx:false, flag:"🇺🇸"},
+    {l:"DOW",        k:"DOW",       fx:false, flag:"🇺🇸"},
+    {l:"NIKKEI",     k:"NIKKEI",    fx:false, flag:"🇯🇵"},
+    {l:"FTSE",       k:"FTSE100",   fx:false, flag:"🇬🇧"},
+  ];
 
   return (
-    <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
-
-      {/* ── Header ── */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div>
-          <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>Good morning, Shah Family 👋</div>
-          <div style={{fontSize:9,color:"#3a4a6a"}}>{today}</div>
+    <div style={{background:"#070a16",borderBottom:"1px solid #1a2035",padding:"8px 16px",marginBottom:0,overflowX:"auto"}}>
+      <div style={{display:"flex",alignItems:"center",gap:0,minWidth:"max-content"}}>
+        {/* Status */}
+        <div style={{display:"flex",alignItems:"center",gap:4,paddingRight:14,borderRight:"1px solid #1a2035",marginRight:14,flexShrink:0}}>
+          {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#10b981",display:"inline-block",boxShadow:"0 0 5px #10b981"}}/>}
+          {status==="loading"&&<span style={{fontSize:9,color:"#f0b429"}}>⟳</span>}
+          {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠</span>}
+          {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
+          <button onClick={fetch_data} disabled={status==="loading"} style={{background:"none",border:"none",color:"#2a3a50",fontSize:10,cursor:"pointer",padding:"0 2px"}}>↻</button>
         </div>
-        {/* Health Score */}
-        <div style={{display:"flex",alignItems:"center",gap:8,background:"#080b18",borderRadius:10,padding:"6px 12px",border:"1px solid #1d2545"}}>
-          <div style={{fontSize:20,fontWeight:900,color:scoreColor,fontFamily:"monospace"}}>{score}</div>
+
+        {/* All indices */}
+        {ALL.map(function(item, i) {
+          var d = data[item.k];
+          var isUp = !d || d.pct >= 0;
+          var c = d ? (isUp ? "#10b981" : "#ef4444") : "#2a3a50";
+          return (
+            <div key={item.k} style={{display:"flex",alignItems:"center",gap:8,paddingRight:16,marginRight:16,borderRight:i<ALL.length-1?"1px solid #1a2035":"none",flexShrink:0}}>
+              <div>
+                <div style={{fontSize:7,color:"#3a4a6a",whiteSpace:"nowrap"}}>{item.flag} {item.l}</div>
+                <div style={{fontSize:11,fontWeight:800,fontFamily:"monospace",color:c,whiteSpace:"nowrap"}}>
+                  {fmt(d, item.fx)}
+                  {d&&d.pct!=null&&(
+                    <span style={{fontSize:8,marginLeft:4,color:c}}>{isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
+function DailyDigest() {
+  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+
+  const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
+  const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const bank  = (typeof BANK!=="undefined"?BANK:[]);
+  const ppf   = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]);
+  const mfReg = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
+
+  const totalEq   = mems.reduce((s,m)=>s+(m.stocks||0),0);
+  const totalMF   = mems.reduce((s,m)=>s+(m.mf||0),0);
+  const totalBank = bank.reduce((s,b)=>s+(b.b||0),0);
+  const totalPPF  = ppf.reduce((s,p)=>s+(p.bal||0),0);
+  const totalWealth = totalEq+totalMF+totalBank+totalPPF;
+  const totalInv  = allH.reduce((s,h)=>s+(h.inv||0),0);
+  const totalVal  = allH.reduce((s,h)=>s+(h.val||0),0);
+  const totalPL   = totalVal-totalInv;
+  const retPct    = totalInv>0?(totalPL/totalInv*100):0;
+  const totalDayPL = allH.reduce((s,h)=>s+(h.dayPL||0),0);
+  const hasLive   = allH.some(h=>h.dayPL!=null&&h.dayPL!==0);
+
+  /* Top 5 performers and losers */
+  const withRet = allH.filter(h=>h.inv>5000);
+  const top5 = [...withRet].sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,5);
+  const bot5 = [...withRet].sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,5);
+
+  /* Member wealth */
+  const memberRanked = [...mems].sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
+  const topMember = memberRanked[0];
+  const topMemberW = topMember?((topMember.stocks||0)+(topMember.mf||0)):1;
+
+  /* Asset donut */
+  const assets = [
+    {l:"Equity",v:totalEq,c:"#6366f1"},
+    {l:"Mutual Funds",v:totalMF,c:"#10b981"},
+    {l:"Bank",v:totalBank,c:"#f0b429"},
+    {l:"PPF",v:totalPPF,c:"#3b82f6"},
+  ].filter(a=>a.v>0);
+  const assetTotal = assets.reduce((s,a)=>s+a.v,0)||1;
+
+  /* Health score */
+  const stockTotals = {};
+  allH.forEach(h=>{ if(h.s) stockTotals[h.s]=(stockTotals[h.s]||0)+(h.val||0); });
+  const topStock = Object.entries(stockTotals).sort((a,b)=>b[1]-a[1])[0];
+  const topStockPct = topStock&&totalWealth>0?(topStock[1]/totalWealth*100):0;
+  let score=100;
+  if(topStockPct>20) score-=15; if(topStockPct>35) score-=10;
+  if(retPct<0) score-=10; if(retPct<-10) score-=10;
+  score=Math.max(0,Math.min(100,score));
+  const scoreColor=score>=75?"#10b981":score>=50?"#f0b429":"#ef4444";
+
+  const [shown,setShown]=React.useState(false);
+  React.useEffect(()=>{ const t=setTimeout(()=>setShown(true),100); return()=>clearTimeout(t); },[]);
+
+  /* Donut SVG */
+  const DonutChart = () => {
+    const cx=52,cy=52,r=44,ri=30; let angle=-Math.PI/2;
+    return (
+      <svg width={104} height={104} viewBox="0 0 104 104">
+        {assets.map((a,i)=>{
+          const sw=(a.v/assetTotal)*2*Math.PI;
+          const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle); angle+=sw;
+          const x2=cx+r*Math.cos(angle),y2=cy+r*Math.sin(angle);
+          const ix1=cx+ri*Math.cos(angle-sw),iy1=cy+ri*Math.sin(angle-sw);
+          const ix2=cx+ri*Math.cos(angle),iy2=cy+ri*Math.sin(angle);
+          const lg=sw>Math.PI?1:0;
+          return <path key={i} d={`M${x1},${y1} A${r},${r} 0 ${lg},1 ${x2},${y2} L${ix2},${iy2} A${ri},${ri} 0 ${lg},0 ${ix1},${iy1} Z`} fill={a.c} stroke="#070a16" strokeWidth={2}/>;
+        })}
+        <text x={52} y={49} textAnchor="middle" fill="#e8eaf0" fontSize={10} fontWeight={800}>{cr(totalWealth).split("₹")[1]||""}</text>
+        <text x={52} y={61} textAnchor="middle" fill="#3a4a6a" fontSize={7}>Total</text>
+      </svg>
+    );
+  };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:12,paddingBottom:8}}>
+
+      {/* ══ HERO ══ */}
+      <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63,#24243e)",borderRadius:20,padding:"22px 24px",position:"relative",overflow:"hidden",border:"1px solid #2a2a5a"}}>
+        <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:"radial-gradient(circle,#6366f133,transparent 70%)",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:-50,left:10,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,#10b98122,transparent 70%)",pointerEvents:"none"}}/>
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:14,position:"relative"}}>
           <div>
-            <div style={{fontSize:9,fontWeight:700,color:scoreColor}}>{scoreLabel}</div>
-            <div style={{fontSize:8,color:"#2a3a50"}}>Portfolio Health</div>
+            <div style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Shah Family Office</div>
+            <div style={{fontSize:11,color:"#6a7a9a",marginBottom:10}}>{new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</div>
+            <div style={{fontSize:11,color:"#a0aabb",marginBottom:3}}>Total Family Wealth</div>
+            <div style={{fontSize:38,fontWeight:900,letterSpacing:"-0.02em",background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontFamily:"'JetBrains Mono',monospace",transform:shown?"translateY(0)":"translateY(8px)",opacity:shown?1:0,transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)"}}>
+              {cr(totalWealth)}
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginTop:7,flexWrap:"wrap"}}>
+              <span style={{fontSize:12,color:retPct>=0?"#10b981":"#ef4444",fontWeight:700,fontFamily:"monospace"}}>
+                {retPct>=0?"▲":"▼"} {Math.abs(retPct).toFixed(2)}% unrealised
+              </span>
+              {hasLive&&(
+                <span style={{display:"flex",alignItems:"center",gap:4,background:totalDayPL>=0?"#10b98115":"#ef444415",borderRadius:6,padding:"3px 10px",border:`1px solid ${totalDayPL>=0?"#10b98133":"#ef444433"}`}}>
+                  <span style={{fontSize:8,color:"#8899bb"}}>Today</span>
+                  <span style={{fontSize:11,fontWeight:800,color:totalDayPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalDayPL>=0?"+":""}{cr(totalDayPL)}</span>
+                </span>
+              )}
+            </div>
           </div>
-          <svg width="36" height="36" viewBox="0 0 36 36">
-            <circle cx="18" cy="18" r="15" fill="none" stroke="#1d2545" strokeWidth="3"/>
-            <circle cx="18" cy="18" r="15" fill="none" stroke={scoreColor} strokeWidth="3"
-              strokeDasharray={`${score*0.942} 94.2`} strokeLinecap="round"
-              transform="rotate(-90 18 18)"/>
-          </svg>
+          <div style={{display:"flex",gap:16,alignItems:"center"}}>
+            <DonutChart/>
+            <div style={{textAlign:"center"}}>
+              <svg width={70} height={70} viewBox="0 0 70 70">
+                <circle cx={35} cy={35} r={29} fill="none" stroke="#1d2545" strokeWidth={5}/>
+                <circle cx={35} cy={35} r={29} fill="none" stroke={scoreColor} strokeWidth={5} strokeDasharray={`${score*1.822} 182.2`} strokeLinecap="round" transform="rotate(-90 35 35)"/>
+                <text x={35} y={32} textAnchor="middle" fill={scoreColor} fontSize={14} fontWeight={900}>{score}</text>
+                <text x={35} y={43} textAnchor="middle" fill="#3a4a6a" fontSize={6}>Health</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Asset pills */}
+        <div style={{display:"flex",gap:7,marginTop:14,flexWrap:"wrap"}}>
+          {assets.map(a=>(
+            <div key={a.l} style={{background:"rgba(255,255,255,0.05)",borderRadius:16,padding:"4px 10px",display:"flex",alignItems:"center",gap:5,border:`1px solid ${a.c}33`}}>
+              <div style={{width:5,height:5,borderRadius:"50%",background:a.c}}/>
+              <span style={{fontSize:8,color:"#8899bb"}}>{a.l}</span>
+              <span style={{fontSize:9,fontWeight:700,color:"#c8d0e8",fontFamily:"monospace"}}>{cr(a.v)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── KPI Strip ── */}
+      {/* ══ 4 KEY METRICS ══ */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
         {[
-          {l:"Total Wealth",v:cr(grandTotal),c:"#7eb8ff",sub:"equity+MF+bank"},
-          {l:"Unrealised P&L",v:cr(totalUnreal),c:totalUnreal>=0?"#34d399":"#f87171",sub:(totalInv>0?(totalUnreal/totalInv*100).toFixed(1):0)+"% on invested"},
-          {l:"MTF Cost Today",v:"-"+cr(dailyInterest),c:"#f87171",sub:"₹"+Math.round(dailyInterest*30/1000)+"K/mo @ 18%"},
-          {l:"Cash in Bank",v:cr(totalBank),c:"#f0b429",sub:bank.length+" accounts"},
-          {l:"PPF Corpus",v:cr(totalPPF),c:"#34d399",sub:"8 accounts · 7.1% p.a."},
-        ].map(({l,v,c,sub})=>(
-          <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:10,padding:"10px 12px"}}>
-            <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>{l}</div>
-            <div style={{fontSize:15,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
-            <div style={{fontSize:8,color:"#2a3a50",marginTop:2}}>{sub}</div>
+          {l:"Equity",v:cr(totalEq),sub:(retPct>=0?"+":"")+retPct.toFixed(1)+"%",c:"#6366f1"},
+          {l:"Mutual Funds",v:cr(totalMF),sub:Object.keys(mfReg).length+" members",c:"#10b981"},
+          {l:"Bank + PPF",v:cr(totalBank+totalPPF),sub:bank.length+" accounts",c:"#f0b429"},
+          {l:"Today P&L",v:hasLive?(totalDayPL>=0?"+":"")+cr(totalDayPL):"—",sub:hasLive?"live":"awaiting prices",c:hasLive?(totalDayPL>=0?"#10b981":"#ef4444"):"#3a4a6a"},
+        ].map(({l,v,sub,c})=>(
+          <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:`1px solid ${c}22`,borderTop:`2px solid ${c}`,borderRadius:12,padding:"12px 14px"}}>
+            <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{l}</div>
+            <div style={{fontSize:16,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
+            <div style={{fontSize:9,color:"#3a4a6a",marginTop:3}}>{sub}</div>
           </div>
         ))}
       </div>
 
-      {/* ── Notification Bell ── */}
-      {(()=>{
-        const [showAlerts, setShowAlerts] = React.useState(false);
-        const alerts = [];
-        if(dailyInterest>0) alerts.push({icon:"⚠️",color:"#f87171",title:"MTF Interest",desc:"₹"+Math.round(dailyInterest).toLocaleString("en-IN")+"/day eroding · ₹"+Math.round(dailyInterest*30/1000)+"K/month"});
-        if(topStockPct>10&&topStock) alerts.push({icon:"📊",color:"#f0b429",title:"Concentration: "+topStock[0],desc:topStockPct.toFixed(1)+"% of portfolio in one stock"});
-        if(ltcgCandidates.length>0) alerts.push({icon:"💰",color:"#34d399",title:"LTCG Harvest",desc:ltcgCandidates.length+" candidates — book ₹1.25L tax-free before Mar 31"});
-        if(lossHarvest.length>0) alerts.push({icon:"📉",color:"#a78bfa",title:"Loss Harvest",desc:lossHarvest.length+" positions down >15% — offset gains"});
-        if(upcoming7.length>0) alerts.push({icon:"💵",color:"#7eb8ff",title:"Upcoming Dividends",desc:upcoming7.length+" payouts this month"});
-        return (
-          <div style={{position:"relative",marginBottom:12}}>
-            <button onClick={()=>setShowAlerts(s=>!s)} style={{display:"flex",alignItems:"center",gap:7,background:"#080b18",border:"1px solid #1d2545",borderRadius:9,padding:"7px 14px",cursor:"pointer",color:"#c8d0e8",fontSize:11,fontWeight:600}}>
-              <span style={{fontSize:16}}>🔔</span>
-              <span>Alerts</span>
-              {alerts.length>0&&<span style={{background:"#f87171",color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700}}>{alerts.length}</span>}
-              <span style={{fontSize:10,color:"#3a4a6a",marginLeft:4}}>{showAlerts?"▲":"▼"}</span>
-            </button>
-            {showAlerts&&(
-              <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"#0d1020",border:"1px solid #1d2545",borderRadius:12,zIndex:100,padding:"8px",boxShadow:"0 8px 32px #00000066",minWidth:320}}>
-                {alerts.length===0&&<div style={{padding:"12px",fontSize:11,color:"#3a4a6a",textAlign:"center"}}>No alerts — portfolio looks good ✓</div>}
-                {alerts.map((a,i)=>(
-                  <div key={i} style={{display:"flex",gap:10,padding:"9px 10px",borderRadius:8,marginBottom:4,background:"#080b18",alignItems:"flex-start"}}>
-                    <span style={{fontSize:16,flexShrink:0}}>{a.icon}</span>
-                    <div>
-                      <div style={{fontSize:11,fontWeight:700,color:a.color}}>{a.title}</div>
-                      <div style={{fontSize:10,color:"#4a5a7a",marginTop:2}}>{a.desc}</div>
-                    </div>
-                  </div>
-                ))}
+      {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+
+        {/* Gainers */}
+        <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden"}}>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}>📈 Top Gainers</div>
+          {top5.map((h,i)=>{
+            const r=((h.val-h.inv)/h.inv*100);
+            return (
+              <div key={i} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #0d1f0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120}}>{h.s}</div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:11,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>+{r.toFixed(1)}%</div>
+                  {h.dayPL!=null&&h.dayPL!==0&&<div style={{fontSize:8,color:"#10b98199",fontFamily:"monospace"}}>{h.dayPL>=0?"+":""}{cr(h.dayPL)} today</div>}
+                </div>
               </div>
-            )}
-          </div>
-        );
-      })()}
-            {/* ── Quick Actions ── */}
+            );
+          })}
+        </div>
+
+        {/* Losers */}
+        <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:14,overflow:"hidden"}}>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>📉 Under Pressure</div>
+          {bot5.map((h,i)=>{
+            const r=((h.val-h.inv)/h.inv*100);
+            return (
+              <div key={i} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #1f0d0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120}}>{h.s}</div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:11,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>{r.toFixed(1)}%</div>
+                  {h.dayPL!=null&&h.dayPL!==0&&<div style={{fontSize:8,color:"#ef444499",fontFamily:"monospace"}}>{h.dayPL>=0?"+":""}{cr(h.dayPL)} today</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ══ MEMBER WEALTH BARS ══ */}
+      <div style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:"1px solid #1d2545",borderRadius:14,padding:"14px 16px"}}>
+        <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:12,display:"flex",justifyContent:"space-between"}}>
+          <span>👨‍👩‍👧 Family Wealth Distribution</span>
+          <span style={{fontSize:9,color:"#3a4a6a"}}>{mems.length} members</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 20px"}}>
+          {memberRanked.map((m,i)=>{
+            const w=(m.stocks||0)+(m.mf||0);
+            const barPct=topMemberW>0?(w/topMemberW*100):0;
+            return (
+              <div key={m.n}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{width:20,height:20,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
+                    <span style={{fontSize:10,color:"#c8d0e8",fontWeight:600}}>{m.n.split(" ")[0]}</span>
+                  </div>
+                  <span style={{fontSize:9,color:"#e8eaf0",fontFamily:"monospace",fontWeight:700}}>{cr(w)}</span>
+                </div>
+                <div style={{height:4,background:"#0d1020",borderRadius:2,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:barPct+"%",background:m.c||"#6366f1",borderRadius:2,transition:"width 1s cubic-bezier(0.34,1.56,0.64,1)"}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ══ QUICK ACTIONS ══ */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-        <div style={{fontSize:9,color:"#3a4a6a",alignSelf:"center",fontWeight:600}}>QUICK:</div>
         {[
-          {l:"↻ Refresh Prices",tab:null,action:"refresh"},
-          {l:"📋 MTF Detail",tab:"MTF"},
-          {l:"💰 Tax Optimiser",tab:"Tax Optimiser"},
+          {l:"📋 Holdings",tab:"Holdings"},
+          {l:"💰 P&L",tab:"P&L"},
+          {l:"🏦 Bank",tab:"Bank"},
+          {l:"💼 Funds",tab:"Funds"},
+          {l:"⚡ Tax",tab:"Tax"},
           {l:"🎯 What-If",tab:"What-If"},
-          {l:"📂 Upload Data",tab:"Upload"},
-        ].map(({l,tab,action})=>(
-          <button key={l}
-            style={{padding:"5px 11px",borderRadius:7,border:"1px solid #1d2545",background:"#080b18",color:"#7eb8ff",fontSize:10,fontWeight:600,cursor:"pointer"}}
-            onClick={()=>{ if(tab&&window._setDashTab) window._setDashTab(tab); }}>
+          {l:"👥 Advisors",tab:"Advisors"},
+          {l:"📂 Upload",tab:"Upload"},
+        ].map(({l,tab})=>(
+          <button key={tab} onClick={()=>window._setDashTab&&window._setDashTab(tab)}
+            style={{padding:"7px 14px",borderRadius:20,border:"1px solid #1d2545",background:"linear-gradient(155deg,#11152c,#0d1020)",color:"#8899bb",fontSize:10,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}}>
             {l}
           </button>
         ))}
@@ -2602,11 +2731,6 @@ function DailyDigest() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BANK STATEMENT PARSER TAB
-   Parses ICICI / HDFC / Axis / SBI PDF/CSV statements
-   Extracts: balance, transactions, income, expenses, patterns
-═══════════════════════════════════════════════════════════ */
 function BankStatementTab() {
   const [files, setFiles] = React.useState([]);
   const [parsed, setParsed] = React.useState([]);
@@ -3907,12 +4031,64 @@ function MutualFundsTab() {
 
 function FamilyApp() {
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
+
+  /* ── Patch live prices into holdings data ─────────────────────────────── */
+  React.useEffect(function() {
+    if (!livePrices || Object.keys(livePrices).length === 0) return;
+    var symMap = typeof SYMBOL_MAP !== "undefined" ? SYMBOL_MAP : {};
+    /* Build reverse map: NSE symbol → stock name variants */
+    var nseToName = {};
+    Object.entries(symMap).forEach(function(e) { 
+      if (!nseToName[e[1]]) nseToName[e[1]] = e[0]; 
+    });
+    /* Patch FAMILY_TOP */
+    if (typeof FAMILY_TOP !== "undefined") {
+      FAMILY_TOP.forEach(function(h) {
+        var nseSym = symMap[h.s] || h.s;
+        var lp = livePrices[nseSym] || livePrices[h.s];
+        if (lp && typeof lp.p === "number" && lp.p > 0) {
+          var qty = parseInt(h.qty) || 0;
+          h.cmp    = lp.p;
+          h.chg    = lp.c || 0;
+          h.chgPct = lp.pct || 0;
+          h.val    = Math.round(lp.p * qty);
+          h.unreal = h.val - (parseInt(h.inv) || 0);
+          h.dayPL  = Math.round((lp.c || 0) * qty);  /* Today's P&L for this holding */
+          h.prevClose = Math.round((lp.p - (lp.c || 0)) * 100) / 100;
+        }
+      });
+    }
+    /* Patch MEMBER_HOLDINGS */
+    if (typeof MEMBER_HOLDINGS !== "undefined") {
+      Object.values(MEMBER_HOLDINGS).forEach(function(arr) {
+        if (!Array.isArray(arr)) return;
+        arr.forEach(function(h) {
+          var nseSym = symMap[h.s] || h.s;
+          var lp = livePrices[nseSym] || livePrices[h.s];
+          if (lp && typeof lp.p === "number" && lp.p > 0) {
+            var qty = parseInt(h.qty) || 0;
+            h.cmp  = lp.p;
+            h.chg  = lp.c || 0;
+            h.chgPct = lp.pct || 0;
+            h.val  = Math.round(lp.p * qty);
+            h.unreal = h.val - (parseInt(h.inv) || 0);
+          }
+        });
+      });
+    }
+    /* Force re-render by updating a counter */
+    setPriceVersion(function(v) { return v + 1; });
+    console.log("Live prices patched into holdings:", Object.keys(livePrices).length);
+  }, [livePrices]);
+
   const [tab,setTab]=React.useState("Overview");
+  const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
   const [bBankSubTab,setBBankSubTab]=React.useState("accounts");
   const [stockDetail,setStockDetail]=React.useState(null);
   React.useEffect(()=>{ window._openStockDetail = s => setStockDetail(s); return ()=>{ delete window._openStockDetail; }; },[]);
   React.useEffect(()=>{ window._setDashTab = setTab; return ()=>{ delete window._setDashTab; }; },[setTab]);
   const [sidebarOpen,setSidebarOpen]=React.useState(false);
+  /* Always dark mode */
   const DM = {
     bg:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",
     card:"linear-gradient(155deg,#11152c,#0d1122)",border:"#1d2545",text:"#e8eaf0",
@@ -4228,9 +4404,10 @@ function FamilyApp() {
         border:"1px solid #1c2440",borderRadius:18,boxShadow:"0 4px 32px #00000044, inset 0 1px 0 #ffffff08"}}>
         <div>
           <div style={{display:"flex",alignItems:"baseline",gap:12}}>
-              <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.03em",
+              <div onClick={()=>setTab("Overview")} style={{fontSize:22,fontWeight:800,letterSpacing:"-0.03em",
                 background:"linear-gradient(90deg,#e8eaf0 0%,#7eb8ff 55%,#a78bfa 100%)",
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+                cursor:"pointer"}} title="Go to Overview">
                 Shah Family Finance
               </div>
               <div style={{fontSize:10,color:"#46557a",fontFamily:"'JetBrains Mono',monospace",
@@ -4361,19 +4538,16 @@ function FamilyApp() {
           </div>
           {/* Primary Tabs + Sidebar Toggle */}
           <div style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:4,msOverflowStyle:"none",scrollbarWidth:"none"} } className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:4}}>
+            <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
+              style={{background:"none",border:"none",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
+                cursor:"pointer",padding:"5px 8px",borderRadius:7,fontSize:18,lineHeight:1,flexShrink:0}}>
+              {sidebarOpen?"✕":"☰"}
+            </button>
             {TABS.map(t=>(
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
             
-            <button onClick={()=>setSidebarOpen(s=>!s)} style={{
-              padding:"5px 12px",borderRadius:7,border:"1px solid #1d2545",
-              background:sidebarOpen?"#1e3a5f":"#0d1020",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
-              fontSize:11,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,flexShrink:0
-            }}>
-              <span>{sidebarOpen?"✕":"☰"}</span>
-              <span style={{fontSize:10}}>More</span>
-              <span style={{background:"#3a4a6a",color:"#c8d0e8",fontSize:8,padding:"1px 5px",borderRadius:4}}>{SIDEBAR_SECTIONS.reduce((s,sec)=>s+sec.tabs.length,0)}</span>
-            </button>
+            
           </div>
         </div>
       </div>
@@ -4421,8 +4595,8 @@ function FamilyApp() {
       {tab==="Overview"&&<div>
         <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
         {/* - LIVE INDICES TICKER - */}
+        <GlobalIndicesWidget/>
         <DailyDigest/>
-        <LiveIndicesWidget/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
           <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff"/>
@@ -4473,7 +4647,7 @@ function FamilyApp() {
                 const totalFamilyVal = topStocks2.reduce((s,h)=>s+h.val,0);
                 return topStocks2.map(h=>{
                   const pl=h.val-h.inv; const nseSym = (typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP[h.sym||h.s]:null)||(h.sym)||(h.s&&h.s.match(/^[A-Z0-9&-]{2,15}$/)?h.s:null);
-                  const liveCmp = nseSym&&livePrices[nseSym] ? livePrices[nseSym].p : null;
+                  const liveCmp = nseSym&&livePrices[nseSym] ? livePrices[nseSym] : null;
                   const effectiveCmp = liveCmp || h.cmp || 0;
                   const effectiveVal = effectiveCmp&&h.qty ? effectiveCmp*h.qty : h.val;
                   const pl2 = effectiveVal - h.inv;
@@ -5325,7 +5499,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Holdings"&&<AllHoldingsTab/>}
+      {tab==="Holdings"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
       {tab==="Tax"&&<TaxTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
@@ -5357,7 +5531,7 @@ function FamilyApp() {
       {tab==="Watchlist"&&<WatchlistTab/>}
       {tab==="Profiles"&&<ProfilesTab/>}
        {tab==="Funds"&&<MutualFundsTab/>}
-       {tab==="P&L"&&<PLTab/>}
+       {tab==="P&L"&&<PLTab plCol={plCol} setPlCol={setPlCol} plDir={plDir} setPlDir={setPlDir} plView={plView} setPlView={setPlView} plFilter={plFilter} setPlFilter={setPlFilter}/>}
        
        {tab==="MTF"&&<MTFTab/>}
        {tab==="Advisors"&&<AdvisorTrackerTab/>}
@@ -5859,7 +6033,7 @@ const MEMBERS = [
    cas:"Asha Shah",   broker:"JD0A46",icici:null,holdingsRef:"A46",
    custodian:["Sushil Financial (JD0A46)","IIFL Capital"],casApr26:50266763,
    casTrend:[{m:"May'25",v:48000000},{m:"Oct'25",v:50000000},{m:"Apr'26",v:50266763}]},
-  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146804,   bank:53715,
+  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146804,   bank:2000000,
    cas:"Jash Shah",   broker:null,icici:null,holdingsRef:"JASH",
    custodian:["Zerodha","ICICI NSDL"],casApr26:31240646,
    casTrend:[{m:"May'25",v:28000000},{m:"Oct'25",v:30000000},{m:"Apr'26",v:31240646}]},
@@ -5900,9 +6074,6 @@ const MEMBERS = [
   html: m.n,
 }));
 
-
-
-var FAMILY_EQ_TOTAL_MKT  = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.val||0);}, 0);
 
 const totalBank  = BANK.reduce((s,r)=>s+r.b, 0);
 
@@ -5981,7 +6152,7 @@ const CHETAN_HUF_SUSHIL_HOLDINGS = [
   {s:"Ambuja Cements",qty:200,avg:615.60,cmp:417.55,val:83510,inv:123120,unreal:-39610,sector:"CEM"},
   {s:"Astra Microwave",qty:100,avg:1073.60,cmp:1419.50,val:141950,inv:107360,unreal:34590,sector:"TELE"},
   {s:"Atul",qty:580,avg:188.86,cmp:6678.50,val:3873530,inv:109539,unreal:3763991,sector:"DYPG"},
-  {s:"Bajaj Housing Fin",qty:214,avg:70.00,cmp:84.14,val:18006,inv:14980,unreal:3026,sector:"BFSI"},
+  {s:"Bajaj Housing",qty:214,avg:70.00,cmp:84.14,val:18006,inv:14980,unreal:3026,sector:"BFSI"},
   {s:"Bank of Baroda",qty:3000,avg:104.86,cmp:263.70,val:791100,inv:314580,unreal:476520,sector:"BFSI"},
   {s:"Bharat Dynamics",qty:1800,avg:1112.19,cmp:1207.40,val:2173320,inv:2001942,unreal:171378,sector:"ENGG"},
   {s:"BHEL",qty:6350,avg:51.93,cmp:386.95,val:2457133,inv:329756,unreal:2127377,sector:"POWR"},
@@ -6035,7 +6206,7 @@ const VASUMATI_SUSHIL_HOLDINGS = [
   {s:"360 ONE",qty:70,avg:635.99,cmp:1073.90,val:75173,inv:44519,unreal:30654,sector:"BFSI"},
   {s:"Aadhar Hsg. Fin.",qty:47,avg:315.00,cmp:468.15,val:22003,inv:14805,unreal:7198,sector:"BFSI"},
   {s:"Aditya Birla RE",qty:300,avg:801.28,cmp:1237.80,val:371340,inv:240384,unreal:130956,sector:"CONS"},
-  {s:"Bajaj Housing Fin",qty:214,avg:70.00,cmp:84.14,val:18006,inv:14980,unreal:3026,sector:"BFSI"},
+  {s:"Bajaj Housing",qty:214,avg:70.00,cmp:84.14,val:18006,inv:14980,unreal:3026,sector:"BFSI"},
   {s:"Bayer Crop Sci.",qty:504,avg:44998.31,cmp:4350.10,val:2192450,inv:2519148,unreal:-326698,sector:"AGCH"},
   {s:"Bombay Dyeing",qty:1000,avg:150.61,cmp:122.95,val:122950,inv:150610,unreal:-27660,sector:"TEXT"},
   {s:"Capacit'e Infra.",qty:280,avg:303.06,cmp:222.09,val:62185,inv:84857,unreal:-22672,sector:"CONS"},
@@ -6545,14 +6716,14 @@ const CT5294_PNL = [
   {s:"ADANIENSOL",qty:1285,bv:1146808.1,sv:1151360.0,pl:4551.9,pp:0.3969},
   {s:"ADANIENT",qty:53,bv:99051.0,sv:101225.0,pl:2174.0,pp:2.1948},
   {s:"ADANIPORTS",qty:1225,bv:1566099.45,sv:1572319.25,pl:6219.8,pp:0.3972},
-  {s:"ADANIPOWER",qty:5400,bv:1186620.8,sv:1199802.5,pl:13181.7,pp:1.1109},
+  {s:"Adani Power",qty:5400,bv:1186620.8,sv:1199802.5,pl:13181.7,pp:1.1109},
   {s:"AFFLE",qty:20,bv:23865.9,sv:27000.0,pl:3134.1,pp:13.1321},
-  {s:"AJMERA",qty:11865,bv:13112197.5,sv:13274200.35,pl:162002.85,pp:1.2355},
+  {s:"Ajmera Realty",qty:11865,bv:13112197.5,sv:13274200.35,pl:162002.85,pp:1.2355},
   {s:"Alicon Cast.",qty:3871,bv:3478155.8,sv:3567030.8,pl:88875.0,pp:2.5552},
   {s:"Allcargo Gati",qty:40,bv:5115.75,sv:5210.0,pl:94.25,pp:1.8423},
   {s:"Ambuja Cements",qty:7757,bv:3975844.5,sv:4161156.3,pl:185311.8,pp:4.6609},
   {s:"APOLLOHOSP",qty:19,bv:41161.0,sv:43535.0,pl:2374.0,pp:5.7676},
-  {s:"APOLLOTYRE",qty:20,bv:3520.0,sv:3840.0,pl:320.0,pp:9.0909},
+  {s:"Apollo Tyres",qty:20,bv:3520.0,sv:3840.0,pl:320.0,pp:9.0909},
   {s:"ARE&M",qty:30,bv:22629.0,sv:16775.3,pl:-5853.7,pp:-25.8681},
   {s:"ARMANFIN",qty:12914,bv:16959017.7,sv:16974435.8,pl:15418.1,pp:0.0909},
   {s:"ARVINDFASN",qty:30,bv:4500.0,sv:5287.35,pl:787.35,pp:17.4967},
@@ -6581,7 +6752,7 @@ const CT5294_PNL = [
   {s:"BHEL",qty:605,bv:34382.0,sv:31613.0,pl:-2769.0,pp:-8.0536},
   {s:"Bikaji Foods",qty:50,bv:15000.0,sv:16500.0,pl:1500.0,pp:10.0},
   {s:"BIRLANU",qty:4,bv:18237.35,sv:11045.3,pl:-7192.05,pp:-39.4358},
-  {s:"BLUEDART",qty:21,bv:95119.5,sv:97739.15,pl:2619.65,pp:2.7541},
+  {s:"Blue Dart Expres",qty:21,bv:95119.5,sv:97739.15,pl:2619.65,pp:2.7541},
   {s:"BOROLTD",qty:15,bv:3347.25,sv:3360.0,pl:12.75,pp:0.3809},
   {s:"Bosch",qty:7,bv:18657.65,sv:19226.0,pl:568.35,pp:3.0462},
   {s:"BPCL",qty:40,bv:17591.0,sv:18340.0,pl:749.0,pp:4.2579},
@@ -6589,7 +6760,7 @@ const CT5294_PNL = [
   {s:"BSE",qty:2795,bv:7040746.2,sv:7099863.9,pl:59117.7,pp:0.8397},
   {s:"BUTTERFLY",qty:15,bv:12685.0,sv:15225.0,pl:2540.0,pp:20.0236},
   {s:"Canara Bank",qty:180,bv:34605.0,sv:35458.0,pl:853.0,pp:2.465},
-  {s:"CANFINHOME",qty:20,bv:12791.6,sv:12810.0,pl:18.4,pp:0.1438},
+  {s:"Can Fin Homes",qty:20,bv:12791.6,sv:12810.0,pl:18.4,pp:0.1438},
   {s:"CARERATING",qty:31,bv:13854.0,sv:14198.0,pl:344.0,pp:2.483},
   {s:"CASTROLIND",qty:90,bv:10300.0,sv:11322.0,pl:1022.0,pp:9.9223},
   {s:"CDSL",qty:1265,bv:1927786.9,sv:1982168.65,pl:54381.75,pp:2.8209},
@@ -6604,11 +6775,11 @@ const CT5294_PNL = [
   {s:"CREDITACC",qty:30,bv:20231.75,sv:20845.0,pl:613.25,pp:3.0311},
   {s:"CYIENT",qty:10,bv:11599.0,sv:14500.0,pl:2901.0,pp:25.0108},
   {s:"Dabur India",qty:20,bv:12001.5,sv:12400.0,pl:398.5,pp:3.3204},
-  {s:"DCBBANK",qty:29116,bv:4008517.15,sv:4061674.42,pl:53157.27,pp:1.3261},
+  {s:"DCB Bank",qty:29116,bv:4008517.15,sv:4061674.42,pl:53157.27,pp:1.3261},
   {s:"DCMSHRIRAM",qty:17,bv:12130.45,sv:16197.7,pl:4067.25,pp:33.5293},
   {s:"DECCANCE",qty:19,bv:5204.0,sv:5776.0,pl:572.0,pp:10.9915},
   {s:"Deepak Nitrite",qty:123,bv:176231.25,sv:179107.85,pl:2876.6,pp:1.6323},
-  {s:"DHANBANK",qty:600,bv:10685.0,sv:7207.84,pl:-3477.16,pp:-32.5424},
+  {s:"Bandhan Bank",qty:600,bv:10685.0,sv:7207.84,pl:-3477.16,pp:-32.5424},
   {s:"DHANUKA",qty:20,bv:14130.0,sv:14160.0,pl:30.0,pp:0.2123},
   {s:"DICIND",qty:5,bv:1976.95,sv:1985.0,pl:8.05,pp:0.4072},
   {s:"DIXON",qty:8,bv:33552.15,sv:38648.55,pl:5096.4,pp:15.1895},
@@ -6644,7 +6815,7 @@ const CT5294_PNL = [
   {s:"Greaves Cotton",qty:380,bv:52199.45,sv:54189.0,pl:1989.55,pp:3.8114},
   {s:"GREENPANEL",qty:140,bv:39034.0,sv:46249.55,pl:7215.55,pp:18.4853},
   {s:"GSCLCEMENT6",qty:2,bv:105.0,sv:106.0,pl:1.0,pp:0.9524},
-  {s:"GTLINFRA",qty:2100,bv:4327.0,sv:4641.0,pl:314.0,pp:7.2568},
+  {s:"GTL Infra.",qty:2100,bv:4327.0,sv:4641.0,pl:314.0,pp:7.2568},
   {s:"GUJALKALI",qty:15,bv:6532.25,sv:6630.0,pl:97.75,pp:1.4964},
   {s:"HAL",qty:90,bv:146150.0,sv:151930.0,pl:5780.0,pp:3.9548},
   {s:"HBLENGINE",qty:1000,bv:676240.75,sv:678000.0,pl:1759.25,pp:0.2602},
@@ -6664,7 +6835,7 @@ const CT5294_PNL = [
   {s:"IDEA",qty:16874,bv:185614.0,sv:220205.7,pl:34591.7,pp:18.6364},
   {s:"IDFC First Bank",qty:275,bv:12307.5,sv:13392.5,pl:1085.0,pp:8.8158},
   {s:"Indian Energy Exchange",qty:5390,bv:1044763.1,sv:1030498.2,pl:-14264.9,pp:-1.3654},
-  {s:"IFBIND",qty:35,bv:19570.0,sv:22750.0,pl:3180.0,pp:16.2494},
+  {s:"IFB Industries",qty:35,bv:19570.0,sv:22750.0,pl:3180.0,pp:16.2494},
   {s:"IGARASHI",qty:27,bv:8025.0,sv:9086.7,pl:1061.7,pp:13.2299},
   {s:"IGL",qty:30,bv:12080.0,sv:12510.0,pl:430.0,pp:3.5596},
   {s:"IIFL",qty:1446,bv:465999.25,sv:487230.0,pl:21230.75,pp:4.556},
@@ -7257,12 +7428,12 @@ const INCRED_HOLDINGS = [
 const ASHA_SUSHIL_HOLDINGS = [
   {s:"360 ONE",qty:170,avg:534.85,cmp:1073.90,val:182563,inv:90925,unreal:91638,sector:"BFSI"},
   {s:"Aegis Logistics",qty:900,avg:789.21,cmp:770.40,val:693360,inv:710289,unreal:-16929,sector:"TRAD"},
-  {s:"AJMERA",qty:9000,avg:211.55,cmp:121.67,val:1095030,inv:1903950,unreal:-808920,sector:"CONS"},
+  {s:"Ajmera Realty",qty:9000,avg:211.55,cmp:121.67,val:1095030,inv:1903950,unreal:-808920,sector:"CONS"},
   {s:"Angel One",qty:2000,avg:290.86,cmp:332.60,val:665200,inv:581720,unreal:83480,sector:"BFSI"},
   {s:"Astra Microwave",qty:1750,avg:364.97,cmp:1419.50,val:2484125,inv:638698,unreal:1845428,sector:"TELE"},
   {s:"Astrazeneca Pharma",qty:54,avg:6785.96,cmp:8600.00,val:464400,inv:366442,unreal:97958,sector:"PHRM"},
   {s:"Automotive Axles",qty:100,avg:2161.77,cmp:1726.70,val:172670,inv:216177,unreal:-43507,sector:"AUTO"},
-  {s:"Bajaj Housing Fin",qty:214,avg:70.00,cmp:84.14,val:18006,inv:14980,unreal:3026,sector:"BFSI"},
+  {s:"Bajaj Housing",qty:214,avg:70.00,cmp:84.14,val:18006,inv:14980,unreal:3026,sector:"BFSI"},
   {s:"BSE",qty:45,avg:1028.01,cmp:3880.00,val:174600,inv:46260,unreal:128340,sector:"BFSI"},
   {s:"Cantabil Retail",qty:1800,avg:271.81,cmp:219.65,val:395370,inv:489258,unreal:-93888,sector:"TEXT"},
   {s:"CDSL",qty:1000,avg:849.86,cmp:1217.50,val:1217500,inv:849860,unreal:367640,sector:"BFSI"},
@@ -7321,7 +7492,7 @@ const ASHA_SUSHIL_HOLDINGS = [
 
 const KARI_HOLDINGS = [
   {s:"ACUTAAS",   qty:274, avg:620.54,cmp:3316.00,val:908584, inv:170027, pl:738557,  ltp:3316.00},
-  {s:"AJMERA",    qty:750, avg:226.00, cmp:121.20, val:90900,  inv:169500, pl:-78600,  ltp:121.20},
+  {s:"Ajmera Realty",    qty:750, avg:226.00, cmp:121.20, val:90900,  inv:169500, pl:-78600,  ltp:121.20},
   {s:"Ambuja Cements", qty:1101,avg:381.14, cmp:417.55, val:459723, inv:419630, pl:40093,   ltp:417.55},
   {s:"BCLIND",    qty:100, avg:51.95,  cmp:33.35,  val:3335,   inv:5195,   pl:-1860,   ltp:33.35},
   {s:"Bharat Forge",qty:19,  avg:996.65, cmp:1930.45,val:36679,  inv:18936,  pl:17742,   ltp:1930.45},
@@ -7356,7 +7527,7 @@ const PRAFUL_HUF_SUSHIL_P71 = [
   {s:"Ceigall India",qty:37,cmp:375.05,val:13877,avg:0,inv:0,unreal:0},
   {s:"Danlaw Tech.",qty:352,cmp:941.85,val:331531,avg:0,inv:0,unreal:0},
   {s:"DCX Systems",qty:7400,cmp:184.26,val:1363524,avg:0,inv:0,unreal:0},
-  {s:"Divi's Lab",qty:324,cmp:6638.0,val:2150712,avg:0,inv:0,unreal:0},
+  {s:"Divis Laboratories",qty:324,cmp:6638.0,val:2150712,avg:0,inv:0,unreal:0},
   {s:"GAIL India",qty:622,cmp:170.5,val:106051,avg:0,inv:0,unreal:0},
   {s:"GEE Ltd",qty:4086,cmp:82.99,val:339097,avg:0,inv:0,unreal:0},
   {s:"Genesys International",qty:1303,cmp:317.7,val:413963,avg:0,inv:0,unreal:0},
@@ -7391,90 +7562,11 @@ const PRAFUL_HUF_SUSHIL_P71 = [
   {s:"Yes Bank",qty:1000,cmp:23.02,val:23020,avg:0,inv:0,unreal:0},
 ];
 
+
 /* ── FAMILY_TOP — combined family equity holdings (derived from MEMBER_HOLDINGS) ── */
-/* ── Aarya Shah — Sushil Financial (uploaded Jun 2026) ── */
-const AARYA_SUSHIL_HOLDINGS = [
-  {s:"ABBPOW",qty:3,avg:34072.72,cmp:34730,inv:102218,val:104190,sector:"Engineering"},
-  {s:"Inox Wind",qty:968,avg:150.56,cmp:91,inv:145742,val:88088,sector:"Energy"},
-  {s:"MTAR Technologies",qty:9,avg:7342.41,cmp:7730,inv:66082,val:69570,sector:"Defence"},
-  {s:"Yasho Industries",qty:4,avg:2492.60,cmp:2746.80,inv:9970,val:10987,sector:"Chemicals"},
-  {s:"Gujarat Pipavav Port",qty:180,avg:158.96,cmp:154.50,inv:28613,val:27810,sector:"Logistics"},
-  {s:"Nelco",qty:200,avg:953.17,cmp:727.65,inv:190634,val:145530,sector:""},
-];
-
-/* ── Riya Shah — NSDL Demat (uploaded Jun 2026) ── */
-const RIYA_NSDL_HOLDINGS = [
-  {s:"Hitachi Energy India",qty:10,avg:34730,cmp:34730,inv:347300,val:347300,sector:"Engineering"},
-  {s:"Ajmera Realty",qty:1255,avg:0,cmp:140.09,inv:0,val:175813,sector:"Real Estate"},
-  {s:"Bajaj Housing",qty:100,avg:0,cmp:85.50,inv:0,val:8550,sector:"Financial Services"},
-  {s:"BSE",qty:279,avg:0,cmp:4139.40,inv:0,val:1154893,sector:"BFSI"},
-  {s:"Aditya Birla RE",qty:57,avg:0,cmp:1311.10,inv:0,val:74733,sector:"Real Estate"},
-  {s:"Cummins India",qty:50,avg:0,cmp:5722.50,inv:0,val:286125,sector:"Engineering"},
-  {s:"Genesys International",qty:133,avg:0,cmp:321.05,inv:0,val:42700,sector:"Software"},
-  {s:"Greaves Cotton",qty:50,avg:0,cmp:191.70,inv:0,val:9585,sector:"Engineering"},
-  {s:"Gujarat Fluorochem",qty:29,avg:0,cmp:3660,inv:0,val:106140,sector:"Chemicals"},
-  {s:"HDFC Bank",qty:100,avg:0,cmp:786,inv:0,val:78600,sector:"BFSI"},
-  {s:"Jagatjit Industries",qty:100,avg:0,cmp:137.95,inv:0,val:13795,sector:"FMCG"},
-  {s:"Just Dial",qty:50,avg:0,cmp:543.90,inv:0,val:27195,sector:"Software"},
-  {s:"Mahanagar Gas",qty:80,avg:0,cmp:1184.10,inv:0,val:94728,sector:"Energy"},
-  {s:"Natco Pharma",qty:200,avg:0,cmp:853.20,inv:0,val:170640,sector:"Pharma"},
-  {s:"Nelco",qty:133,avg:0,cmp:726.35,inv:0,val:96605,sector:""},
-  {s:"Northern Arc Capital",qty:100,avg:0,cmp:298.70,inv:0,val:29870,sector:"Financial Services"},
-  {s:"Smartlink Holdings",qty:929,avg:0,cmp:168,inv:0,val:156072,sector:"Telecom"},
-  {s:"State Bank of India",qty:300,avg:0,cmp:1012.10,inv:0,val:303630,sector:"BFSI"},
-];
-
-/* ── Riya Shah — Zerodha WF3563 (uploaded Jun 2026) ── */
-const RIYA_ZERODHA_HOLDINGS = [
-  {s:"Bajaj Housing",qty:364,avg:114.69,cmp:86.71,inv:41747,val:31562,sector:"Financial Services"},
-  {s:"BSE",qty:50,avg:0,cmp:4126,inv:0,val:206300,sector:"BFSI"},
-  {s:"CDSL",qty:200,avg:1423.72,cmp:1265.70,inv:284744,val:253140,sector:"Financial Services"},
-  {s:"Control Print",qty:40,avg:836.75,cmp:617.40,inv:33470,val:24696,sector:"Software"},
-  {s:"DB Realty",qty:25,avg:181.27,cmp:114.96,inv:4532,val:2874,sector:"Real Estate"},
-  {s:"Expleo Solutions",qty:30,avg:1230,cmp:803.65,inv:36900,val:24110,sector:"Software"},
-  {s:"GOCL Corp",qty:57,avg:469.88,cmp:404.75,inv:26783,val:23071,sector:"Chemicals"},
-  {s:"IDFC First Bank",qty:489,avg:85.66,cmp:78.34,inv:41888,val:38308,sector:"BFSI"},
-  {s:"Kewal Kiran Clothing",qty:36,avg:486.15,cmp:461.30,inv:17501,val:16607,sector:"Textiles"},
-  {s:"Natco Pharma",qty:100,avg:844.80,cmp:847.60,inv:84480,val:84760,sector:"Pharma"},
-  {s:"Protean eGov Tech",qty:10,avg:1143.20,cmp:623.45,inv:11432,val:6234,sector:"Software"},
-  {s:"State Bank of India",qty:80,avg:767.28,cmp:1020.85,inv:61382,val:81668,sector:"BFSI"},
-  {s:"Tata Power",qty:50,avg:260,cmp:404.10,inv:13000,val:20205,sector:"Energy"},
-  {s:"TMCV",qty:60,avg:579.57,cmp:406.60,inv:34774,val:24396,sector:"Auto"},
-];
-
-/* ── Honey Chetan Shah — Zerodha VE7649 (uploaded Jun 2026) ── */
-const HONEY_ZERODHA_HOLDINGS = [
-  {s:"Abbott India",qty:1,avg:14975,cmp:26268,inv:14975,val:26268,sector:"Pharma"},
-  {s:"Aditya Birla RE",qty:240,avg:962.48,cmp:1240,inv:230995,val:297600,sector:"Real Estate"},
-  {s:"Bayer CropScience",qty:28,avg:5085.36,cmp:4294.80,inv:142390,val:120254,sector:"Chemicals"},
-  {s:"Cochin Shipyard",qty:40,avg:1690,cmp:1412.50,inv:67600,val:56500,sector:"Defence"},
-  {s:"Dredging Corpn.",qty:150,avg:1106,cmp:1099.70,inv:165900,val:164955,sector:"Logistics"},
-  {s:"ENRIN",qty:30,avg:561.76,cmp:3554.90,inv:16853,val:106647,sector:"Engineering"},
-  {s:"Gujarat Fluorochem",qty:25,avg:2888.90,cmp:3689.30,inv:72222,val:92232,sector:"Chemicals"},
-  {s:"Genesys International",qty:759,avg:561.47,cmp:315.30,inv:426156,val:239313,sector:"Software"},
-  {s:"Honeywell Automation",qty:1,avg:35500,cmp:35950,inv:35500,val:35950,sector:"Consumer Durables"},
-  {s:"Inox Wind",qty:379,avg:163.86,cmp:89.87,inv:62103,val:34061,sector:"Energy"},
-  {s:"JM Financial",qty:500,avg:94.73,cmp:123.58,inv:47365,val:61790,sector:"Financial Services"},
-  {s:"Linde India",qty:51,avg:7933.17,cmp:6940,inv:404592,val:353940,sector:"Energy"},
-  {s:"Lloyds Engineering",qty:200,avg:73,cmp:71.36,inv:14600,val:14272,sector:"Engineering"},
-  {s:"Microland",qty:1500,avg:121.73,cmp:26.66,inv:182595,val:39990,sector:"Software"},
-  {s:"MTAR Technologies",qty:21,avg:7650,cmp:7356.50,inv:160650,val:154486,sector:"Defence"},
-  {s:"Natco Pharma",qty:50,avg:1035,cmp:847.60,inv:51750,val:42380,sector:"Pharma"},
-  {s:"Sammaan Capital",qty:175,avg:145.97,cmp:180.75,inv:25545,val:31631,sector:"Financial Services"},
-  {s:"State Bank of India",qty:250,avg:756.16,cmp:1020.85,inv:189040,val:255212,sector:"BFSI"},
-  {s:"Siemens",qty:30,avg:1796.58,cmp:3603.95,inv:53897,val:108118,sector:"Engineering"},
-  {s:"Vindhya Telelinks",qty:15,avg:2148,cmp:2198.40,inv:32220,val:32976,sector:"Telecom"},
-  {s:"Wockhardt",qty:37,avg:2004.25,cmp:1907.70,inv:74157,val:70585,sector:"Pharma"},
-];
-
-
-var FAMILY_TOP = (function() {
+const FAMILY_TOP = (function() {
   var all = [];
   var sources = [
-    {arr: typeof AARYA_SUSHIL_HOLDINGS!=="undefined"?AARYA_SUSHIL_HOLDINGS:[], m:"Aarya Shah",      c:"Sushil Financial"},
-    {arr: typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],     m:"Riya Shah",       c:"NSDL"},
-    {arr: typeof RIYA_ZERODHA_HOLDINGS!=="undefined"?RIYA_ZERODHA_HOLDINGS:[],m:"Riya Shah",       c:"Zerodha"},
-    {arr: typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[],m:"Honey Chetan Shah",c:"Zerodha"},
     {arr: typeof VASUMATI_SUSHIL_HOLDINGS!=="undefined"?VASUMATI_SUSHIL_HOLDINGS:[], m:"Vasumati Shah",    c:"Sushil Financial"},
     {arr: typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[], m:"Vasumati Shah",    c:"ICICI Direct"},
     {arr: typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[], m:"Vasumati Shah", c:"Zerodha"},
@@ -7500,7 +7592,10 @@ var FAMILY_TOP = (function() {
   });
   return all;
 })();
-var FAMILY_EQ_TOTAL_COST = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.inv||0);}, 0);
+
+const FAMILY_EQ_TOTAL_COST = FAMILY_TOP.reduce((s,h)=>s+h.inv, 0);
+
+const FAMILY_EQ_TOTAL_MKT  = FAMILY_TOP.reduce((s,h)=>s+h.val, 0);
 
 
 const MEMBER_HOLDINGS = {
@@ -10199,7 +10294,7 @@ const P71_DIVIDENDS = {
   {s:"NOCIL",amt:34000},
   {s:"Heritage Foods",amt:29658},
   {s:"Sterlite Tech",amt:26700},
-  {s:"Divi's Lab",amt:23160},
+  {s:"Divis Laboratories",amt:23160},
   {s:"Deepak Nitrite",amt:22500},
   {s:"GAIL India",amt:19049},
   {s:"D-Link India",amt:17566},
@@ -10329,6 +10424,7 @@ const P71_TAX = {
 };
 
 /* Praful Shah HUF (JD0P71) Holdings — 40 positions Jun-2026 */
+
 
 
 
@@ -12280,6 +12376,12 @@ function PortfolioDetailTab() {
 function InCredTab() {
   const [view, setView] = React.useState("holdings");
   const [sortCol, setSortCol] = React.useState("sym");
+  /* Live price lookup — uses Cloudflare worker prices when available */
+  const getLivePrice = React.useCallback(function(stockName) {
+    if (!livePrices || !livePrices[stockName]) return null;
+    return livePrices[stockName].p;
+  }, [livePrices]);
+  const liveCount = livePrices ? Object.keys(livePrices).length : 0;
   const [sortDir, setSortDir] = React.useState(1);
 
   const fC = (n) => {
@@ -12786,7 +12888,7 @@ function KarishmaTab() {
    Consolidates every member's equity holdings into one sortable, filterable table.
    Each row shows stock, member, custodian, qty, avg, CMP, value, P&L, P&L%.
    - */
-function AllHoldingsTab() {
+function AllHoldingsTab({livePrices, priceStatus}) {
   const [sortCol, setSortCol] = React.useState("sym");
   const [sortDir, setSortDir] = React.useState(1);
   const [filterMember, setFilterMember] = React.useState("All");
@@ -12794,7 +12896,29 @@ function AllHoldingsTab() {
   const [filterStock, setFilterStock] = React.useState("");
   const [groupBy, setGroupBy] = React.useState("stock"); // none | stock | member | custodian
   const [expandedStock, setExpandedStock] = React.useState(null);
-  const [holView, setHolView] = React.useState("holdings"); /* holdings | live | sector */
+  const [holView, setHolView] = React.useState("holdings");
+  const [colWidths, setColWidths] = React.useState({stock:220,qty:80,avg:90,cmp:90,val:110,pl:110,pct:80,mem:110,cust:110});
+  const resizing = React.useRef(null);
+
+  const startResize = React.useCallback(function(col, e) {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = colWidths[col];
+    resizing.current = col;
+    const onMove = function(e2) {
+      const delta = e2.clientX - startX;
+      setColWidths(function(prev) {
+        return {...prev, [col]: Math.max(50, startW + delta)};
+      });
+    };
+    const onUp = function() {
+      resizing.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [colWidths]); /* holdings | live | sector */
 
   const fC = (n) => {
     if(!n && n!==0) return "—";
@@ -13032,15 +13156,25 @@ function AllHoldingsTab() {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
-                  {[["sym","Stock",false],["totalQty","Total Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
-                    <th key={col} onClick={()=>{if(sortCol===col)setSortDir(d=>d*-1);else{setSortCol(col);setSortDir(col==="sym"?1:-1);}}}
-                      style={{padding:"6px 10px",textAlign:r?"right":"left",color:sortCol===col?"#7eb8ff":"#3a4a6a",
-                        fontWeight:700,fontSize:9,borderBottom:"1px solid #1e2540",cursor:"pointer",
-                        textTransform:"uppercase",whiteSpace:"nowrap",userSelect:"none"}}>
-                      {label}{sortCol===col?(sortDir<0?" ↓":" ↑"):" ⇅"}
+                  {[["sym","Stock",false],["totalQty","Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
+                    <th key={col} style={{padding:"6px 8px",textAlign:r?"right":"left",
+                      color:sortCol===col?"#7eb8ff":"#3a4a6a",fontWeight:700,fontSize:9,
+                      borderBottom:"1px solid #1e2540",textTransform:"uppercase",
+                      whiteSpace:"nowrap",userSelect:"none",position:"relative",
+                      width:colWidths[col]||"auto",minWidth:50}}>
+                      <span onClick={()=>{if(sortCol===col)setSortDir(d=>d*-1);else{setSortCol(col);setSortDir(col==="sym"?1:-1);}}} style={{cursor:"pointer"}}>
+                        {label}{sortCol===col?(sortDir<0?" ↓":" ↑"):" ⇅"}
+                      </span>
+                      {/* Resize handle */}
+                      <span onMouseDown={function(e){startResize(col,e);}}
+                        style={{position:"absolute",right:0,top:0,bottom:0,width:6,cursor:"col-resize",
+                          background:"transparent",borderRight:"2px solid #1d2545",opacity:0,
+                          transition:"opacity 0.15s"}}
+                        onMouseEnter={function(e){e.target.style.opacity=1;}}
+                        onMouseLeave={function(e){e.target.style.opacity=0;}}/>
                     </th>
                   ))}
-                  <th style={{padding:"6px 10px",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1e2540",textTransform:"uppercase"}}>Holders</th>
+                  <th style={{padding:"6px 8px",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1e2540",textTransform:"uppercase",minWidth:80}}>Holders</th>
                 </tr>
               </thead>
               <tbody>
@@ -13098,7 +13232,10 @@ function AllHoldingsTab() {
                     </tr>,
                     isOpen && (
                       <tr key={g.sym+"_detail"}>
-                        <td colSpan={8} style={{padding:0,background:"#0a0d1c",borderBottom:"1px solid #1e2540"}}>
+                        <td colSpan={9} style={{padding:0,background:"#060912",
+                          borderBottom:"3px solid #6366f133",borderTop:"none",
+                          boxShadow:"inset 0 2px 8px #00000044"}}>
+                          <div style={{padding:"2px 0 4px 0",borderLeft:"3px solid #6366f1"}}>
                           <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                             <thead>
                               <tr style={{background:"#060809"}}>
@@ -13144,6 +13281,7 @@ function AllHoldingsTab() {
                               })}
                             </tbody>
                           </table>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -13278,29 +13416,156 @@ function AllHoldingsTab() {
    - */
 /* ═══════════════════════════════════════════════ TAX P/L TAB (REBUILD) */
 function TaxTab() {
-  const [taxView,setTaxView]=React.useState("pnl");
-  const [txView, setTxView] = React.useState("overview");
-  const cr  = v => { if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const pct = v => v==null?"--":(v>=0?"+":"")+v.toFixed(1)+"%";
-  const tax = typeof R75_TAX!=="undefined"?R75_TAX:{total_st:0,total_lt:0,total_spec:0,fy:{},top_st:[],top_lt:[],losses:[]};
-  const fyData = Object.entries(tax.fy||{}).sort((a,b)=>a[0].localeCompare(b[0]));
-  const maxFY = Math.max(...fyData.map(([,v])=>v.st+v.lt+v.spec),1);
-  const ltcgRate=0.125, stcgRate=0.20, specRate=0.30;
-  const estTaxLT = tax.total_lt>125000?(tax.total_lt-125000)*ltcgRate:0;
-  const estTaxST = tax.total_st*stcgRate;
-  const estTaxSp = tax.total_spec*specRate;
+  const [taxView,setTaxView] = React.useState("summary");
+  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+
+  /* ── Collect tax data from all accounts ── */
+  const ACCOUNTS = [
+    {name:"Rasiklal HUF", key:"R75",  data:typeof R75_TAX!=="undefined"?R75_TAX:null},
+    {name:"Vasumati",     key:"V129", data:typeof V129_TAX!=="undefined"?V129_TAX:null},
+    {name:"Asha Shah",    key:"A46",  data:typeof A46_TAX!=="undefined"?A46_TAX:null},
+    {name:"Chetan HUF",   key:"C31",  data:null}, /* C31_TAX not yet uploaded */
+    {name:"Praful HUF",   key:"P71",  data:typeof P71_TAX!=="undefined"?P71_TAX:null},
+    {name:"Maya Shah",    key:"M34",  data:typeof M34_TAX!=="undefined"?M34_TAX:null},
+  ].filter(a=>a.data);
+
+  const totalSTCG = ACCOUNTS.reduce((s,a)=>s+(a.data.stcg||a.data.total_st||0),0);
+  const totalLTCG = ACCOUNTS.reduce((s,a)=>s+(a.data.ltcg||a.data.total_lt||0),0);
+  const LTCG_EXEMPT = 125000;
+  const taxableLTCG = Math.max(0, totalLTCG - LTCG_EXEMPT);
+  const estTaxLTCG = Math.round(taxableLTCG * 0.125);
+  const estTaxSTCG = Math.round(totalSTCG * 0.20);
+  const totalTax = estTaxLTCG + estTaxSTCG;
+
+  const VIEWS = [{k:"summary",l:"📊 Summary"},{k:"optimiser",l:"⚡ Optimiser"},{k:"accounts",l:"📋 By Account"}];
 
   return (
     <div style={{paddingBottom:24}}>
+      {/* Sub-nav */}
       <div style={{display:"flex",gap:6,marginBottom:14,borderBottom:"1px solid #1d2545",paddingBottom:10,flexWrap:"wrap"}}>
-        {[{k:"pnl",l:"📊 P&L Summary"},{k:"optimiser",l:"⚡ Tax Optimiser"},{k:"detail",l:"📋 Lot Detail"}].map(({k,l})=>(
-          <button key={k} onClick={()=>setTaxView(k)} style={{padding:"5px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,background:taxView===k?"#1e3a5f":"#080b18",color:taxView===k?"#7eb8ff":"#3a4a6a"}}>
+        {VIEWS.map(({k,l})=>(
+          <button key={k} onClick={()=>setTaxView(k)}
+            style={{padding:"6px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,
+              background:taxView===k?"#1e3a5f":"#080b18",color:taxView===k?"#7eb8ff":"#3a4a6a"}}>
             {l}
           </button>
         ))}
       </div>
+
+      {taxView==="summary"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {/* KPI tiles */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:9}}>
+            {[
+              {l:"Total STCG",v:cr(totalSTCG),c:"#f0b429",sub:"@ 20% tax"},
+              {l:"Total LTCG",v:cr(totalLTCG),c:"#7eb8ff",sub:"@ 12.5% above ₹1.25L"},
+              {l:"LTCG Exempt",v:cr(LTCG_EXEMPT),c:"#34d399",sub:"₹1.25L per year"},
+              {l:"Est. STCG Tax",v:cr(estTaxSTCG),c:"#f87171",sub:"@20%"},
+              {l:"Est. LTCG Tax",v:cr(estTaxLTCG),c:"#f87171",sub:"@12.5%"},
+              {l:"Total Tax Liability",v:cr(totalTax),c:"#ef4444",sub:"FY2025-26 estimate"},
+            ].map(({l,v,c,sub})=>(
+              <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderTop:"2px solid "+c,borderRadius:12,padding:"12px 14px"}}>
+                <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{l}</div>
+                <div style={{fontSize:16,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
+                <div style={{fontSize:9,color:"#2a3a50",marginTop:3}}>{sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Per-account breakdown */}
+          <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
+            <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
+              Tax by Account
+            </div>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <thead><tr style={{background:"#0a0e1e"}}>
+                {["Account","Lots","STCG","LTCG","Est. Tax","Taxable LTCG"].map(h=>(
+                  <th key={h} style={{padding:"7px 14px",textAlign:h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {ACCOUNTS.map((acct,i)=>{
+                  const stcg = acct.data.stcg||acct.data.total_st||0;
+                  const ltcg = acct.data.ltcg||acct.data.total_lt||0;
+                  const lots = acct.data.lots||(acct.data.detail||[]).length||0;
+                  const txblLT = Math.max(0,ltcg-LTCG_EXEMPT/ACCOUNTS.length);
+                  const tax = Math.round(stcg*0.20 + txblLT*0.125);
+                  return (
+                    <tr key={acct.key} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                      <td style={{padding:"9px 14px",fontWeight:600,color:"#c8d0e8"}}>{acct.name}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",color:"#3a4a6a",fontFamily:"monospace"}}>{lots}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#f0b429",fontWeight:600}}>{cr(stcg)}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{cr(ltcg)}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#f87171",fontWeight:700}}>{cr(tax)}</td>
+                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(txblLT)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot><tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
+                <td colSpan={2} style={{padding:"9px 14px",color:"#3a4a6a",fontWeight:700,fontSize:10}}>TOTAL</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#f0b429"}}>{cr(totalSTCG)}</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalLTCG)}</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#ef4444"}}>{cr(totalTax)}</td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(taxableLTCG)}</td>
+              </tr></tfoot>
+            </table>
+          </div>
+
+          {/* Note */}
+          <div style={{background:"#0a1218",border:"1px solid #1a2a38",borderRadius:8,padding:"10px 14px",fontSize:10,color:"#3a5a7a",lineHeight:1.6}}>
+            💡 LTCG exemption of ₹1.25L per year (Budget 2024). LTCG rate 12.5%, STCG rate 20%. C31 tax data not yet uploaded — add c31_TaxImplication.xls to complete the picture.
+          </div>
+        </div>
+      )}
+
       {taxView==="optimiser"&&<TaxOptimiserTab/>}
-      {taxView==="detail"&&<div style={{padding:"20px",color:"#3a4a6a",textAlign:"center"}}>Detailed tax lots — see Tax P&L in planning tab</div>}
+
+      {taxView==="accounts"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {ACCOUNTS.map(acct=>{
+            const detail = acct.data.detail||[];
+            const stcg = acct.data.stcg||acct.data.total_st||0;
+            const ltcg = acct.data.ltcg||acct.data.total_lt||0;
+            return (
+              <div key={acct.key} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{acct.name}</div>
+                  <div style={{display:"flex",gap:16}}>
+                    <span style={{fontSize:10,color:"#f0b429",fontFamily:"monospace"}}>STCG {cr(stcg)}</span>
+                    <span style={{fontSize:10,color:"#7eb8ff",fontFamily:"monospace"}}>LTCG {cr(ltcg)}</span>
+                    <span style={{fontSize:9,color:"#3a4a6a"}}>{detail.length} lots</span>
+                  </div>
+                </div>
+                {detail.length>0&&(
+                  <div style={{maxHeight:250,overflowY:"auto"}}>
+                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                      <thead><tr style={{background:"#0a0e1e",position:"sticky",top:0}}>
+                        {["Stock","Qty","Sale Date","Sale Val","Buy Val","STCG","LTCG"].map(h=>(
+                          <th key={h} style={{padding:"5px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
+                        ))}
+                      </tr></thead>
+                      <tbody>
+                        {detail.slice(0,50).map((t,i)=>(
+                          <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                            <td style={{padding:"5px 12px",color:"#c8d0e8",fontWeight:600}}>{t.s}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{t.qty}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",color:"#3a4a6a",fontSize:9}}>{t.sale_date}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff"}}>{cr(t.sale_val)}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#3a4a6a"}}>{cr(t.buy_val)}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#f0b429",fontWeight:600}}>{t.stcg>0?cr(t.stcg):"—"}</td>
+                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{t.ltcg>0?cr(t.ltcg):"—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -13595,65 +13860,58 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
 
 
 function LiveIndicesWidget() {
-  const [manual, setManual] = React.useState({
-    nifty:24650, sensex:81200, banknifty:53100, usdinr:84.20, gold:3300
-  });
-  const [editing, setEditing] = React.useState(false);
-  const [draft, setDraft] = React.useState({});
-
-  const fmt = (v, fx) => v==null?"—": fx ? v.toFixed(2) : Math.round(v).toLocaleString("en-IN");
+  const {indices, status, lastUpdate, refresh} = useLivePrices();
 
   const ITEMS = [
-    {l:"NIFTY 50",   k:"nifty",     fx:false},
-    {l:"SENSEX",     k:"sensex",    fx:false},
-    {l:"BANK NIFTY", k:"banknifty", fx:false},
-    {l:"USD/INR",    k:"usdinr",    fx:true},
-    {l:"GOLD $/oz",  k:"gold",      fx:true},
+    {l:"NIFTY 50",   k:"NIFTY50",   fx:false},
+    {l:"SENSEX",     k:"SENSEX",    fx:false},
+    {l:"BANK NIFTY", k:"BANKNIFTY", fx:false},
+    {l:"USD/INR",    k:"USDINR",    fx:true},
+    {l:"GOLD $/oz",  k:"GOLD",      fx:true},
   ];
 
-  const startEdit = () => { setDraft({...manual}); setEditing(true); };
-  const save = () => { setManual({...draft}); setEditing(false); };
+  const fmt = function(d, fx) {
+    if (!d || !d.p) return "—";
+    return fx ? d.p.toFixed(2) : Math.round(d.p).toLocaleString("en-IN");
+  };
 
   return (
     <div style={{background:"linear-gradient(135deg,#090c18,#0d1020)",border:"1px solid #1a2035",borderRadius:12,padding:"10px 14px",marginBottom:14}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-        <span style={{fontSize:9,fontWeight:700,color:"#2a3a5a",textTransform:"uppercase",letterSpacing:"0.1em"}}>Markets</span>
-        <div style={{display:"flex",gap:6}}>
-          <span style={{fontSize:7,color:"#2a3a50"}}>Manual · update daily</span>
-          {!editing
-            ? <button onClick={startEdit} style={{background:"none",border:"1px solid #1a2035",borderRadius:4,color:"#3a4a6a",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>✏ Edit</button>
-            : <button onClick={save} style={{background:"#1e3a5f",border:"none",borderRadius:4,color:"#7eb8ff",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>✓ Save</button>
-          }
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:9,fontWeight:700,color:"#2a3a5a",textTransform:"uppercase",letterSpacing:"0.1em"}}>Markets</span>
+          {status==="loading"&&<span style={{fontSize:9,color:"#3a5a7a"}}>⟳</span>}
+          {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#34d399",display:"inline-block",boxShadow:"0 0 4px #34d399"}}/>}
+          {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠ offline</span>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
+          <button onClick={refresh} disabled={status==="loading"}
+            style={{background:"none",border:"1px solid #1a2035",borderRadius:4,color:"#3a4a6a",fontSize:9,padding:"2px 8px",cursor:"pointer"}}>↻</button>
         </div>
       </div>
-
-      {!editing ? (
-        <div style={{display:"flex",gap:12,overflowX:"auto"}}>
-          {ITEMS.map(item=>(
-            <div key={item.k} style={{flexShrink:0,minWidth:82}}>
+      <div style={{display:"flex",gap:12,overflowX:"auto"}}>
+        {ITEMS.map(function(item) {
+          var d = indices[item.k];
+          var isUp = d && d.pct >= 0;
+          return (
+            <div key={item.l} style={{flexShrink:0,minWidth:82}}>
               <div style={{fontSize:8,color:"#2a3a5a",marginBottom:2}}>{item.l}</div>
-              <div style={{fontSize:13,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:"#c8d0e8"}}>
-                {fmt(manual[item.k], item.fx)}
+              <div style={{fontSize:13,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:d?(isUp?"#34d399":"#f87171"):"#1d2535"}}>
+                {fmt(d, item.fx)}
               </div>
+              {d&&d.pct!=null&&(
+                <div style={{fontSize:9,color:isUp?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                  {isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%
+                </div>
+              )}
+              {!d&&status!=="error"&&<div style={{fontSize:9,color:"#1d2535"}}>—</div>}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
-          {ITEMS.map(item=>(
-            <div key={item.k}>
-              <div style={{fontSize:7,color:"#2a3a5a",marginBottom:2}}>{item.l}</div>
-              <input
-                type="number"
-                value={draft[item.k]||""}
-                onChange={e=>setDraft(d=>({...d,[item.k]:parseFloat(e.target.value)||0}))}
-                style={{width:"100%",background:"#0d1020",border:"1px solid #3a5a7a",borderRadius:4,
-                  padding:"3px 6px",color:"#7eb8ff",fontSize:10,fontFamily:"monospace",boxSizing:"border-box"}}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
+      {status==="idle"&&<div style={{fontSize:9,color:"#2a3a50",marginTop:4}}>Connecting to live price server...</div>}
+      {status==="error"&&<div style={{fontSize:9,color:"#3a2a2a",marginTop:4}}>Start your Render.com price server</div>}
     </div>
   );
 }
@@ -15103,6 +15361,37 @@ function ProfilesTab() {
               </div>
             )}
 
+            {/* PPF Account */}
+            {(()=>{
+              const ppfAcc = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]).filter(p=>p.member===selected.n);
+              if(ppfAcc.length===0) return null;
+              return (
+                <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
+                  <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3b82f6",textTransform:"uppercase",letterSpacing:"0.08em"}}>📘 PPF Account</div>
+                  {ppfAcc.map((p,i)=>(
+                    <div key={i} style={{padding:"10px 16px",borderBottom:"1px solid #0d1020",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                      <div>
+                        <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div>
+                        <div style={{fontSize:11,fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{p.acc}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BALANCE</div>
+                        <div style={{fontSize:11,fontFamily:"monospace",color:"#34d399",fontWeight:700}}>₹{Math.round(p.bal).toLocaleString("en-IN")}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>OPENED</div>
+                        <div style={{fontSize:10,color:"#8899bb"}}>{p.opened}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>MATURES</div>
+                        <div style={{fontSize:10,color:"#a78bfa",fontWeight:600}}>{p.matures}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
             {/* Bank balances from BANK data */}
             {BANK.filter(b=>b.n===selected.n).length>0&&(
               <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
@@ -15208,7 +15497,7 @@ function NetWorthReportTab() {
             {memberData.map((m,i)=>{
               const bank=BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0);
               const total=(m.stocks||0)+(m.mf||0)+bank;
-              const grandTotal=totalEquity+totalMF+totalBank+totalPPF;
+              const grandTotal=totalEquity+totalMF+totalBank;
               return (
                 <tr key={m.n} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                   <td style={{padding:"8px 12px",textAlign:"right",color:"#3a4a6a",fontWeight:700}}>#{i+1}</td>
@@ -15710,8 +15999,6 @@ const VASUMATI_ZERODHA_PNL = {realized:774496,unrealized:60108,brokerage:4947,st
 /* - MF_REGISTRY — snapshot history per member - */
 
 
-/* - FAMILY_TOP — top holdings across all members (for P/L tab) - */
-/* R75 Dividend records — Rasiklal HUF (JD0R75) */
 
 
 
@@ -15877,41 +16164,6 @@ function MTFTab() {
   return (
     <div style={{paddingBottom:24}}>
       {/* Sub-nav */}
-      {/* Grand total KPI cards */}
-      {(()=>{
-        var allF=(typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){return h&&h.val>0;});
-        var inv=allF.reduce(function(s,h){return s+(h.inv||0);},0);
-        var val=allF.reduce(function(s,h){return s+(h.val||0);},0);
-        var pl=val-inv, pct=inv>0?(pl/inv*100):0;
-        var day=allF.reduce(function(s,h){return s+(h.dayPL||0);},0);
-        var hasD=allF.some(function(h){return h.dayPL!=null&&h.dayPL!==0;});
-        var stocks=new Set(allF.map(function(h){return h.s;})).size;
-        var f=function(v){if(!v&&v!==0)return"--";var a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN");};
-        return (
-          <div style={{marginBottom:14}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <span style={{fontSize:10,color:"#3a4a6a"}}>{stocks} unique stocks · {allF.length} positions</span>
-              {priceStatus==="live"&&<span style={{fontSize:9,color:"#10b981",fontWeight:600}}>● Live prices active</span>}
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-              {[
-                {l:"Total Invested",  v:f(inv),c:"#8899bb",icon:"💼"},
-                {l:"Current Value",   v:f(val),c:"#e8eaf0",icon:"📊"},
-                {l:"Unrealised P&L",  v:(pl>=0?"+":"")+f(pl),sub:(pct>=0?"+":"")+pct.toFixed(2)+"%",c:pl>=0?"#10b981":"#ef4444",icon:pl>=0?"📈":"📉"},
-                {l:"Today's P&L",     v:hasD?(day>=0?"+":"")+f(day):"—",sub:hasD?"from live":"—",c:hasD?(day>=0?"#10b981":"#ef4444"):"#3a4a6a",icon:"⚡"},
-              ].map(function(it,i){return(
-                <div key={it.l} style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:"1px solid #1d2545",borderTop:"2px solid "+it.c+"66",borderRadius:12,padding:"13px 15px",position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",top:7,right:9,fontSize:16,opacity:0.1}}>{it.icon}</div>
-                  <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>{it.l}</div>
-                  <div style={{fontSize:19,fontWeight:900,fontFamily:"monospace",color:it.c,letterSpacing:"-0.02em"}}>{it.v}</div>
-                  {it.sub&&<div style={{fontSize:9,color:it.c,opacity:0.75,marginTop:3,fontWeight:600}}>{it.sub}</div>}
-                </div>
-              );})
-              }
-            </div>
-          </div>
-        );
-      })()}
       <div style={{display:"flex",gap:7,marginBottom:16,flexWrap:"wrap"}}>
         {[{k:"overview",l:"📊 Overview"},{k:"interest",l:"💸 Interest Cost"},{k:"roi",l:"📈 ROI Analysis"},{k:"accounts",l:"🏦 By Account"},{k:"positions",l:"📋 Positions"}].map(b=>(
           <button key={b.k} onClick={()=>setView(b.k)} style={{padding:"5px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:view===b.k?"#1e3a5f":"#111827",color:view===b.k?"#7eb8ff":"#3a4a6a"}}>{b.l}</button>
