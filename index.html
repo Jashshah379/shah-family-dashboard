@@ -808,7 +808,7 @@ function WhatIfTab() {
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
       if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:h.cmp||0,holders:[]};
-      m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
+      m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0); if(h.cmp>0) m[h.s].cmp=h.cmp;
       if(h.cmp) m[h.s].cmp=h.cmp;
       if(h._member) m[h.s].holders.push({member:h._member,custodian:h._custodian,qty:h.qty||0,avg:h.avg||0,val:h.val});
     });
@@ -1463,7 +1463,7 @@ function GlobalSearchTab() {
     const m = {};
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
-      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,members:[],custodians:[],sector:h.sector||""};
+      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:0,members:[],custodians:[],sector:h.sector||""};
       m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
       if(h._member&&!m[h.s].members.includes(h._member)) m[h.s].members.push(h._member);
       if(h._custodian&&!m[h.s].custodians.includes(h._custodian)) m[h.s].custodians.push(h._custodian);
@@ -1674,6 +1674,7 @@ function GlobalSearchTab() {
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:14,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(s.val)}</div>
+                  {s.cmp>0&&<div style={{fontSize:10,color:"#7eb8ff",fontFamily:"monospace",marginBottom:2}}>CMP ₹{s.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</div>}
                   <div style={{fontSize:10,color:ret>=0?"#34d399":"#f87171",fontFamily:"monospace",fontWeight:600}}>
                     {ret>=0?"▲":"▼"}{Math.abs(ret).toFixed(1)}% · {cr(pl)}
                   </div>
@@ -4042,18 +4043,30 @@ function MembersTab() {
     if (!m || !m.holdingsRef) return [];
     var mh = typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS : {};
     var arr = mh[m.holdingsRef] || [];
-    /* Also search FAMILY_TOP by _member */
     if (!arr.length) {
       arr = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){ return h._member===m.n; });
     }
-    return arr.filter(function(h){ return h && h.val > 0; });
+    /* Normalize: if holding uses sym instead of s, map it */
+    return arr.filter(function(h){ return h && h.val > 0; }).map(function(h) {
+      if (!h.s && h.sym) return Object.assign({}, h, {s: h.sym});
+      return h;
+    });
   }, []);
 
   /* ── Get MF data for a member ── */
   const getMemberMF = React.useCallback(function(m) {
     if (!m) return null;
-    var reg = typeof MF_REGISTRY!=="undefined" ? MF_REGISTRY : {};
-    return reg[m.n] || null;
+    var reg  = typeof MF_REGISTRY!=="undefined" ? MF_REGISTRY : {};
+    var fols = typeof MEMBER_MF_FOLIOS!=="undefined" ? MEMBER_MF_FOLIOS : {};
+    var regData = reg[m.n] || null;
+    var schemes = fols[m.n] || [];
+    if (!regData && !schemes.length) return null;
+    return {
+      inv:     (regData && regData.inv) || 0,
+      val:     (regData && (regData.valApr26||regData.val)) || 0,
+      history: regData || null,
+      schemes: schemes,
+    };
   }, []);
 
   /* ── Get bank data for a member ── */
@@ -4228,8 +4241,8 @@ function MembersTab() {
                       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
                         {[
                           {l:"Invested",v:cr(mfData.inv||0),c:"#8899bb"},
-                          {l:"Current Value",v:cr(mfData.valApr26||mfData.val||0),c:"#10b981"},
-                          {l:"P&L",v:cr((mfData.valApr26||0)-(mfData.inv||0)),c:(mfData.valApr26||0)>=(mfData.inv||0)?"#10b981":"#ef4444"},
+                          {l:"Current Value",v:cr(mfData.val||0),c:"#10b981"},
+                          {l:"P&L",v:cr((mfData.val||0)-(mfData.inv||0)),c:(mfData.val||0)>=(mfData.inv||0)?"#10b981":"#ef4444"},
                         ].map(function(it){return(
                           <div key={it.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
                             <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{it.l}</div>
@@ -4245,7 +4258,7 @@ function MembersTab() {
                           </div>
                           <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                             <thead><tr style={{background:"#0a0e1e"}}>
-                              {["Scheme","Invested","Value","XIRR"].map(function(h){return(
+                              {["Scheme","Invested","Current Value","P&L"].map(function(h){return(
                                 <th key={h} style={{padding:"6px 12px",textAlign:h==="Scheme"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
                               );})}
                             </tr></thead>
@@ -6077,9 +6090,9 @@ const MEMBERS = [
    cas:"Jash Shah",   broker:null,icici:null,holdingsRef:"JASH",
    custodian:["Zerodha","ICICI NSDL"],casApr26:31240646,
    casTrend:[{m:"May'25",v:28000000},{m:"Oct'25",v:30000000},{m:"Apr'26",v:31240646}]},
-  {n:"Riya Shah",      i:"RI",c:"#d4537e",stocks:24951516,  mf:175391,   bank:83722,
-   cas:"Riya Shah",   broker:null,icici:"JD0R246",holdingsRef:null,
-   custodian:["ICICI Direct"],casApr26:25210629,
+  {n:"Riya Shah",      i:"RI",c:"#d4537e",stocks:28072229,  mf:175391,   bank:83722,
+   cas:"Riya Shah",   broker:null,icici:"JD0R246",holdingsRef:"RIYA",
+   custodian:["ICICI Direct","Sushil Financial","NSDL","Zerodha"],casApr26:25210629,
    casTrend:[{m:"May'25",v:23000000},{m:"Oct'25",v:24000000},{m:"Apr'26",v:25210629}]},
   {n:"Amit Gandhi HUF",i:"AG",c:"#534ab7",stocks:20434309,  mf:0,        bank:78816,
    cas:"Amit Gandhi HUF",broker:null,icici:null,holdingsRef:null,
@@ -6093,8 +6106,8 @@ const MEMBERS = [
    cas:"Chetan Shah", broker:null,icici:null,holdingsRef:"CHETAN",
    custodian:["Zerodha","Sushil Financial"],casApr26:10743001,
    casTrend:[{m:"May'25",v:9500000},{m:"Apr'26",v:10743001}]},
-    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:0,       mf:15757289, bank:0,
-   cas:"Honey Chetan Shah",broker:null,icici:null,holdingsRef:null,
+    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:15757289, bank:0,
+   cas:"Honey Chetan Shah",broker:null,icici:null,holdingsRef:"HONEY",
    custodian:["Zerodha (VE7649)"],casApr26:15757289,
    casTrend:[{m:"Apr'26",v:15757289}]},
   {n:"Karishma Shah",  i:"KS",c:"#06b6d4",stocks:1924396,   mf:0,        bank:52248,
@@ -6105,8 +6118,8 @@ const MEMBERS = [
    cas:"Praful Shah", broker:"JD0P151",icici:null,holdingsRef:null,
    custodian:["Sushil Financial"],casApr26:3421347,
    casTrend:[{m:"Apr'26",v:3421347}]},
-  {n:"Aarya Shah",     i:"AR",c:"#f43f5e",stocks:216942,    mf:0,        bank:68925,
-   cas:"Aarya Shah",  broker:null,icici:null,holdingsRef:"AARYA",
+  {n:"Aarya Shah",     i:"AR",c:"#f43f5e",stocks:730042,    mf:0,        bank:68925,
+   cas:"Aarya Shah",  broker:null,icici:null,holdingsRef:"AARYA_NEW",
    custodian:["ICICI Direct"],casApr26:285867,
    casTrend:[{m:"Apr'26",v:285867}]},
 ].map(m=>({...m,
