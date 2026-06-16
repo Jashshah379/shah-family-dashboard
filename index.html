@@ -4264,13 +4264,11 @@ function FamilyApp() {
   React.useEffect(()=>{ window._openStockDetail = s => setStockDetail(s); return ()=>{ delete window._openStockDetail; }; },[]);
   React.useEffect(()=>{ window._setDashTab = setTab; return ()=>{ delete window._setDashTab; }; },[setTab]);
   const [sidebarOpen,setSidebarOpen]=React.useState(false);
-  const DM = darkMode ? {
+  /* Always dark mode */
+  const DM = {
     bg:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",
     card:"linear-gradient(155deg,#11152c,#0d1122)",border:"#1d2545",text:"#e8eaf0",
     sub:"#3a4a6a",input:"#0d1020",tag:"#080b18",
-  } : {
-    bg:"#f0f2f8",card:"#ffffff",border:"#d0d8e8",text:"#1a2030",
-    sub:"#6a7a9a",input:"#f8f9fc",tag:"#f0f2f8",
   };
   const [expandedSections,setExpandedSections]=React.useState({Analytics:true,Planning:true,Portfolio:true,Accounts:false});
   const toggleSection = (title) => setExpandedSections(s=>({...s,[title]:!s[title]}));
@@ -6157,7 +6155,7 @@ const BC = {
 
 const BANK = [
   /* ICICI Direct linked accounts — updated Jun 15, 2026 */
-  {n:"Jash Shah",          bank:"ICICI", t:"Savings",  acc:"...0126", b:6295309},
+  {n:"Jash Shah",          bank:"ICICI", t:"Savings",  acc:"...0126", b:2000000},
   {n:"Vasumati Shah",      bank:"ICICI", t:"Savings",  acc:"...0112", b:75394,
    ppf:1293608},
   {n:"Rasiklal Shah",      bank:"ICICI", t:"Savings",  acc:"...0111", b:1830337,
@@ -6215,7 +6213,7 @@ const MEMBERS = [
    cas:"Asha Shah",   broker:"JD0A46",icici:null,holdingsRef:"A46",
    custodian:["Sushil Financial (JD0A46)","IIFL Capital"],casApr26:50266763,
    casTrend:[{m:"May'25",v:48000000},{m:"Oct'25",v:50000000},{m:"Apr'26",v:50266763}]},
-  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146804,   bank:53715,
+  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146804,   bank:2000000,
    cas:"Jash Shah",   broker:null,icici:null,holdingsRef:"JASH",
    custodian:["Zerodha","ICICI NSDL"],casApr26:31240646,
    casTrend:[{m:"May'25",v:28000000},{m:"Oct'25",v:30000000},{m:"Apr'26",v:31240646}]},
