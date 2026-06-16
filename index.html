@@ -5902,7 +5902,7 @@ const MEMBERS = [
 
 
 
-var FAMILY_EQ_TOTAL_MKT  = FAMILY_TOP.reduce((s,h)=>s+h.val, 0);
+var FAMILY_EQ_TOTAL_MKT  = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.val||0);}, 0);
 
 const totalBank  = BANK.reduce((s,r)=>s+r.b, 0);
 
@@ -7420,7 +7420,7 @@ var FAMILY_TOP = (function() {
   });
   return all;
 })();
-var FAMILY_EQ_TOTAL_COST = FAMILY_TOP.reduce((s,h)=>s+h.inv, 0);
+var FAMILY_EQ_TOTAL_COST = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.inv||0);}, 0);
 
 
 const MEMBER_HOLDINGS = {
