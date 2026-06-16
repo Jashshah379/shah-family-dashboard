@@ -4963,9 +4963,9 @@ function FamilyApp() {
         <DailyDigest/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
-          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff"/>
-          <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399"/>
-          <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24"/>
+          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Holdings")}/>
+          <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Funds")}/>
+          <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
           <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa"/>
           <M label="Net Capital (Jilmill)" value="₹7.68 Cr" sub="Own money deployed" color="#c084fc"/>
@@ -6004,11 +6004,11 @@ const pc=v=>v>0?"#00d68f":v<0?"#ff4060":"#4a6a8c";
 
 const S={bg:"#060c16",sf:"#0b1520",cd:"#101c2c",bd:"#182d43",tx:"#deeeff",mt:"#4a6a8c",gn:"#00d68f",rd:"#ff4060",bl:"#3a9eff",am:"#f5a623"};
 
-const M = ({label, value, sub, color="#e8eaf0"}) => (
-  <div style={{background:"linear-gradient(155deg,#131830 0%,#0e1224 100%)",
+const M = ({label, value, sub, color="#e8eaf0", onClick}) => (
+  <div onClick={onClick} style={{background:"linear-gradient(155deg,#131830 0%,#0e1224 100%)",
     border:"1px solid #1e2848",borderRadius:14,padding:"15px 17px",
     boxShadow:"0 2px 16px #00000033, inset 0 1px 0 #ffffff06",
-    transition:"all .2s",position:"relative",overflow:"hidden"}}>
+    transition:"all .2s",position:"relative",overflow:"hidden",cursor:onClick?"pointer":"default"}}>
     <div style={{position:"absolute",top:0,left:0,right:0,height:2,
       background:`linear-gradient(90deg,transparent,${color}55,transparent)`}}/>
     <div style={{fontSize:9.5,color:"#4a5a85",marginBottom:6,textTransform:"uppercase",
