@@ -100,7 +100,6 @@ window.onload = function() {
 };
 </script>
 <script type="text/plain" id="jsx">
-
 /* ── Recharts stub — pure SVG, no external deps ── */
 function ResponsiveContainer({height,children}) {
   var h=typeof height==="number"?height:220;
@@ -4030,6 +4029,369 @@ function MutualFundsTab() {
   );
 }
 
+function MembersTab() {
+  const [selMem, setSelMem] = React.useState(null);
+  const [subTab, setSubTab] = React.useState("equity");
+
+  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+
+  /* ── Get holdings for a member ── */
+  const getMemberHoldings = React.useCallback(function(m) {
+    if (!m || !m.holdingsRef) return [];
+    var mh = typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS : {};
+    var arr = mh[m.holdingsRef] || [];
+    /* Also search FAMILY_TOP by _member */
+    if (!arr.length) {
+      arr = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){ return h._member===m.n; });
+    }
+    return arr.filter(function(h){ return h && h.val > 0; });
+  }, []);
+
+  /* ── Get MF data for a member ── */
+  const getMemberMF = React.useCallback(function(m) {
+    if (!m) return null;
+    var reg = typeof MF_REGISTRY!=="undefined" ? MF_REGISTRY : {};
+    return reg[m.n] || null;
+  }, []);
+
+  /* ── Get bank data for a member ── */
+  const getMemberBank = React.useCallback(function(m) {
+    if (!m) return [];
+    return (typeof BANK!=="undefined"?BANK:[]).filter(function(b){ return b.n===m.n; });
+  }, []);
+
+  /* ── Get PPF for a member ── */
+  const getMemberPPF = React.useCallback(function(m) {
+    if (!m) return [];
+    return (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]).filter(function(p){ return p.member===m.n; });
+  }, []);
+
+  const SUB_TABS = [
+    {k:"equity", l:"📈 Equity"},
+    {k:"mf",     l:"💼 Mutual Funds"},
+    {k:"cas",    l:"📋 CAS / History"},
+    {k:"profile",l:"👤 Profile"},
+  ];
+
+  return (
+    <div style={{display:"flex",gap:14,height:"auto"}}>
+      {/* ── Left: member list ── */}
+      <div style={{width:200,flexShrink:0,display:"flex",flexDirection:"column",gap:6}}>
+        <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4,paddingLeft:4}}>
+          {realMembers.length} Members
+        </div>
+        {realMembers.map(function(m) {
+          var holdings = getMemberHoldings(m);
+          var total = (m.stocks||0) + (m.mf||0) + (m.bank||0);
+          return (
+            <div key={m.n} onClick={function(){setSelMem(m.n);setSubTab("equity");}}
+              style={{background:selMem===m.n?"linear-gradient(135deg,#1e3a5f,#162040)":"linear-gradient(155deg,#11152c,#0d1122)",
+                border:selMem===m.n?"1px solid #3b82f6":"1px solid #1d2545",
+                borderRadius:10,padding:"10px 12px",cursor:"pointer",transition:"all 0.15s"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <div style={{width:26,height:26,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
+                <div>
+                  <div style={{fontSize:10,fontWeight:700,color:selMem===m.n?"#7eb8ff":"#c8d0e8"}}>{m.n.split(" ")[0]}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{m.n.split(" ").slice(1).join(" ")}</div>
+                </div>
+              </div>
+              <div style={{fontSize:10,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(total)}</div>
+              {m.stocks>0&&<div style={{fontSize:8,color:"#6366f1"}}>Eq {cr(m.stocks)}</div>}
+              {m.mf>0&&<div style={{fontSize:8,color:"#10b981"}}>MF {cr(m.mf)}</div>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Right: member detail ── */}
+      <div style={{flex:1,minWidth:0}}>
+        {!selMem ? (
+          <div style={{padding:"60px 0",textAlign:"center",color:"#3a4a6a"}}>
+            <div style={{fontSize:28,marginBottom:12}}>👈</div>
+            <div style={{fontSize:13}}>Select a member to view their details</div>
+          </div>
+        ) : (()=>{
+          var m = realMembers.find(function(x){return x.n===selMem;});
+          if (!m) return null;
+          var holdings = getMemberHoldings(m);
+          var mfData   = getMemberMF(m);
+          var bankData = getMemberBank(m);
+          var ppfData  = getMemberPPF(m);
+          var total    = (m.stocks||0)+(m.mf||0)+(m.bank||0);
+          var totalInv = holdings.reduce(function(s,h){return s+(h.inv||0);},0);
+          var totalVal = holdings.reduce(function(s,h){return s+(h.val||0);},0);
+          var pl       = totalVal - totalInv;
+          var plPct    = totalInv>0?(pl/totalInv*100):0;
+
+          return (
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {/* Header card */}
+              <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63,#24243e)",borderRadius:14,padding:"16px 20px",border:"1px solid #2a2a5a",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:44,height:44,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:"#fff"}}>{m.i}</div>
+                  <div>
+                    <div style={{fontSize:16,fontWeight:800,color:"#e8eaf0"}}>{m.n}</div>
+                    <div style={{fontSize:9,color:"#6a7a9a"}}>{(m.custodian||[]).join(" · ")}</div>
+                  </div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:22,fontWeight:900,color:"#a5b4fc",fontFamily:"monospace"}}>{cr(total)}</div>
+                  <div style={{fontSize:9,color:"#3a4a6a"}}>total wealth</div>
+                </div>
+              </div>
+
+              {/* Sub-tab nav */}
+              <div style={{display:"flex",gap:6,borderBottom:"1px solid #1d2545",paddingBottom:8}}>
+                {SUB_TABS.map(function(t) {
+                  return (
+                    <button key={t.k} onClick={function(){setSubTab(t.k);}}
+                      style={{padding:"5px 14px",borderRadius:8,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,
+                        background:subTab===t.k?"#1e3a5f":"transparent",color:subTab===t.k?"#7eb8ff":"#3a4a6a",
+                        transition:"all 0.15s"}}>
+                      {t.l}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* ── EQUITY TAB ── */}
+              {subTab==="equity"&&(
+                <div>
+                  {/* KPI strip */}
+                  {totalInv>0&&(
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+                      {[
+                        {l:"Invested",v:cr(totalInv),c:"#8899bb"},
+                        {l:"Current Value",v:cr(totalVal),c:"#e8eaf0"},
+                        {l:"P&L",v:(pl>=0?"+":"")+cr(pl),sub:(plPct>=0?"+":"")+plPct.toFixed(1)+"%",c:pl>=0?"#10b981":"#ef4444"},
+                      ].map(function(it){return(
+                        <div key={it.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
+                          <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{it.l}</div>
+                          <div style={{fontSize:14,fontWeight:800,fontFamily:"monospace",color:it.c}}>{it.v}</div>
+                          {it.sub&&<div style={{fontSize:9,color:it.c,opacity:0.7}}>{it.sub}</div>}
+                        </div>
+                      );})
+                      }
+                    </div>
+                  )}
+                  {holdings.length===0 ? (
+                    <div style={{padding:"30px",textAlign:"center",color:"#3a4a6a",border:"1px solid #1d2545",borderRadius:12}}>
+                      No equity holdings data available
+                    </div>
+                  ) : (
+                    <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                      <div style={{overflowX:"auto"}}>
+                        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                          <thead><tr style={{background:"#0a0e1e"}}>
+                            {["Stock","Qty","Avg","CMP","Value","P&L","Return %"].map(function(h){return(
+                              <th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>
+                            );})}
+                          </tr></thead>
+                          <tbody>
+                            {[...holdings].sort(function(a,b){return (b.val||0)-(a.val||0);}).map(function(h,i){
+                              var ret = h.inv>0?((h.val-h.inv)/h.inv*100):null;
+                              var isGain = ret==null||ret>=0;
+                              return (
+                                <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                                  <td style={{padding:"7px 12px",fontWeight:600,color:"#c8d0e8"}}>
+                                    {h.s}
+                                    {h._custodian&&<div style={{fontSize:8,color:"#3a4a6a"}}>{h._custodian}</div>}
+                                  </td>
+                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{h.qty||"—"}</td>
+                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontSize:10}}>{h.avg>0?"₹"+h.avg.toFixed(2):"—"}</td>
+                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#e8eaf0",fontSize:10}}>{h.cmp>0?"₹"+h.cmp.toFixed(2):"—"}</td>
+                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(h.val)}</td>
+                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:isGain?"#34d399":"#f87171",fontWeight:600}}>{h.inv>0?(isGain?"+":"")+cr(h.val-h.inv):"—"}</td>
+                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:isGain?"#34d399":"#f87171",fontWeight:700}}>{ret!=null?(isGain?"+":"")+ret.toFixed(1)+"%":"—"}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── MUTUAL FUNDS TAB ── */}
+              {subTab==="mf"&&(
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {!mfData ? (
+                    <div style={{padding:"30px",textAlign:"center",color:"#3a4a6a",border:"1px solid #1d2545",borderRadius:12}}>
+                      No mutual fund data available for {m.n}
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                        {[
+                          {l:"Invested",v:cr(mfData.inv||0),c:"#8899bb"},
+                          {l:"Current Value",v:cr(mfData.valApr26||mfData.val||0),c:"#10b981"},
+                          {l:"P&L",v:cr((mfData.valApr26||0)-(mfData.inv||0)),c:(mfData.valApr26||0)>=(mfData.inv||0)?"#10b981":"#ef4444"},
+                        ].map(function(it){return(
+                          <div key={it.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
+                            <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{it.l}</div>
+                            <div style={{fontSize:14,fontWeight:800,fontFamily:"monospace",color:it.c}}>{it.v}</div>
+                          </div>
+                        );})
+                        }
+                      </div>
+                      {mfData.schemes&&mfData.schemes.length>0&&(
+                        <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                          <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#10b981"}}>
+                            {mfData.schemes.length} Schemes
+                          </div>
+                          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                            <thead><tr style={{background:"#0a0e1e"}}>
+                              {["Scheme","Invested","Value","XIRR"].map(function(h){return(
+                                <th key={h} style={{padding:"6px 12px",textAlign:h==="Scheme"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
+                              );})}
+                            </tr></thead>
+                            <tbody>
+                              {mfData.schemes.map(function(s,i){
+                                var pl2 = (s.currentValue||0)-(s.invested||0);
+                                return (
+                                  <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                                    <td style={{padding:"7px 12px",color:"#c8d0e8",fontWeight:500}}>{s.scheme}</td>
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#8899bb"}}>{cr(s.invested||0)}</td>
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:pl2>=0?"#34d399":"#f87171",fontWeight:600}}>{cr(s.currentValue||0)}</td>
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:s.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>{s.xirr!=null?s.xirr.toFixed(1)+"%":"—"}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* ── CAS / HISTORY TAB ── */}
+              {subTab==="cas"&&(
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"16px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:12}}>Portfolio Value History</div>
+                    {m.casTrend&&m.casTrend.length>0 ? (
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        {[...m.casTrend].reverse().map(function(pt,i){
+                          var prev = m.casTrend[m.casTrend.length-2-i];
+                          var chg = prev ? pt.v - prev.v : 0;
+                          return (
+                            <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 8px",borderRadius:6,background:i===0?"#0f1a2e":"transparent"}}>
+                              <span style={{fontSize:10,color:i===0?"#7eb8ff":"#6a7a9a",fontWeight:i===0?700:400}}>{pt.m}</span>
+                              <div style={{textAlign:"right"}}>
+                                <span style={{fontSize:11,fontWeight:700,fontFamily:"monospace",color:i===0?"#e8eaf0":"#a0aabb"}}>{cr(pt.v)}</span>
+                                {chg!==0&&<span style={{fontSize:9,marginLeft:8,color:chg>0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{chg>0?"+":""}{cr(chg)}</span>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{color:"#3a4a6a",textAlign:"center",padding:20}}>No history data</div>
+                    )}
+                  </div>
+
+                  {/* CAS snapshot */}
+                  {m.casApr26>0&&(
+                    <div style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"12px 16px"}}>
+                      <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:4}}>Latest CAS Snapshot (Apr 2026)</div>
+                      <div style={{fontSize:18,fontWeight:800,color:"#a5b4fc",fontFamily:"monospace"}}>{cr(m.casApr26)}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── PROFILE TAB ── */}
+              {subTab==="profile"&&(
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {/* Broker / account info */}
+                  <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>🏦 Account Details</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                      {[
+                        {l:"Broker ID",v:m.broker||"—"},
+                        {l:"ICICI Account",v:m.icici||"—"},
+                        {l:"Custodians",v:(m.custodian||[]).join(", ")||"—"},
+                        {l:"Holdings Ref",v:m.holdingsRef||"—"},
+                      ].map(function(it){return(
+                        <div key={it.l}>
+                          <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>{it.l}</div>
+                          <div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>{it.v}</div>
+                        </div>
+                      );})}
+                    </div>
+                  </div>
+
+                  {/* Bank accounts */}
+                  {bankData.length>0&&(
+                    <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                      <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#f0b429"}}>🏦 Bank Accounts</div>
+                      {bankData.map(function(b,i){return(
+                        <div key={i} style={{padding:"10px 14px",borderBottom:"1px solid #0d1020",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                          <div>
+                            <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BANK</div>
+                            <div style={{fontSize:11,color:"#c8d0e8",fontWeight:600}}>{b.bank}</div>
+                          </div>
+                          <div>
+                            <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT</div>
+                            <div style={{fontSize:11,color:"#7eb8ff",fontFamily:"monospace"}}>{b.acc||"—"}</div>
+                          </div>
+                          <div>
+                            <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BALANCE</div>
+                            <div style={{fontSize:11,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>{cr(b.b)}</div>
+                          </div>
+                        </div>
+                      );})}
+                    </div>
+                  )}
+
+                  {/* PPF accounts */}
+                  {ppfData.length>0&&(
+                    <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                      <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#3b82f6"}}>📘 PPF Account</div>
+                      {ppfData.map(function(p,i){return(
+                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                          <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div><div style={{fontSize:11,color:"#7eb8ff",fontFamily:"monospace",fontWeight:600}}>{p.acc}</div></div>
+                          <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BALANCE</div><div style={{fontSize:11,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>{cr(p.bal)}</div></div>
+                          <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>OPENED</div><div style={{fontSize:10,color:"#8899bb"}}>{p.opened}</div></div>
+                          <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>MATURES</div><div style={{fontSize:10,color:"#a78bfa",fontWeight:600}}>{p.matures}</div></div>
+                        </div>
+                      );})}
+                    </div>
+                  )}
+
+                  {/* Wealth summary */}
+                  <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>💰 Wealth Summary</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                      {[
+                        {l:"Equity",v:cr(m.stocks||0),c:"#6366f1"},
+                        {l:"Mutual Funds",v:cr(m.mf||0),c:"#10b981"},
+                        {l:"Bank",v:cr(m.bank||0),c:"#f0b429"},
+                        {l:"PPF",v:ppfData.length>0?cr(ppfData.reduce(function(s,p){return s+p.bal;},0)):"—",c:"#3b82f6"},
+                      ].map(function(it){return(
+                        <div key={it.l} style={{background:"#0a0e1e",borderRadius:8,padding:"8px 12px",border:"1px solid #1d2545"}}>
+                          <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>{it.l}</div>
+                          <div style={{fontSize:13,fontWeight:700,color:it.c,fontFamily:"monospace"}}>{it.v}</div>
+                        </div>
+                      );})}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
+
 function FamilyApp() {
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
 
@@ -5017,330 +5379,7 @@ function FamilyApp() {
         );
       })()}
 
-      {tab==="Members"&&<div>
-        {/* - TOP CONTROLS - */}
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-          {/* Sort */}
-          <span style={{fontSize:11,color:"#3a4a6a",fontWeight:600}}>Sort:</span>
-          {[
-            {k:"total",  l:"Total"},
-            {k:"stocks", l:"Stocks"},
-            {k:"mf",     l:"MF"},
-            {k:"bank",   l:"Bank"},
-            {k:"n",      l:"Name"},
-          ].map(({k,l})=>(
-            <button key={k}
-              onClick={()=>{const isStr=k==="n";if(mSort===k)setMDir(d=>d*-1);else{setMSort(k);setMDir(isStr?1:-1);}}}
-              style={{padding:"4px 11px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,
-                background:mSort===k?"#1e3a5f":"#111827",color:mSort===k?"#7eb8ff":"#3a4a6a"}}>
-              {l}{mSort===k?(mDir<0?" ↓":" ↑"):""}
-            </button>
-          ))}
-
-          {/* Custodian filter */}
-          <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:8}}>
-            <span style={{fontSize:11,color:"#3a4a6a",fontWeight:600}}>Custodian:</span>
-            <select value={custFilter} onChange={e=>{setCustFilter(e.target.value);setSelMember(null);}}
-              style={{background:"#111827",border:"1px solid #1e2a40",borderRadius:6,
-                color:"#e8eaf0",padding:"4px 10px",fontSize:11,cursor:"pointer"}}>
-              <option value="All">All</option>
-              {["ICICI Direct","ICICI Direct","Zerodha","Zerodha","Zerodha",
-                "Angel One","LKP Securities","JFSL Sharekhan (JD0A46)","JFSL Sharekhan (JD0P71)",
-                "JFSL Sharekhan (JD0P151)","InCred PMS","Incred Capital","IIFL Capital",
-                "Sushil Financial","Groww","Indstocks","Gandhi Securities","NRE/NRO Bank"
-              ].map(c=><option key={c} value={c}>{c}</option>)}
-            </select>
-            {custFilter!=="All"&&<span style={{fontSize:10,color:"#7eb8ff"}}>
-              {MEMBERS.filter(m=>m.custodian&&m.custodian.includes(custFilter)).length} members
-            </span>}
-          </div>
-
-          <div style={{marginLeft:"auto",fontSize:11,color:"#3a4a6a"}}>
-            {MEMBERS.filter(m=>!m._isFamily).length} members · ₹{(MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+m.total,0)/1e7).toFixed(1)} Cr
-          </div>
-        </div>
-
-        {/* - MEMBER CARDS — collapsible inline detail - */}
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {MEMBERS
-            .filter(m=>custFilter==="All"||(m._isFamily)||(m.custodian&&m.custodian.includes(custFilter)))
-            .slice().sort((a,b)=>{
-              if(a._isFamily) return -1; if(b._isFamily) return 1;
-              const av=mSort==="n"?a.n:a[mSort]||0;
-              const bv=mSort==="n"?b.n:b[mSort]||0;
-              return mSort==="n"?av.localeCompare(bv)*mDir:(bv-av)*mDir;
-            }).map(m=>{
-              const isSelected = selMember===m.n;
-              const stockPct=m.total>0?(m.stocks/m.total*100).toFixed(0):0;
-              const mfPct   =m.total>0?(m.mf/m.total*100).toFixed(0):0;
-              const bankPct =m.total>0?(m.bank/m.total*100).toFixed(0):0;
-              const hCount  =(m.holdingsRef&&MEMBER_HOLDINGS[m.holdingsRef])?MEMBER_HOLDINGS[m.holdingsRef].length:0;
-              const otherSelected = selMember && !isSelected;
-
-              /* ── Collapsed compact row (when another member is open) ── */
-              if(otherSelected) return (
-                <div key={m.n}
-                  onClick={()=>{setSelMember(m.n);setMemberView("holdings");setSelMemberCust("All");}}
-                  style={{background:"#080b18",border:"1px solid #1a2035",borderRadius:8,
-                    padding:"8px 14px",cursor:"pointer",display:"flex",alignItems:"center",
-                    gap:10,opacity:0.6,transition:"all 0.2s"}}>
-                  <div style={{width:24,height:24,borderRadius:"50%",background:m.c+"33",color:m.c,
-                    display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:9,flexShrink:0}}>{m.i}</div>
-                  <span style={{fontSize:11,color:"#8899bb",flex:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.n}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:"#c8d0e8",fontFamily:"monospace",flexShrink:0}}>{cr(m.total)}</span>
-                  <span style={{fontSize:9,color:"#3a4a6a"}}>▶</span>
-                </div>
-              );
-
-              /* ── Full card (selected or nothing selected) ── */
-              return (
-                <div key={m.n} id={"member-card-"+m.n} style={{transition:"all 0.25s"}}>
-                  {/* Card header — always visible, click to toggle */}
-                  <div
-                    onClick={()=>{ const next=isSelected?null:m.n; setSelMember(next); setMemberView("holdings"); setSelMemberCust("All"); if(next){ setTimeout(()=>{ const el=document.getElementById("member-card-"+next); if(el) el.scrollIntoView({behavior:"smooth",block:"nearest"}); },50); }}}
-                    style={{background:isSelected?"linear-gradient(155deg,#0d1e35,#0a1525)":"linear-gradient(155deg,#11152c,#0d1122)",
-                      border:`1px solid ${isSelected?m.c+"88":"#1d2545"}`,
-                      borderRadius:isSelected?"12px 12px 0 0":"12px",
-                      borderBottom:isSelected?"none":"",
-                      padding:"12px 14px",cursor:"pointer",
-                      display:"flex",alignItems:"center",gap:10,
-                      boxShadow:isSelected?`0 0 0 1px ${m.c}44`:"none",
-                      transition:"all 0.2s"}}>
-                    {/* Left accent */}
-                    <div style={{width:3,height:36,borderRadius:2,background:m.c,flexShrink:0}}/>
-                    {/* Avatar */}
-                    <div style={{width:36,height:36,borderRadius:"50%",background:m.c+"22",color:m.c,
-                      display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,flexShrink:0}}>
-                      {m.i}
-                    </div>
-                    {/* Name + custodians */}
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:700,color:"#e8eaf0",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.n}</div>
-                      <div style={{fontSize:9,color:"#3a4a6a",marginTop:1}}>
-                        {hCount>0?hCount+" stocks · ":""}{m.custodian?(m.custodian.slice(0,2).join(", ")+(m.custodian.length>2?" +"+(m.custodian.length-2):"")):""}
-                      </div>
-                    </div>
-                    {/* Wealth + bar */}
-                    <div style={{textAlign:"right",flexShrink:0}}>
-                      <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#e8eaf0",marginBottom:4}}>{cr(m.total)}</div>
-                      <div style={{width:100,height:4,borderRadius:2,background:"#1a2035",overflow:"hidden",display:"flex"}}>
-                        {m.stocks>0&&<div style={{width:stockPct+"%",background:"#3b82f6"}}/>}
-                        {m.mf>0&&<div style={{width:mfPct+"%",background:"#34d399"}}/>}
-                        {m.bank>0&&<div style={{width:bankPct+"%",background:"#f59e0b"}}/>}
-                      </div>
-                      <div style={{fontSize:8,color:"#2a3a50",marginTop:2}}>
-                        {m.stocks>0&&<span style={{color:"#3b82f6",marginRight:4}}>S {cr(m.stocks)}</span>}
-                        {m.mf>0&&<span style={{color:"#34d399",marginRight:4}}>MF {cr(m.mf)}</span>}
-                        {m.bank>0&&<span style={{color:"#f59e0b"}}>B {cr(m.bank)}</span>}
-                      </div>
-                    </div>
-                    {/* Chevron */}
-                    <div style={{fontSize:12,color:m.c,transform:isSelected?"rotate(90deg)":"rotate(0deg)",transition:"transform 0.2s",flexShrink:0}}>▶</div>
-                  </div>
-
-                  {/* Expanded detail — inline below the card header */}
-                  {isSelected&&(()=>{
-                    const ref=m.holdingsRef;
-                    const REF_CUSTODIAN={V129:"Sushil + ICICI Direct",A46:"Sushil Financial (JD0A46)",HUF:"Sushil Financial (JD0C31)",AARYA:"ICICI Direct",CHETAN:"Zerodha / IIFL / Sushil",JASH:"Zerodha",KARI:"ICICI Direct",PRAFUL_HUF:"Sushil Financial (JD0P71)",RM:"Sushil + Zerodha + ICICI",RASIKLAL_HUF:"Sushil Financial (JD0R75)",MAYA_SUSHIL:"Sushil Financial (JD0M34)"};
-                    const buildAllHoldings=(member)=>{
-                      const sources=[];
-                      if(member.holdingsRef&&member.holdingsRef!=="INCRED"&&member.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[member.holdingsRef]){
-                        MEMBER_HOLDINGS[member.holdingsRef].forEach(row=>sources.push({...row,_custodian:row._custodian||REF_CUSTODIAN[member.holdingsRef]||member.holdingsRef}));
-                      }
-                      if(member.icici&&ICICI_CLIENTS[member.icici]){
-                        (ICICI_CLIENTS[member.icici].holdings||[]).forEach(row=>sources.push({...row,_custodian:"ICICI Direct"}));
-                      }
-                      return sources.length>0?sources:null;
-                    };
-                    const isAllFamily=m._isFamily;
-                    const allHoldings=ref==="INCRED"?null:ref==="ALL_FAMILY"?MEMBER_HOLDINGS["ALL_FAMILY"]:buildAllHoldings(m);
-                    const custodianTags=allHoldings?[...new Set(allHoldings.map(h=>isAllFamily?h._member:h._custodian).filter(Boolean))]:[];
-                    const holdings=allHoldings
-                      ?(selMemberCust&&selMemberCust!=="All"?allHoldings.filter(h=>(isAllFamily?h._member:h._custodian)===selMemberCust):allHoldings)
-                      :(ref==="INCRED"?INCRED_HOLDINGS.filter(h=>h.sector!=="Cash and Equivalent"&&h.sector!=="Dividend / Interest receivable").map(h=>({s:h.name,qty:null,val:h.val,inv:null,pct:h.pct,sector:h.sector,_custodian:"InCred PMS"})):null);
-                    const isIncred=m.holdingsRef==="INCRED";
-                    const sortHoldings=(arr)=>{
-                      if(!arr) return arr;
-                      const getV=(h,col)=>{
-                        if(col==="s") return h.s||"";
-                        if(col==="qty") return h.qty||0;
-                        if(col==="avg") return h.avg||0;
-                        if(col==="cmp") return h.cmp||0;
-                        if(col==="inv") return h.inv||0;
-                        if(col==="val") return h.val||0;
-                        if(col==="sector") return h.sector||"";
-                        if(col==="pl") return h.unreal!=null?h.unreal:(h.inv>0?h.val-h.inv:0);
-                        if(col==="plpct") return h.inv>0?((h.val-h.inv)/h.inv):0;
-                        return h.val||0;
-                      };
-                      return arr.slice().sort((a,b)=>{
-                        const av=getV(a,hSort), bv=getV(b,hSort);
-                        return (typeof av==="string")?av.localeCompare(String(bv))*hDir:(Number(bv)-Number(av))*hDir;
-                      });
-                    };
-                    const sortedH=sortHoldings(holdings);
-                    const totalVal=holdings?holdings.reduce((s,h)=>s+(h.val||0),0):0;
-                    const totalInv=holdings?holdings.filter(h=>h.inv>0).reduce((s,h)=>s+h.inv,0):0;
-                    const totalUnreal=holdings?holdings.reduce((s,h)=>s+(h.unreal!=null?h.unreal:h.inv>0?h.val-h.inv:0),0):0;
-                    const hasInv=holdings?holdings.some(h=>h.inv>0||h.avg>0):false;
-                    const hasCmp=holdings?holdings.some(h=>h.cmp>0):false;
-                    const hasSector=holdings?holdings.some(h=>h.sector):false;
-                    const SortTh=({col,label,right=true})=>(
-                      <th onClick={()=>{if(hSort===col)setHDir(d=>d*-1);else{setHSort(col);setHDir(-1);}}}
-                        style={{padding:"7px 8px",textAlign:right?"right":"left",
-                          color:hSort===col?"#7eb8ff":"#3a4a6a",fontWeight:600,fontSize:9,
-                          borderBottom:"1px solid #1e2540",cursor:"pointer",userSelect:"none",
-                          whiteSpace:"nowrap",textTransform:"uppercase",letterSpacing:"0.04em"}}>
-                        {label}{hSort===col?(hDir<0?" ↓":" ↑"):" ⇅"}
-                      </th>
-                    );
-                    const subViews=[
-                      {k:"holdings",l:"📈 Holdings"},
-                      {k:"mf",      l:"📊 Funds"},
-                      {k:"cas",     l:"📋 CAS"},
-                      ...(m.broker?[{k:"broker",l:"🏦 Broker"}]:[]),
-                    ];
-                    return (
-                      <div style={{background:"linear-gradient(155deg,#0a1220,#080e1a)",
-                        border:`1px solid ${m.c}88`,borderTop:"none",
-                        borderRadius:"0 0 12px 12px",padding:"14px",
-                        boxShadow:`0 0 0 1px ${m.c}44`}}>
-
-                        {/* Minimize button */}
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                            {subViews.map(sv=>(
-                              <button key={sv.k} onClick={e=>{e.stopPropagation();setMemberView(sv.k);}}
-                                style={{padding:"4px 11px",borderRadius:6,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,
-                                  background:memberView===sv.k?m.c+"33":"#0d1020",color:memberView===sv.k?m.c:"#3a4a6a"}}>
-                                {sv.l}
-                              </button>
-                            ))}
-                          </div>
-                          <button onClick={e=>{e.stopPropagation();setSelMember(null);}}
-                            style={{padding:"4px 10px",borderRadius:6,border:"1px solid #1d2545",background:"#0a0e1a",
-                              color:"#3a4a6a",fontSize:10,cursor:"pointer",flexShrink:0}}>
-                            ✕ Minimize
-                          </button>
-                        </div>
-
-                        {/* KPI strip */}
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(110px,1fr))",gap:7,marginBottom:12}}>
-                          {[
-                            {l:"Portfolio",v:cr(totalVal),c:m.c},
-                            ...(hasInv?[{l:"Invested",v:cr(totalInv),c:"#3a4a6a"}]:[]),
-                            ...(hasInv&&totalUnreal!==0?[{l:"Unrealised P&L",v:cr(totalUnreal),c:totalUnreal>=0?"#34d399":"#f87171"}]:[]),
-                            ...(hasInv&&totalInv>0?[{l:"Return",v:((totalUnreal/totalInv)*100).toFixed(1)+"%",c:totalUnreal>=0?"#34d399":"#f87171"}]:[]),
-                            {l:"Positions",v:(sortedH||[]).length,c:"#e8eaf0"},
-                          ].map(({l,v,c})=>(
-                            <div key={l} style={{background:"#080b18",borderRadius:8,padding:"8px 10px"}}>
-                              <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:2}}>{l}</div>
-                              <div style={{fontSize:13,fontWeight:700,color:c,fontFamily:"monospace"}}>{v}</div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Custodian filter chips */}
-                        {custodianTags.length>1&&(
-                          <div style={{display:"flex",gap:5,marginBottom:10,flexWrap:"wrap"}}>
-                            {["All",...custodianTags].map(c=>(
-                              <button key={c} onClick={e=>{e.stopPropagation();setSelMemberCust(c);}}
-                                style={{padding:"3px 9px",borderRadius:5,border:"none",cursor:"pointer",fontSize:9,fontWeight:600,
-                                  background:selMemberCust===c?"#1e3a5f":"#0d1020",color:selMemberCust===c?"#7eb8ff":"#3a4a6a"}}>
-                                {c==="All"?"All Custodians":c}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Holdings table */}
-                        {memberView==="holdings"&&sortedH&&(
-                          <div style={{overflowX:"auto",maxHeight:380,overflowY:"auto"}}>
-                            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:400}}>
-                              <thead style={{position:"sticky",top:0}}>
-                                <tr style={{background:"#060910"}}>
-                                  <SortTh col="s" label="Stock" right={false}/>
-                                  {isAllFamily&&<th style={{padding:"7px 8px",color:"#3a4a6a",fontSize:9,fontWeight:600,borderBottom:"1px solid #1e2540",textTransform:"uppercase"}}>Member</th>}
-                                  {!isIncred&&<SortTh col="qty" label="Qty"/>}
-                                  {hasInv&&!isIncred&&<SortTh col="avg" label="Avg"/>}
-                                  {hasCmp&&<SortTh col="cmp" label="CMP"/>}
-                                  <SortTh col="val" label="Value"/>
-                                  {hasInv&&<SortTh col="pl" label="P&L"/>}
-                                  {hasInv&&<SortTh col="plpct" label="%"/>}
-                                  {hasSector&&<th style={{padding:"7px 8px",color:"#3a4a6a",fontSize:9,fontWeight:600,borderBottom:"1px solid #1e2540",textTransform:"uppercase"}}>Sector</th>}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {sortedH.slice(0,100).map((h,i)=>{
-                                  const pl=h.unreal!=null?h.unreal:(h.inv>0?h.val-h.inv:null);
-                                  const plPct=h.inv>0?(((h.val-h.inv)/h.inv)*100):null;
-                                  return (
-                                    <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#07080f"}}>
-                                      <td style={{padding:"6px 8px",fontWeight:600,color:"#c5cce0",fontSize:10,whiteSpace:"nowrap"}}>{h.s}</td>
-                                      {isAllFamily&&<td style={{padding:"6px 8px",color:"#3a5a7a",fontSize:9}}>{(h._member||"").split(" ")[0]}</td>}
-                                      {!isIncred&&<td style={{padding:"6px 8px",textAlign:"right",fontFamily:"monospace",color:"#8899bb",fontSize:10}}>{h.qty!=null?h.qty.toLocaleString("en-IN"):"—"}</td>}
-                                      {hasInv&&!isIncred&&<td style={{padding:"6px 8px",textAlign:"right",fontFamily:"monospace",color:"#3a4a6a",fontSize:9}}>{h.avg?"₹"+h.avg:"—"}</td>}
-                                      {hasCmp&&<td style={{padding:"6px 8px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontSize:9}}>{h.cmp?"₹"+h.cmp:"—"}</td>}
-                                      <td style={{padding:"6px 8px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(h.val)}</td>
-                                      {hasInv&&<td style={{padding:"6px 8px",textAlign:"right",fontFamily:"monospace",fontWeight:600,color:pl!=null?(pl>=0?"#34d399":"#f87171"):"#3a4a6a"}}>{pl!=null?cr(pl):"—"}</td>}
-                                      {hasInv&&<td style={{padding:"6px 8px",textAlign:"right",fontFamily:"monospace",fontSize:10,color:plPct!=null?(plPct>=0?"#34d399":"#f87171"):"#3a4a6a"}}>{plPct!=null?(plPct>=0?"+":"")+plPct.toFixed(1)+"%":"—"}</td>}
-                                      {hasSector&&<td style={{padding:"6px 8px",color:"#3a5a7a",fontSize:9}}>{h.sector||""}</td>}
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                              {sortedH.length>0&&(
-                                <tfoot><tr style={{background:"#06080e",borderTop:"2px solid #1e2540"}}>
-                                  <td colSpan={(!isIncred?2:1)+(hasInv&&!isIncred?1:0)+(hasCmp?1:0)} style={{padding:"7px 8px",color:"#3a4a6a",fontSize:10}}>
-                                    Total · {sortedH.length} positions{sortedH.length>100?" (showing 100)":""}
-                                  </td>
-                                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:m.c}}>{cr(totalVal)}</td>
-                                  {hasInv&&<td style={{padding:"7px 8px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:totalUnreal>=0?"#34d399":"#f87171"}}>{cr(totalUnreal)}</td>}
-                                  {hasInv&&<td style={{padding:"7px 8px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:totalUnreal>=0?"#34d399":"#f87171"}}>{totalInv>0?((totalUnreal/totalInv)*100).toFixed(1)+"%":"—"}</td>}
-                                  {hasSector&&<td/>}
-                                </tr></tfoot>
-                              )}
-                            </table>
-                          </div>
-                        )}
-
-                        {/* MF sub-view */}
-                        {memberView==="mf"&&(()=>{
-                          const regData=MF_REGISTRY[m.n];
-                          const htmlMF=(typeof VASUMATI_ZERODHA_MF!=="undefined"&&m.n==="Vasumati Shah")?VASUMATI_ZERODHA_MF:[];
-                          if(!regData&&htmlMF.length===0) return <div style={{padding:"20px",textAlign:"center",color:"#3a4a6a",fontSize:11}}>No MF data for {m.n}</div>;
-                          const schemes=(regData&&regData.schemes)||[];
-                          const allMF=[...htmlMF,...schemes.map(s=>({name:s.scheme,value:s.currentValue,invested:s.invested,xirr:s.xirr}))];
-                          return (
-                            <div>
-                              {allMF.map((f,i)=>(
-                                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #0d1020",alignItems:"center"}}>
-                                  <div style={{fontSize:10,color:"#c8d0e8",flex:1,paddingRight:8}}>{f.name||f.scheme}</div>
-                                  <div style={{textAlign:"right",flexShrink:0}}>
-                                    <div style={{fontSize:11,fontWeight:700,color:"#34d399",fontFamily:"monospace"}}>{cr(f.value||f.currentValue)}</div>
-                                    {f.xirr&&<div style={{fontSize:9,color:"#3a6a4a"}}>XIRR {f.xirr}%</div>}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })()}
-
-                        {/* CAS sub-view */}
-                        {memberView==="cas"&&(()=>{
-                          const casDat=typeof CAS_DATA!=="undefined"?CAS_DATA[m.cas]:null;
-                          if(!casDat) return <div style={{padding:"20px",textAlign:"center",color:"#3a4a6a",fontSize:11}}>No CAS data — upload CDSL CAS PDF</div>;
-                          return <div style={{fontSize:11,color:"#8899bb"}}>CAS data available · {JSON.stringify(casDat).slice(0,200)}</div>;
-                        })()}
-
-                      </div>
-                    );
-                  })()}
-                </div>
-              );
-            })}
-        </div>
-      </div>}
+      {tab==="Members"&&<MembersTab/>}
 
       {tab==="Bank"&&(()=>{
         const banks=[...new Set(BANK.map(r=>r.bank))];
@@ -7725,6 +7764,16 @@ const MEMBER_HOLDINGS = {
     ..._tag(CHETAN_V60_SUSHIL_HOLDINGS, "Chetan Shah", "Sushil Financial"),
   ],
   "JASH":  _tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah",      "Zerodha"),
+  "RIYA": [
+    ..._tag(typeof RIYA_SUSHIL_HOLDINGS!=="undefined"?RIYA_SUSHIL_HOLDINGS:[],   "Riya Shah", "Sushil Financial"),
+    ..._tag(typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],       "Riya Shah", "NSDL"),
+    ..._tag(typeof RIYA_ZERODHA_HOLDINGS!=="undefined"?RIYA_ZERODHA_HOLDINGS:[], "Riya Shah", "Zerodha"),
+  ],
+  "HONEY": _tag(typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[], "Honey Chetan Shah", "Zerodha"),
+  "AARYA_NEW": [
+    ..._tag(AARYA_HOLDINGS, "Aarya Shah", "ICICI Direct"),
+    ..._tag(typeof AARYA_SUSHIL_HOLDINGS!=="undefined"?AARYA_SUSHIL_HOLDINGS:[], "Aarya Shah", "Sushil Financial"),
+  ],
   "KARI":  _tag(KARI_HOLDINGS,           "Karishma Shah",  "Zerodha"),
   "AARYA": _tag(AARYA_HOLDINGS,          "Aarya Shah",     "ICICI Direct"),
   "ALL_FAMILY": [
@@ -16559,7 +16608,6 @@ function MTFTab() {
    Called from Overview "Refresh Prices" button
    Updates all CMP values in holdings via React state
 ═══════════════════════════════════════════════════════════ */
-
 </script>
 </body>
 </html>
