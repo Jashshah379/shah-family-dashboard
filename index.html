@@ -831,7 +831,7 @@ function WhatIfTab() {
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
       if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:h.cmp||0,holders:[]};
-      m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
+      m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0); if(h.cmp>0) m[h.s].cmp=h.cmp;
       if(h.cmp) m[h.s].cmp=h.cmp;
       if(h._member) m[h.s].holders.push({member:h._member,custodian:h._custodian,qty:h.qty||0,avg:h.avg||0,val:h.val});
     });
@@ -1153,7 +1153,7 @@ function FamilyMeetingTab() {
   const totalEquity = realMembers.reduce((s,m)=>s+(m.stocks||0),0);
   const totalMF = realMembers.reduce((s,m)=>s+(m.mf||0),0);
   const totalBank = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0),0);
-  const grandTotal = totalEquity+totalMF+totalBank;
+  const grandTotal = totalEquity+totalMF+totalBank+totalPPF;
 
   const topGainers = [...allH].filter(h=>h.val>0&&h.inv>0).sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,5);
   const topLosers = [...allH].filter(h=>h.val>0&&h.inv>0&&h.val<h.inv).sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,5);
@@ -1486,7 +1486,7 @@ function GlobalSearchTab() {
     const m = {};
     allH.forEach(h=>{
       if(!h||!h.s||!(h.val>0)) return;
-      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,members:[],custodians:[],sector:h.sector||""};
+      if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,cmp:0,members:[],custodians:[],sector:h.sector||""};
       m[h.s].val+=h.val; m[h.s].inv+=h.inv; m[h.s].qty+=(h.qty||0);
       if(h._member&&!m[h.s].members.includes(h._member)) m[h.s].members.push(h._member);
       if(h._custodian&&!m[h.s].custodians.includes(h._custodian)) m[h.s].custodians.push(h._custodian);
@@ -1697,6 +1697,7 @@ function GlobalSearchTab() {
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:14,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(s.val)}</div>
+                  {s.cmp>0&&<div style={{fontSize:9,color:"#7eb8ff",fontFamily:"monospace",marginBottom:2}}>CMP ₹{s.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</div>}
                   <div style={{fontSize:10,color:ret>=0?"#34d399":"#f87171",fontFamily:"monospace",fontWeight:600}}>
                     {ret>=0?"▲":"▼"}{Math.abs(ret).toFixed(1)}% · {cr(pl)}
                   </div>
@@ -4491,8 +4492,8 @@ function FamilyApp() {
                         </div>
                       )}
                       <div style={{fontSize:14,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:isUp?"#34d399":"#f87171"}}>
-                        {nseSym&&livePrices[nseSym]&&livePrices[nseSym].p
-                          ? "₹"+(livePrices[nseSym].p||0).toLocaleString("en-IN",{maximumFractionDigits:1})
+                        {nseSym&&livePrices[nseSym]
+                          ? "₹"+livePrices[nseSym].toLocaleString("en-IN",{maximumFractionDigits:1})
                           : cr(effectiveVal)}
                       </div>
                       <div style={{fontSize:10,color:isUp?"#10b981":"#ef4444",fontWeight:600,marginTop:2}}>
@@ -15126,7 +15127,7 @@ function NetWorthReportTab() {
             {memberData.map((m,i)=>{
               const bank=BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0);
               const total=(m.stocks||0)+(m.mf||0)+bank;
-              const grandTotal=totalEquity+totalMF+totalBank;
+              const grandTotal=totalEquity+totalMF+totalBank+totalPPF;
               return (
                 <tr key={m.n} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                   <td style={{padding:"8px 12px",textAlign:"right",color:"#3a4a6a",fontWeight:700}}>#{i+1}</td>
@@ -15795,6 +15796,41 @@ function MTFTab() {
   return (
     <div style={{paddingBottom:24}}>
       {/* Sub-nav */}
+      {/* Grand total KPI cards */}
+      {(()=>{
+        var allF=(typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){return h&&h.val>0;});
+        var inv=allF.reduce(function(s,h){return s+(h.inv||0);},0);
+        var val=allF.reduce(function(s,h){return s+(h.val||0);},0);
+        var pl=val-inv, pct=inv>0?(pl/inv*100):0;
+        var day=allF.reduce(function(s,h){return s+(h.dayPL||0);},0);
+        var hasD=allF.some(function(h){return h.dayPL!=null&&h.dayPL!==0;});
+        var stocks=new Set(allF.map(function(h){return h.s;})).size;
+        var f=function(v){if(!v&&v!==0)return"--";var a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN");};
+        return (
+          <div style={{marginBottom:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{fontSize:10,color:"#3a4a6a"}}>{stocks} unique stocks · {allF.length} positions</span>
+              {priceStatus==="live"&&<span style={{fontSize:9,color:"#10b981",fontWeight:600}}>● Live prices active</span>}
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+              {[
+                {l:"Total Invested",  v:f(inv),c:"#8899bb",icon:"💼"},
+                {l:"Current Value",   v:f(val),c:"#e8eaf0",icon:"📊"},
+                {l:"Unrealised P&L",  v:(pl>=0?"+":"")+f(pl),sub:(pct>=0?"+":"")+pct.toFixed(2)+"%",c:pl>=0?"#10b981":"#ef4444",icon:pl>=0?"📈":"📉"},
+                {l:"Today's P&L",     v:hasD?(day>=0?"+":"")+f(day):"—",sub:hasD?"from live":"—",c:hasD?(day>=0?"#10b981":"#ef4444"):"#3a4a6a",icon:"⚡"},
+              ].map(function(it,i){return(
+                <div key={it.l} style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:"1px solid #1d2545",borderTop:"2px solid "+it.c+"66",borderRadius:12,padding:"13px 15px",position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:7,right:9,fontSize:16,opacity:0.1}}>{it.icon}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>{it.l}</div>
+                  <div style={{fontSize:19,fontWeight:900,fontFamily:"monospace",color:it.c,letterSpacing:"-0.02em"}}>{it.v}</div>
+                  {it.sub&&<div style={{fontSize:9,color:it.c,opacity:0.75,marginTop:3,fontWeight:600}}>{it.sub}</div>}
+                </div>
+              );})
+              }
+            </div>
+          </div>
+        );
+      })()}
       <div style={{display:"flex",gap:7,marginBottom:16,flexWrap:"wrap"}}>
         {[{k:"overview",l:"📊 Overview"},{k:"interest",l:"💸 Interest Cost"},{k:"roi",l:"📈 ROI Analysis"},{k:"accounts",l:"🏦 By Account"},{k:"positions",l:"📋 Positions"}].map(b=>(
           <button key={b.k} onClick={()=>setView(b.k)} style={{padding:"5px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:view===b.k?"#1e3a5f":"#111827",color:view===b.k?"#7eb8ff":"#3a4a6a"}}>{b.l}</button>
