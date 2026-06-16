@@ -3946,56 +3946,61 @@ function PPFTab() {
 }
 
 function MutualFundsTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const reg  = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
-  const fols = typeof MEMBER_MF_FOLIOS!=="undefined"?MEMBER_MF_FOLIOS:{};
-  const members = Object.keys(reg).sort();
-  const [selMember, setSelMember] = React.useState(null);
-  const [expandedScheme, setExpandedScheme] = React.useState(null);
+  var cr = function(v) { if(!v&&v!==0)return"--";var a=Math.abs(v),si=v<0?"-":"";return a>=1e7?si+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?si+"₹"+(a/1e5).toFixed(1)+" L":si+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  var reg  = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
+  var fols = typeof MEMBER_MF_FOLIOS!=="undefined"?MEMBER_MF_FOLIOS:{};
+  var members = Object.keys(reg).sort();
+  var [selMember, setSelMember] = React.useState(null);
+  var [expandedScheme, setExpandedScheme] = React.useState(null);
 
-  const totalInv = members.reduce((s,m)=>s+(reg[m].inv||0),0);
-  const totalVal = members.reduce((s,m)=>s+(reg[m].valApr26||reg[m].val||0),0);
-  const totalPL  = totalVal - totalInv;
+  var totalInv = members.reduce(function(acc,m){return acc+(reg[m].inv||0);},0);
+  var totalVal = members.reduce(function(acc,m){return acc+(reg[m].valApr26||reg[m].val||0);},0);
+  var totalPL  = totalVal - totalInv;
 
-  const getMemberData = (name) => {
-    const r = reg[name] || {};
-    const schemes = fols[name] || [];
-    const schemeInv = schemes.reduce((s,sc)=>s+(sc.invested||0),0);
-    const schemeVal = schemes.reduce((s,sc)=>s+(sc.value||0),0);
+  var getMemberData = function(name) {
+    var r = reg[name] || {};
+    var schemes = fols[name] || [];
+    var schemeInv = schemes.reduce(function(acc,sc){return acc+(sc.invested||0);},0);
+    var schemeVal = schemes.reduce(function(acc,sc){return acc+(sc.value||0);},0);
     return {
       inv: schemeInv||r.inv||0,
       val: schemeVal||r.valApr26||r.val||0,
       xirr: r.xirr||null,
-      schemes,
+      schemes: schemes,
     };
   };
 
+  var selData = selMember ? getMemberData(selMember) : null;
+  var selPL   = selData ? selData.val - selData.inv : 0;
+  var selPct  = selData && selData.inv>0 ? (selPL/selData.inv*100) : 0;
+  var selMem  = selMember ? (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(function(x){return x.n===selMember;}) : null;
+
   return (
     <div style={{display:"flex",gap:14}}>
-      {/* ── Left: member list ── */}
+      {/* Left sidebar */}
       <div style={{width:200,flexShrink:0}}>
-        {/* Summary KPIs */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:12,padding:"12px 14px",marginBottom:10}}>
           <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:6}}>Family MF Total</div>
           <div style={{fontSize:18,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>{cr(totalVal)}</div>
           <div style={{fontSize:9,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace",marginTop:3}}>
-            {totalPL>=0?"+":""}{cr(totalPL)} · {totalInv>0?((totalPL/totalInv*100).toFixed(1)+"%"):"—"}
+            {totalPL>=0?"+":""}{cr(totalPL)}
           </div>
         </div>
-        {/* Member list */}
         <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6,paddingLeft:4}}>{members.length} Members</div>
         <div style={{display:"flex",flexDirection:"column",gap:5}}>
-          {members.map(name=>{
-            const d = getMemberData(name);
-            const pl = d.val - d.inv;
-            const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(x=>x.n===name);
+          {members.map(function(name){
+            var d = getMemberData(name);
+            var pl = d.val - d.inv;
+            var mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(function(x){return x.n===name;});
             return (
-              <div key={name} onClick={()=>setSelMember(selMember===name?null:name)}
+              <div key={name} onClick={function(){setSelMember(selMember===name?null:name); setExpandedScheme(null);}}
                 style={{background:selMember===name?"linear-gradient(135deg,#1e3a5f,#162040)":"linear-gradient(155deg,#11152c,#0d1122)",
                   border:selMember===name?"1px solid #3b82f6":"1px solid #1d2545",
                   borderRadius:10,padding:"10px 12px",cursor:"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
-                  <div style={{width:22,height:22,borderRadius:"50%",background:(mem&&mem.c)||"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff",flexShrink:0}}>{(mem&&mem.i)||(name[0])}</div>
+                  <div style={{width:22,height:22,borderRadius:"50%",background:(mem&&mem.c)||"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff",flexShrink:0}}>
+                    {(mem&&mem.i)||(name[0])}
+                  </div>
                   <div style={{fontSize:10,fontWeight:700,color:selMember===name?"#7eb8ff":"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{name.split(" ")[0]}</div>
                 </div>
                 <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(d.val)}</div>
@@ -4007,104 +4012,118 @@ function MutualFundsTab() {
         </div>
       </div>
 
-      {/* ── Right: selected member detail ── */}
+      {/* Right panel */}
       <div style={{flex:1,minWidth:0}}>
-        {!selMember?(
+        {!selMember&&(
           <div style={{padding:"60px 0",textAlign:"center",color:"#3a4a6a"}}>
             <div style={{fontSize:28,marginBottom:12}}>💼</div>
             <div style={{fontSize:13}}>Select a member to view their mutual fund holdings</div>
           </div>
-        ):(()=>{
-          const d = getMemberData(selMember);
-          const pl = d.val - d.inv;
-          const plPct = d.inv>0?(pl/d.inv*100):0;
-          const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(x=>x.n===selMember);
-          return (
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {/* Header */}
-              <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63)",borderRadius:14,padding:"14px 18px",border:"1px solid #2a2a5a",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{width:40,height:40,borderRadius:"50%",background:(mem&&mem.c)||"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff"}}>{(mem&&mem.i)||(selMember[0])}</div>
-                  <div>
-                    <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>{selMember}</div>
-                    <div style={{fontSize:9,color:"#6a7a9a"}}>Mutual Fund Portfolio · RACH Distributor</div>
-                  </div>
+        )}
+        {selMember&&selData&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {/* Header */}
+            <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63)",borderRadius:14,padding:"14px 18px",border:"1px solid #2a2a5a",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{width:40,height:40,borderRadius:"50%",background:(selMem&&selMem.c)||"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff"}}>
+                  {(selMem&&selMem.i)||(selMember[0])}
                 </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:20,fontWeight:900,color:"#10b981",fontFamily:"monospace"}}>{cr(d.val)}</div>
-                  {d.xirr!=null&&<div style={{fontSize:10,color:d.xirr>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>XIRR {d.xirr.toFixed(2)}%</div>}
+                <div>
+                  <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>{selMember}</div>
+                  <div style={{fontSize:9,color:"#6a7a9a"}}>Mutual Fund Portfolio · RACH Distributor</div>
                 </div>
               </div>
-
-              {/* KPIs */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-                {[
-                  {l:"Invested",    v:cr(d.inv),                                      c:"#8899bb"},
-                  {l:"Current Value",v:cr(d.val),                                     c:"#10b981"},
-                  {l:"P&L",         v:(pl>=0?"+":"")+cr(pl),sub:plPct.toFixed(1)+"%", c:pl>=0?"#10b981":"#ef4444"},
-                  {l:"XIRR",        v:d.xirr!=null?d.xirr.toFixed(2)+"%":"—",        c:d.xirr!=null?(d.xirr>=0?"#10b981":"#ef4444"):"#3a4a6a"},
-                ].map(it=>(
-                  <div key={it.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
-                    <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{it.l}</div>
-                    <div style={{fontSize:14,fontWeight:800,fontFamily:"monospace",color:it.c}}>{it.v}</div>
-                    {it.sub&&<div style={{fontSize:9,color:it.c,opacity:0.7}}>{it.sub}</div>}
-                  </div>
-                ))}
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:20,fontWeight:900,color:"#10b981",fontFamily:"monospace"}}>{cr(selData.val)}</div>
+                {selData.xirr!=null&&<div style={{fontSize:10,color:selData.xirr>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>XIRR {selData.xirr.toFixed(2)}%</div>}
               </div>
-
-              {/* Scheme list */}
-              {d.schemes.length===0?(
-                <div style={{padding:20,textAlign:"center",color:"#3a4a6a",border:"1px solid #1d2545",borderRadius:12}}>
-                  No scheme-level data available
-                </div>
-              ):(
-                <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
-                  <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#10b981"}}>
-                    {d.schemes.length} Schemes
-                  </div>
-                  <div>
-                    {d.schemes.map((sc,i)=>{
-                      const spl = sc.gain!==undefined ? sc.gain : (sc.value||0)-(sc.invested||0);
-                      const isGain = spl>=0;
-                      const isExp = expandedScheme===i;
-                      return (
-                        <div key={i}>
-                          <div onClick={()=>setExpandedScheme(isExp?null:i)}
-                            style={{padding:"11px 14px",borderBottom:"1px solid #0d1020",cursor:"pointer",
-                              background:isExp?"#0a1020":"transparent",
-                              display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8",marginBottom:3}}>{sc.scheme}</div>
-                              <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                                {sc.cat&&<span style={{fontSize:7,color:"#3a4a6a",background:"#0a0e1e",padding:"1px 5px",borderRadius:3}}>{sc.cat}</span>}
-                                {sc.platform&&<span style={{fontSize:7,color:"#7eb8ff",background:"#1e3a5f",padding:"1px 5px",borderRadius:3}}>{sc.platform}</span>}
-                              </div>
-                            </div>
-                            <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
-                              <div style={{fontSize:12,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(sc.value||0)}</div>
-                              <div style={{fontSize:10,color:isGain?"#10b981":"#ef4444",fontFamily:"monospace"}}>{isGain?"+":""}{cr(spl)}</div>
-                            </div>
-                            <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>{isExp?"▲":"▼"}</span>
-                          </div>
-                          {isExp&&(
-                            <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-                              <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>INVESTED</div><div style={{fontSize:11,fontFamily:"monospace",color:"#8899bb",fontWeight:600}}>{cr(sc.invested||0)}</div></div>
-                              <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>CURRENT VALUE</div><div style={{fontSize:11,fontFamily:"monospace",color:"#10b981",fontWeight:700}}>{cr(sc.value||0)}</div></div>
-                              <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>P&L</div><div style={{fontSize:11,fontFamily:"monospace",color:isGain?"#10b981":"#ef4444",fontWeight:700}}>{isGain?"+":""}{cr(spl)}</div></div>
-                              <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>XIRR</div><div style={{fontSize:11,fontFamily:"monospace",color:sc.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>{sc.xirr!=null?sc.xirr.toFixed(2)+"%":"—"}</div></div>
-                              <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>START DATE</div><div style={{fontSize:11,color:"#8899bb"}}>{sc.start||"—"}</div></div>
-                              <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>FOLIO</div><div style={{fontSize:10,fontFamily:"monospace",color:"#7eb8ff"}}>{sc.folio||"—"}</div></div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
-          );
-        })()}
+
+            {/* KPIs */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+              {[
+                {l:"Invested",     v:cr(selData.inv),                                        c:"#8899bb"},
+                {l:"Current Value",v:cr(selData.val),                                        c:"#10b981"},
+                {l:"P&L",          v:(selPL>=0?"+":"")+cr(selPL), sub:selPct.toFixed(1)+"%", c:selPL>=0?"#10b981":"#ef4444"},
+                {l:"XIRR",         v:selData.xirr!=null?selData.xirr.toFixed(2)+"%":"—",    c:selData.xirr!=null?(selData.xirr>=0?"#10b981":"#ef4444"):"#3a4a6a"},
+              ].map(function(tile){return(
+                <div key={tile.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
+                  <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{tile.l}</div>
+                  <div style={{fontSize:14,fontWeight:800,fontFamily:"monospace",color:tile.c}}>{tile.v}</div>
+                  {tile.sub&&<div style={{fontSize:9,color:tile.c,opacity:0.7}}>{tile.sub}</div>}
+                </div>
+              );})}
+            </div>
+
+            {/* Schemes */}
+            {selData.schemes.length===0&&(
+              <div style={{padding:20,textAlign:"center",color:"#3a4a6a",border:"1px solid #1d2545",borderRadius:12}}>No scheme-level data available</div>
+            )}
+            {selData.schemes.length>0&&(
+              <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#10b981"}}>
+                  {selData.schemes.length} Schemes
+                </div>
+                <div>
+                  {selData.schemes.map(function(sc,i){
+                    var spl = sc.gain!==undefined ? sc.gain : (sc.value||0)-(sc.invested||0);
+                    var isGain = spl>=0;
+                    var isExp = expandedScheme===i;
+                    return (
+                      <div key={i}>
+                        <div onClick={function(){setExpandedScheme(isExp?null:i);}}
+                          style={{padding:"11px 14px",borderBottom:"1px solid #0d1020",cursor:"pointer",
+                            background:isExp?"#0a1020":"transparent",
+                            display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8",marginBottom:3}}>{sc.scheme}</div>
+                            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                              {sc.cat&&<span style={{fontSize:7,color:"#3a4a6a",background:"#0a0e1e",padding:"1px 5px",borderRadius:3}}>{sc.cat}</span>}
+                              {sc.platform&&<span style={{fontSize:7,color:"#7eb8ff",background:"#1e3a5f",padding:"1px 5px",borderRadius:3}}>{sc.platform}</span>}
+                            </div>
+                          </div>
+                          <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
+                            <div style={{fontSize:12,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(sc.value||0)}</div>
+                            <div style={{fontSize:10,color:isGain?"#10b981":"#ef4444",fontFamily:"monospace"}}>{isGain?"+":""}{cr(spl)}</div>
+                          </div>
+                          <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>{isExp?"▲":"▼"}</span>
+                        </div>
+                        {isExp&&(
+                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>INVESTED</div>
+                              <div style={{fontSize:11,fontFamily:"monospace",color:"#8899bb",fontWeight:600}}>{cr(sc.invested||0)}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>CURRENT VALUE</div>
+                              <div style={{fontSize:11,fontFamily:"monospace",color:"#10b981",fontWeight:700}}>{cr(sc.value||0)}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>P&L</div>
+                              <div style={{fontSize:11,fontFamily:"monospace",color:isGain?"#10b981":"#ef4444",fontWeight:700}}>{isGain?"+":""}{cr(spl)}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>XIRR</div>
+                              <div style={{fontSize:11,fontFamily:"monospace",color:sc.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>{sc.xirr!=null?sc.xirr.toFixed(2)+"%":"—"}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>START DATE</div>
+                              <div style={{fontSize:11,color:"#8899bb"}}>{sc.start||"—"}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>FOLIO</div>
+                              <div style={{fontSize:10,fontFamily:"monospace",color:"#7eb8ff"}}>{sc.folio||"—"}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
