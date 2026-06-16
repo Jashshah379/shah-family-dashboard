@@ -4631,7 +4631,8 @@ function FamilyApp() {
 
       {/* - STOCK DETAIL PAGE - */}
       {stockDetail&&(()=>{
-        const sym = stockDetail;
+        const sym = typeof stockDetail === "string" ? stockDetail : (stockDetail.s||stockDetail.sym||"");
+        if(!sym){return null;}
         /* gather all family holdings of this stock */
         const holdings = [];
         MEMBERS.filter(m=>!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef]).forEach(m=>{
