@@ -2356,7 +2356,7 @@ function ChangelogTab() {
       </div>
 
       {/* Summary stats */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
         {[
           {l:"Data Updates",v:CHANGELOG.filter(e=>e.type==="data").length,c:"#7eb8ff",icon:"📊"},
           {l:"Features Added",v:CHANGELOG.filter(e=>e.type==="feature").length,c:"#34d399",icon:"✨"},
@@ -4049,9 +4049,12 @@ function MembersTab() {
     var regData = reg[m.n] || null;
     var schemes = fols[m.n] || [];
     if (!regData && !schemes.length) return null;
+    var inv = schemes.length>0 ? schemes.reduce(function(s,sc){return s+(sc.invested||0);},0) : ((regData&&regData.inv)||0);
+    var val = schemes.length>0 ? schemes.reduce(function(s,sc){return s+(sc.value||0);},0) : ((regData&&(regData.valApr26||regData.val))||0);
     return {
-      inv:     (regData && regData.inv) || 0,
-      val:     (regData && (regData.valApr26||regData.val)) || 0,
+      inv: inv,
+      val: val,
+      xirr: regData ? regData.xirr : null,
       history: regData || null,
       schemes: schemes,
     };
@@ -4230,7 +4233,8 @@ function MembersTab() {
                         {[
                           {l:"Invested",v:cr(mfData.inv||0),c:"#8899bb"},
                           {l:"Current Value",v:cr(mfData.val||0),c:"#10b981"},
-                          {l:"P&L",v:cr((mfData.val||0)-(mfData.inv||0)),c:(mfData.val||0)>=(mfData.inv||0)?"#10b981":"#ef4444"},
+                          {l:"P&L",v:(mfData.val>=mfData.inv?"+":"")+cr((mfData.val||0)-(mfData.inv||0)),c:(mfData.val||0)>=(mfData.inv||0)?"#10b981":"#ef4444"},
+                          {l:"XIRR",v:mfData.xirr!=null?mfData.xirr.toFixed(2)+"%":"—",c:mfData.xirr>=0?"#10b981":"#ef4444"},
                         ].map(function(it){return(
                           <div key={it.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
                             <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{it.l}</div>
@@ -4246,7 +4250,7 @@ function MembersTab() {
                           </div>
                           <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                             <thead><tr style={{background:"#0a0e1e"}}>
-                              {["Scheme","Invested","Current Value","P&L"].map(function(h){return(
+                              {["Scheme","Invested","Current Value","P&L","XIRR"].map(function(h){return(
                                 <th key={h} style={{padding:"6px 12px",textAlign:h==="Scheme"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
                               );})}
                             </tr></thead>
@@ -6062,35 +6066,35 @@ const MEMBERS = [
   {n:"All Family",     i:"AF",c:"#e8eaf0",stocks:739029908, mf:104835416, bank:12080327, _isFamily:true,
    cas:"All Family",broker:null,icici:null,holdingsRef:"ALL_FAMILY",custodian:["All accounts"],
    casApr26:855945651,casTrend:[{m:"May'25",v:800000000},{m:"Jun'25",v:820000000},{m:"Jul'25",v:810000000},{m:"Aug'25",v:830000000},{m:"Sep'25",v:840000000},{m:"Oct'25",v:850000000},{m:"Nov'25",v:845000000},{m:"Dec'25",v:855000000},{m:"Jan'26",v:860000000},{m:"Feb'26",v:855000000},{m:"Mar'26",v:852000000},{m:"Apr'26",v:855945651}]},
-  {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:171826882, mf:60336551, bank:422531,
+  {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:171826882, mf:1175446, bank:422531,
    cas:"Vasumati Shah",broker:null,icici:null,holdingsRef:"V129",
    custodian:["Sushil Financial","ICICI Direct","Zerodha"],casApr26:232585964,
    casTrend:[{m:"May'25",v:220000000},{m:"Jun'25",v:225000000},{m:"Oct'25",v:228000000},{m:"Apr'26",v:232585964}]},
-  {n:"Rasiklal HUF",   i:"RH",c:"#1d9e75",stocks:113658467, mf:2513615,  bank:375950,
+  {n:"Rasiklal HUF",   i:"RH",c:"#1d9e75",stocks:113658467, mf:589560,  bank:375950,
    cas:"Rasiklal HUF", broker:null,icici:null,holdingsRef:"RASIKLAL_HUF",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:116548032,
    casTrend:[{m:"May'25",v:168000000},{m:"Oct'25",v:172000000},{m:"Apr'26",v:174525606},{m:"Jun'26",v:116548032}]},
-  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:147774287, mf:9380777,  bank:2171888,
+  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:147774287, mf:1001867,  bank:2171888,
    cas:"Rasiklal Shah",broker:null,icici:null,holdingsRef:"RM",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:159326952,
    casTrend:[{m:"May'25",v:150000000},{m:"Oct'25",v:155000000},{m:"Apr'26",v:159326952}]},
-  {n:"Chetan Shah HUF",i:"CH",c:"#7b6cf6",stocks:53988630,  mf:2991185,  bank:79531,
+  {n:"Chetan Shah HUF",i:"CH",c:"#7b6cf6",stocks:53988630,  mf:2884484,  bank:79531,
    cas:"Chetan Shah HUF",broker:null,icici:null,holdingsRef:"HUF",
    custodian:["Sushil Financial (JD0C31)"],casApr26:67948572,
    casTrend:[{m:"May'25",v:60000000},{m:"Oct'25",v:65000000},{m:"Apr'26",v:67948572}]},
-  {n:"Praful Shah HUF",i:"PH",c:"#ba7517",stocks:47089037,  mf:1089430,  bank:32939,
+  {n:"Praful Shah HUF",i:"PH",c:"#ba7517",stocks:47089037,  mf:1099002,  bank:32939,
    cas:"Praful Shah HUF",broker:"JD0P71",icici:null,holdingsRef:"PRAFUL_HUF",
    custodian:["Sushil Financial (JD0P71)","ICICI Direct"],casApr26:49248406,
    casTrend:[{m:"May'25",v:46000000},{m:"Oct'25",v:48000000},{m:"Apr'26",v:49248406}]},
-  {n:"Asha Shah",      i:"AS",c:"#d85a30",stocks:48716423,  mf:1550340,  bank:50268,
+  {n:"Asha Shah",      i:"AS",c:"#d85a30",stocks:48716423,  mf:1191553,  bank:50268,
    cas:"Asha Shah",   broker:"JD0A46",icici:null,holdingsRef:"A46",
    custodian:["Sushil Financial (JD0A46)","IIFL Capital"],casApr26:50266763,
    casTrend:[{m:"May'25",v:48000000},{m:"Oct'25",v:50000000},{m:"Apr'26",v:50266763}]},
-  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146804,   bank:2000000,
+  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146628,   bank:2000000,
    cas:"Jash Shah",   broker:null,icici:null,holdingsRef:"JASH",
    custodian:["Zerodha","ICICI NSDL"],casApr26:31240646,
    casTrend:[{m:"May'25",v:28000000},{m:"Oct'25",v:30000000},{m:"Apr'26",v:31240646}]},
-  {n:"Riya Shah",      i:"RI",c:"#d4537e",stocks:28072229,  mf:175391,   bank:83722,
+  {n:"Riya Shah",      i:"RI",c:"#d4537e",stocks:28072229,  mf:146628,   bank:83722,
    cas:"Riya Shah",   broker:null,icici:"JD0R246",holdingsRef:"RIYA",
    custodian:["ICICI Direct","Sushil Financial","NSDL","Zerodha"],casApr26:25210629,
    casTrend:[{m:"May'25",v:23000000},{m:"Oct'25",v:24000000},{m:"Apr'26",v:25210629}]},
@@ -6098,15 +6102,15 @@ const MEMBERS = [
    cas:"Amit Gandhi HUF",broker:null,icici:null,holdingsRef:null,
    custodian:["ICICI Direct"],casApr26:20513125,
    casTrend:[{m:"May'25",v:19000000},{m:"Apr'26",v:20513125}]},
-  {n:"Maya Shah",      i:"MY",c:"#e24b4a",stocks:12554025,  mf:1886559,  bank:8996,
+  {n:"Maya Shah",      i:"MY",c:"#e24b4a",stocks:12554025,  mf:990902,  bank:8996,
    cas:"Maya Shah",   broker:null,icici:null,holdingsRef:"MAYA_SUSHIL",
    custodian:["Sushil Financial (JD0M34)"],casApr26:15416584,
    casTrend:[{m:"May'25",v:13000000},{m:"Apr'26",v:15416584}]},
-  {n:"Chetan Shah",    i:"CS",c:"#9977dd",stocks:5910403,   mf:1981709,  bank:2851889,
+  {n:"Chetan Shah",    i:"CS",c:"#9977dd",stocks:5910403,   mf:761846,  bank:2851889,
    cas:"Chetan Shah", broker:null,icici:null,holdingsRef:"CHETAN",
    custodian:["Zerodha","Sushil Financial"],casApr26:10743001,
    casTrend:[{m:"May'25",v:9500000},{m:"Apr'26",v:10743001}]},
-    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:15757289, bank:0,
+    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:2450109, bank:0,
    cas:"Honey Chetan Shah",broker:null,icici:null,holdingsRef:"HONEY",
    custodian:["Zerodha (VE7649)"],casApr26:15757289,
    casTrend:[{m:"Apr'26",v:15757289}]},
@@ -6114,7 +6118,7 @@ const MEMBERS = [
    cas:"Karishma Shah",broker:null,icici:null,holdingsRef:"KARI",
    custodian:["Zerodha (DWL506)"],casApr26:1898102,
    casTrend:[{m:"Apr'26",v:1898102}]},
-  {n:"Praful Shah",    i:"PS",c:"#84cc16",stocks:963163,    mf:7025766,  bank:5748909,
+  {n:"Praful Shah",    i:"PS",c:"#84cc16",stocks:963163,    mf:1978808,  bank:5748909,
    cas:"Praful Shah", broker:"JD0P151",icici:null,holdingsRef:null,
    custodian:["Sushil Financial"],casApr26:3421347,
    casTrend:[{m:"Apr'26",v:3421347}]},
@@ -7876,24 +7880,76 @@ const VASUMATI_ZERODHA_MF = [
   {s:"PARAG PARIKH FLEXI CAP FUND - DIRECT PLA",units:6674.298,nav:89.149,val:595005,inv:599970,unreal:-4964},
 ];
 
+/* ── MEMBER_MF_FOLIOS — Full scheme-level MF data from RACH Portfolio Summary Jun 2026 ── */
 const MEMBER_MF_FOLIOS = {
-  "Chetan Shah HUF": [
-    {scheme:"Nippon India Power & Infra", holder:"HUF",      cat:"Equity",units:376.077,  nav:378.87, invested:15350,   value:142483, gain:127133},
-    {scheme:"Kotak Midcap Fund",          holder:"Asha+HUF", cat:"Equity",units:3446.97,  nav:137.58, invested:100000,  value:474237, gain:374237},
+  "Amit Gandhi HUF": [
+    {scheme:"Axis ELSS Tax Saver Fund (G)",            folio:"91087961536", cat:"ELSS",   platform:"RACH", start:"25-06-2020", invested:75000,   value:162033,  gain:87033,  xirr:13.76},
+    {scheme:"DSP ELSS Tax Saver Fund Reg (G)",          folio:"5300962/70",  cat:"ELSS",   platform:"RACH", start:"23-03-2018", invested:150000,  value:455016,  gain:305016, xirr:15.39},
+    {scheme:"Mirae Asset ELSS Tax Saver Fund Reg (G)",  folio:"70416322783", cat:"ELSS",   platform:"RACH", start:"25-03-2019", invested:75000,   value:214824,  gain:139824, xirr:15.67},
+    {scheme:"Mirae Asset ELSS Tax Saver Fund Reg (G)",  folio:"77728905116", cat:"ELSS",   platform:"RACH", start:"04-05-2020", invested:375000,  value:780526,  gain:405526, xirr:15.44},
   ],
   "Asha Shah": [
-    {scheme:"Kotak Midcap Fund",          holder:"Asha+HUF", cat:"Equity",units:3446.97,  nav:137.58, invested:100000,  value:474237, gain:374237},
-    {scheme:"Mirae Asset Large Cap",      holder:"Asha",     cat:"Equity",units:1500.000, nav:115.00, invested:120000,  value:172500, gain:52500},
+    {scheme:"Canara Robeco Large and Mid Cap Fund Reg (G)", folio:"10510485062", cat:"Equity", platform:"RACH", start:"23-12-2016", invested:50000,  value:193097,  gain:143097, xirr:15.31},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",               folio:"4004174",     cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:235000, value:538693,  gain:303693, xirr:13.60},
+    {scheme:"Kotak Midcap Fund (G)",                       folio:"3827062",     cat:"Equity", platform:"RACH", start:"22-12-2016", invested:50000,  value:244938,  gain:194938, xirr:18.24},
+    {scheme:"Mirae Asset ELSS Tax Saver Fund Reg (G)",     folio:"70416322692", cat:"ELSS",   platform:"RACH", start:"25-03-2019", invested:75000,  value:214824,  gain:139824, xirr:15.67},
   ],
   "Chetan Shah": [
-    {scheme:"Canara Robeco Bluechip",     holder:"Chetan",   cat:"Equity",units:2100.000, nav:62.50,  invested:80000,   value:131250, gain:51250},
-    {scheme:"Axis Long Term Equity",      holder:"Chetan",   cat:"ELSS",  units:1800.000, nav:100.00, invested:100000,  value:180000, gain:80000},
-    {scheme:"ICICI Pru Balanced Advantage",holder:"Jash",    cat:"Hybrid",units:5200.000, nav:62.30,  invested:146804,  value:324000, gain:177196},
+    {scheme:"HDFC Dividend Yield Fund Reg (G)", folio:"14670142/26", cat:"Equity", platform:"RACH", start:"18-12-2020", invested:312632, value:761846, gain:449214, xirr:17.60},
   ],
-  "Vasumati Shah": (VASUMATI_ZERODHA_MF||[]).map(h=>({
-    scheme:h.s, holder:"Vasumati Shah", units:h.units, nav:h.nav,
-    value:h.val, invested:h.inv, gain:h.unreal, cat:"Equity", date:"Jun 2026",
-  })),
+  "Chetan Shah HUF": [
+    {scheme:"Axis ELSS Tax Saver Fund (G)",                folio:"91087961546",  cat:"ELSS",   platform:"RACH", start:"25-06-2020", invested:75000,  value:162033,  gain:87033,  xirr:13.76},
+    {scheme:"Baroda BNP Paribas ELSS Tax Saver Fund Reg (G)", folio:"900000458443", cat:"ELSS", platform:"RACH", start:"26-03-2015", invested:10000,  value:27497,   gain:17497,  xirr:8.62},
+    {scheme:"Canara Robeco ELSS Tax Saver Fund Reg (G)",   folio:"17725943182",  cat:"ELSS",   platform:"RACH", start:"19-03-2021", invested:300000, value:507117,  gain:207117, xirr:11.50},
+    {scheme:"Canara Robeco Large and Mid Cap Fund Reg (G)",folio:"10510485103",  cat:"Equity", platform:"RACH", start:"23-12-2016", invested:50000,  value:193097,  gain:143097, xirr:15.31},
+    {scheme:"HDFC Dividend Yield Fund Reg (G)",            folio:"14670147/11",  cat:"Equity", platform:"RACH", start:"18-12-2020", invested:390790, value:952307,  gain:561517, xirr:17.60},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",               folio:"4004554",      cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:115000, value:321089,  gain:206089, xirr:13.73},
+    {scheme:"Kotak Midcap Fund (G)",                       folio:"3828119",      cat:"Equity", platform:"RACH", start:"22-12-2016", invested:50000,  value:244938,  gain:194938, xirr:18.24},
+    {scheme:"Mirae Asset ELSS Tax Saver Fund Reg (G)",     folio:"70416336362",  cat:"ELSS",   platform:"RACH", start:"25-03-2019", invested:150000, value:476406,  gain:326406, xirr:18.88},
+  ],
+  "Honey Chetan Shah": [
+    {scheme:"Bandhan Small Cap Fund Reg (G)",      folio:"6783181/87",    cat:"Equity", platform:"RACH", start:"04-08-2025", invested:300000, value:314035,  gain:14035,   xirr:5.44},
+    {scheme:"DSP ELSS Tax Saver Fund Reg (G)",     folio:"4209017/21",    cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:280000, value:879341,  gain:599341,  xirr:14.99},
+    {scheme:"Franklin India Opportunities Fund (G)",folio:"35189935",     cat:"Equity", platform:"RACH", start:"20-08-2025", invested:300000, value:296163,  gain:-3837,   xirr:-1.56},
+    {scheme:"Invesco India Mid Cap Fund (G)",       folio:"31034236586",   cat:"Equity", platform:"RACH", start:"11-08-2025", invested:300000, value:316248,  gain:16248,   xirr:6.45},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",        folio:"4004491",       cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:130000, value:367117,  gain:237117,  xirr:13.61},
+    {scheme:"Nippon India Consumption Fund (G)",    folio:"477425413645",  cat:"Equity", platform:"RACH", start:"05-08-2025", invested:300000, value:277205,  gain:-22795,  xirr:-8.78},
+  ],
+  "Jash Shah": [
+    {scheme:"HDFC Children's Fund Regular Plan", folio:"99248/46", cat:"Equity", platform:"RACH", start:"18-10-2017", invested:57294, value:146628, gain:89334, xirr:11.46},
+  ],
+  "Maya Shah": [
+    {scheme:"Canara Robeco Large and Mid Cap Fund Reg (G)", folio:"10510485072", cat:"Equity", platform:"RACH", start:"23-12-2016", invested:50000,  value:193097,  gain:143097, xirr:15.31},
+    {scheme:"HDFC Dividend Yield Fund Reg (G)",             folio:"14670145/17", cat:"Equity", platform:"RACH", start:"18-12-2020", invested:195395, value:476154,  gain:280759, xirr:17.60},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",                folio:"4004553",     cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:25000,  value:76714,   gain:51714,  xirr:12.92},
+    {scheme:"Kotak Midcap Fund (G)",                        folio:"3827086",     cat:"Equity", platform:"RACH", start:"22-12-2016", invested:50000,  value:244938,  gain:194938, xirr:18.24},
+  ],
+  "Praful Shah": [
+    {scheme:"Franklin India Opportunities Fund (G)", folio:"35016315", cat:"Equity", platform:"RACH", start:"17-06-2025", invested:500000,  value:510819,  gain:10819,  xirr:2.18},
+    {scheme:"Parag Parikh Flexi Cap Fund Reg (G)",   folio:"17362116", cat:"Equity", platform:"RACH", start:"20-06-2025", invested:1500000, value:1467989, gain:-32011, xirr:-2.16},
+  ],
+  "Praful Shah HUF": [
+    {scheme:"Invesco India Mid Cap Fund (G)",       folio:"31043913191", cat:"Equity", platform:"RACH", start:"02-04-2026", invested:250000, value:294368, gain:44368,  xirr:123.85},
+    {scheme:"Kotak Multicap Fund (G)",              folio:"18844265",    cat:"Equity", platform:"RACH", start:"02-04-2026", invested:250000, value:275324, gain:25324,  xirr:60.95},
+    {scheme:"Parag Parikh ELSS Tax Saver Fund (G)", folio:"10869263",    cat:"ELSS",   platform:"RACH", start:"22-03-2021", invested:150000, value:296487, gain:146487, xirr:13.90},
+    {scheme:"Parag Parikh ELSS Tax Saver Fund (G)", folio:"12255043",    cat:"ELSS",   platform:"RACH", start:"25-01-2022", invested:150000, value:232822, gain:82822,  xirr:10.54},
+  ],
+  "Rasiklal Shah": [
+    {scheme:"HDFC Dividend Yield Fund Reg (G)", folio:"14670146/14", cat:"Equity", platform:"RACH", start:"18-12-2020", invested:195395, value:476154, gain:280759, xirr:17.60},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",    folio:"4004257",     cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:180000, value:525714, gain:345714, xirr:13.50},
+  ],
+  "Rasiklal HUF": [
+    {scheme:"Canara Robeco Large and Mid Cap Fund Reg (G)", folio:"10510485052", cat:"Equity", platform:"RACH", start:"23-12-2016", invested:50000,  value:193097, gain:143097, xirr:15.31},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",                folio:"4004555",     cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:50000,  value:151525, gain:101525, xirr:13.05},
+    {scheme:"Kotak Midcap Fund (G)",                        folio:"3827117",     cat:"Equity", platform:"RACH", start:"22-12-2016", invested:50000,  value:244938, gain:194938, xirr:18.24},
+  ],
+  "Riya Shah": [
+    {scheme:"HDFC Children's Fund Regular Plan", folio:"99247/49", cat:"Equity", platform:"RACH", start:"18-10-2017", invested:57294, value:146628, gain:89334, xirr:11.46},
+  ],
+  "Vasumati Shah": [
+    {scheme:"HDFC Dividend Yield Fund Reg (G)", folio:"14670148/08", cat:"Equity", platform:"RACH", start:"18-12-2020", invested:312632, value:761846, gain:449214, xirr:17.60},
+    {scheme:"Kotak ELSS Tax Saver Fund (G)",    folio:"4004258",     cat:"ELSS",   platform:"RACH", start:"27-03-2017", invested:190000, value:413600, gain:223600, xirr:13.23},
+  ],
 };
 
 const FAMILY_EQ_PL         = FAMILY_EQ_TOTAL_MKT - FAMILY_EQ_TOTAL_COST;
@@ -9400,17 +9456,19 @@ const V129_DIVIDENDS = {
 };
 
 const MF_REGISTRY = {
-  "Rasiklal Shah":{"inv":4253796,"val31mar24":7319978,"valOct24":8184936,"val31mar25":8332715,"valOct25":9266903,"val31mar26":8536633,"valApr26":9380777},
-  "Vasumati Shah":{"inv":3932625,"val31mar24":3913318,"valOct24":4372621,"val31mar25":5138910,"valOct25":5752893,"val31mar26":6234360,"valApr26":6033655},
-  "Chetan Shah":{"inv":331632,"val31mar24":687537,"valOct24":773945,"val31mar25":716830,"valOct25":790795,"val31mar26":820000,"valApr26":1981709},
-  "Asha Shah":{"inv":500000,"val31mar24":900000,"valOct24":1100000,"val31mar25":1300000,"valOct25":1450000,"val31mar26":1500000,"valApr26":1550340},
-  "Maya Shah":{"inv":800000,"val31mar24":1200000,"valOct24":1400000,"val31mar25":1600000,"valOct25":1750000,"val31mar26":1850000,"valApr26":1886559},
-  "Praful Shah HUF":{"inv":600000,"val31mar24":850000,"valOct24":950000,"val31mar25":1000000,"valOct25":1050000,"val31mar26":1075000,"valApr26":1089430},
-  "Honey Chetan Shah":{"inv":8000000,"val31mar24":11000000,"valOct24":13000000,"val31mar25":14500000,"valOct25":15000000,"val31mar26":15500000,"valApr26":15757289},
-  "Jash Shah":{"inv":100000,"val31mar24":130000,"valOct24":140000,"val31mar25":143000,"valOct25":145000,"val31mar26":146000,"valApr26":146804},
-  "Riya Shah":{"inv":100000,"val31mar24":140000,"valOct24":160000,"val31mar25":170000,"valOct25":173000,"val31mar26":174000,"valApr26":175391},
-  "Praful Shah":{"inv":1200000,"val31mar24":1600000,"valOct24":1750000,"val31mar25":1850000,"valOct25":1950000,"val31mar26":1980000,"valApr26":1988083},
-  "Chetan Shah HUF":{"inv":1800000,"val31mar24":2200000,"valOct24":2500000,"val31mar25":2750000,"valOct25":2900000,"val31mar26":2960000,"valApr26":2991185},
+  "Rasiklal Shah":    {inv:375395,  valApr26:1001867,  xirr:14.59},
+  "Vasumati Shah":    {inv:502632,  valApr26:1175446,  xirr:14.74},
+  "Asha Shah":        {inv:410000,  valApr26:1191553,  xirr:15.10},
+  "Maya Shah":        {inv:320395,  valApr26:990902,   xirr:16.37},
+  "Chetan Shah":      {inv:312632,  valApr26:761846,   xirr:17.60},
+  "Chetan Shah HUF":  {inv:1140790, valApr26:2884484,  xirr:12.87},
+  "Praful Shah":      {inv:2000000, valApr26:1978808,  xirr:-1.07},
+  "Praful Shah HUF":  {inv:800000,  valApr26:1099002,  xirr:14.84},
+  "Rasiklal HUF":     {inv:150000,  valApr26:589560,   xirr:15.28},
+  "Jash Shah":        {inv:57294,   valApr26:146628,   xirr:11.46},
+  "Honey Chetan Shah":{inv:1610000, valApr26:2450109,  xirr:13.07},
+  "Riya Shah":        {inv:57294,   valApr26:146628,   xirr:11.46},
+  "Amit Gandhi HUF":  {inv:675000,  valApr26:1612399,  xirr:15.29},
 };
 
 const SUMMARY = {
@@ -13444,6 +13502,9 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                                     <td style={{padding:"5px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",
                                       color:rret!=null&&rret>=0?"#34d399":"#f87171",fontWeight:600,fontSize:9}}>
                                       {rret!=null?(rret>=0?"+":"")+rret.toFixed(1)+"%":"—"}
+                                    </td>
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:s.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>
+                                      {s.xirr!=null?s.xirr.toFixed(1)+"%":"—"}
                                     </td>
                                   </tr>
                                 );
