@@ -4803,6 +4803,27 @@ function FamilyApp() {
     return warnings;
   }, [priceVersion]);
 
+  /* ── Data Freshness Tracker ── */
+  const [showFreshness, setShowFreshness] = React.useState(false);
+  const freshnessReport = React.useMemo(function() {
+    var now = new Date();
+    var rows = [];
+    var df = typeof DATA_FRESHNESS !== "undefined" ? DATA_FRESHNESS : {};
+    Object.keys(df).forEach(function(key) {
+      var entry = df[key];
+      var lastDate = new Date(entry.lastUpdated);
+      var daysAgo = Math.floor((now - lastDate) / (1000*60*60*24));
+      var status = daysAgo > 3650 ? "never" : daysAgo >= 10 ? "critical" : daysAgo >= 5 ? "warning" : daysAgo >= 3 ? "notice" : "fresh";
+      rows.push({
+        const: key, member: entry.member, custodian: entry.custodian,
+        lastUpdated: entry.lastUpdated, daysAgo: daysAgo, status: status,
+      });
+    });
+    rows.sort(function(a,b){ return b.daysAgo - a.daysAgo; });
+    return rows;
+  }, []);
+  const staleCount = freshnessReport.filter(function(r){return r.status==="critical"||r.status==="warning"||r.status==="never";}).length;
+
   const [manualCmp, setManualCmp] = React.useState({});
   const [showManualCmp, setShowManualCmp] = React.useState(false);
   const [manualInput, setManualInput] = React.useState({sym:"", price:""});
@@ -5295,6 +5316,15 @@ function FamilyApp() {
                 ⚠ {dataIntegrityWarnings.length} dup
               </span>
             )}
+            <button onClick={function(){setShowFreshness(function(v){return !v;});}}
+              title="Data Freshness Tracker"
+              style={{flexShrink:0,marginLeft:8,
+                background:staleCount>0?"#1a1500":"#0a0e1e",
+                border:"1px solid "+(staleCount>0?"#f0b429":"#1d2545"),
+                borderRadius:6,padding:"4px 10px",color:staleCount>0?"#f0b429":"#3a4a6a",
+                cursor:"pointer",fontSize:10,fontWeight:700,whiteSpace:"nowrap"}}>
+              🕐 {staleCount>0?staleCount+" stale":"fresh"}
+            </button>
             <button onClick={function(){setHideValues(function(v){return !v;});}}
               title={(window.HIDE_VALUES)?"Show values":"Hide sensitive values"}
               style={{flexShrink:0,marginLeft:8,background:(window.HIDE_VALUES)?"#2a1a00":"#0a0e1e",
@@ -9423,6 +9453,46 @@ const AMIT_HUF_ICICI_HOLDINGS = [
   {s:"Vst Industries",qty:85,avg:266.78,cmp:259.75,inv:22676,val:22079,sector:""},
   {s:"Yes Bank",qty:1000,avg:12.0,cmp:25.11,inv:12000,val:25110,sector:""}
 ];
+
+/* ── DATA_FRESHNESS — tracks last update date per account ── */
+const DATA_FRESHNESS = {
+  "AARYA_HOLDINGS": { member:"Aarya Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
+  "AARYA_SUSHIL_HOLDINGS": { member:"Aarya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RIYA_SUSHIL_HOLDINGS": { member:"Riya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RIYA_NSDL_HOLDINGS": { member:"Riya Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-17" },
+  "RIYA_ZERODHA_HOLDINGS": { member:"Riya Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "HONEY_ZERODHA_HOLDINGS": { member:"Honey Chetan Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "VASUMATI_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "V129_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "VASUMATI_ICICI_HOLDINGS": { member:"Vasumati Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
+  "VASUMATI_ZERODHA_HOLDINGS": { member:"Vasumati Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "R124_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RASIKLAL_HUF_SUSHIL_HOLDINGS": { member:"Rasiklal HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "R75_SUSHIL_HOLDINGS": { member:"Rasiklal HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "R75_BOND_HOLDINGS": { member:"Rasiklal HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RASIKLAL_SUSHIL_HOLDINGS": { member:"Rasiklal Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RM_ICICI_HOLDINGS": { member:"Rasiklal Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
+  "P151_SUSHIL_HOLDINGS": { member:"Rasiklal Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "CHETAN_HUF_SUSHIL_HOLDINGS": { member:"Chetan Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "C31_SUSHIL_HOLDINGS": { member:"Chetan Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "C31_BOND_HOLDINGS": { member:"Chetan Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "CHETAN_HOLDINGS": { member:"Chetan Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "V60_SUSHIL_HOLDINGS": { member:"Chetan Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "CHETAN_V60_SUSHIL_HOLDINGS": { member:"Chetan Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "ASHA_SUSHIL_HOLDINGS": { member:"Asha Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "ASHA_BOND_HOLDINGS": { member:"Asha Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "MAYA_SUSHIL_HOLDINGS": { member:"Maya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "M34_SUSHIL_HOLDINGS": { member:"Maya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "M34_BOND_HOLDINGS": { member:"Maya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "PRAFUL_HUF_SUSHIL": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "PRAFUL_HUF_SUSHIL_P71": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "P71_SUSHIL_HOLDINGS": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "P71_BOND_HOLDINGS": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "INCRED_HOLDINGS": { member:"Praful Shah HUF", custodian:"InCred PMS", lastUpdated:"2026-06-19" },
+  "JASH_PORTFOLIO_HOLDINGS": { member:"Jash Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "KARI_HOLDINGS": { member:"Karishma Shah", custodian:"Zerodha", lastUpdated:"1970-01-01" },
+  "RAKESH_HUF_HOLDINGS": { member:"Rakesh Bhansali HUF", custodian:"ICICI Direct", lastUpdated:"1970-01-01" },
+};
 
 var FAMILY_TOP = (function() {
   var all = [];
@@ -18302,6 +18372,43 @@ function MTFTab() {
         <span style={{fontSize:16}}>✏</span>
         <span>CMP{Object.keys(manualCmp).length>0?" · "+Object.keys(manualCmp).length+" set":""}</span>
       </button>
+
+      {/* ── Data Freshness Panel ── */}
+{showFreshness&&(
+  <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(420px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
+    <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+      <div>
+        <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>Data Freshness</div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Last updated per account</div>
+      </div>
+      <button onClick={function(){setShowFreshness(false);}} style={{background:"#1d2545",border:"none",color:"#7eb8ff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11}}>✕ Close</button>
+    </div>
+
+    <div style={{flex:1,overflowY:"auto",padding:"10px 16px"}}>
+      {freshnessReport.map(function(r){
+        var statusColor = r.status==="never"?"#6b7280":r.status==="critical"?"#ef4444":r.status==="warning"?"#f0b429":r.status==="notice"?"#7eb8ff":"#34d399";
+        var statusBg = r.status==="never"?"#1a1a1a":r.status==="critical"?"#2a0a0a":r.status==="warning"?"#1a1500":r.status==="notice"?"#0a1628":"#0a1f15";
+        var statusLabel = r.status==="never"?"NEVER UPLOADED":r.status==="critical"?r.daysAgo+" DAYS — CRITICAL":r.status==="warning"?r.daysAgo+" DAYS — STALE":r.status==="notice"?r.daysAgo+" DAYS":"UP TO DATE";
+        return (
+          <div key={r.const} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",marginBottom:6,background:statusBg,borderRadius:8,border:"1px solid "+statusColor+"33"}}>
+            <div style={{minWidth:0,flex:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{r.member}</div>
+              <div style={{fontSize:9,color:"#6a7a9a",marginTop:1}}>{r.custodian}</div>
+              <div style={{fontSize:8,color:"#3a4a6a",marginTop:2}}>{r.status==="never"?"No data uploaded yet":"Last: "+r.lastUpdated}</div>
+            </div>
+            <div style={{flexShrink:0,marginLeft:10,textAlign:"right"}}>
+              <div style={{fontSize:9,fontWeight:800,color:statusColor}}>{statusLabel}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <div style={{padding:"10px 16px",borderTop:"1px solid #1d2545",fontSize:9,color:"#3a4a6a",flexShrink:0}}>
+      🟢 &lt;3 days &nbsp; 🔵 3-4 days &nbsp; 🟡 5-9 days &nbsp; 🔴 10+ days &nbsp; ⚫ never uploaded
+    </div>
+  </div>
+)}
 
       {/* ── Manual CMP Override Panel ── */}
 {showManualCmp&&(
