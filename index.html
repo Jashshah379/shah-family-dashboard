@@ -2615,7 +2615,7 @@ function GlobalIndicesWidget() {
   );
 }
 
-function DailyDigest() {
+function DailyDigest({priceVersion, livePrices}) {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
@@ -4786,15 +4786,16 @@ function FamilyApp() {
 
   const [tab,setTab]=React.useState("Overview");
   const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
-  /* ── Data integrity check: detect duplicate stock entries within same custodian ── */
+  /* ── Data integrity check: detect TRUE duplicate rows (same member+broker+stock+qty+cost) ── */
+  /* Multiple accounts under the same custodian label is normal — only flags exact row repeats */
   var dataIntegrityWarnings = React.useMemo(function() {
     var warnings = [];
     var seen = {};
     (typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : []).forEach(function(h) {
-      if (!h || !h.s || !h._member || !h._custodian) return;
-      var key = h._member + "|" + h._custodian + "|" + h.s;
+      if (!h || !h.s || !h._member) return;
+      var key = h._member + "|" + h.s + "|" + (h.qty||0) + "|" + (h.avg||0);
       if (seen[key]) {
-        warnings.push(h._member + " — " + h.s + " appears twice in " + h._custodian);
+        warnings.push(h._member + " — " + h.s + " (qty " + h.qty + ") looks duplicated");
       }
       seen[key] = true;
     });
@@ -5349,7 +5350,7 @@ function FamilyApp() {
         <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
-        <DailyDigest/>
+        <DailyDigest priceVersion={priceVersion} livePrices={livePrices}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
           <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
