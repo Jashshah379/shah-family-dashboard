@@ -2717,7 +2717,7 @@ function DailyDigest() {
           {l:"📋 Holdings",tab:"Holdings"},
           {l:"💰 P&L",tab:"P&L"},
           {l:"🏦 Bank",tab:"Bank"},
-          {l:"💼 Funds",tab:"Funds"},
+          {l:"💼 Funds",tab:"Mutual Funds"},
           {l:"⚡ Tax",tab:"Tax"},
           {l:"🎯 What-If",tab:"What-If"},
           {l:"👥 Advisors",tab:"Advisors"},
@@ -3972,14 +3972,21 @@ function MutualFundsTab() {
 
   var getMemberData = function(name) {
     var r = reg[name] || {};
-    var schemes = fols[name] || [];
-    var schemeInv = schemes.reduce(function(acc,sc){return acc+(sc.invested||0);},0);
-    var schemeVal = schemes.reduce(function(acc,sc){return acc+(sc.value||0);},0);
+    var rachSchemes = fols[name] || [];
+    var coinData = typeof COIN_MF_ADDITIONAL!=="undefined" ? (COIN_MF_ADDITIONAL[name]||[]) : [];
+    /* Merge: deduplicate by folio number */
+    var allSchemes = rachSchemes.slice();
+    coinData.forEach(function(cs){
+      var exists = allSchemes.some(function(rs){return rs.folio===cs.folio;});
+      if(!exists) allSchemes.push(cs);
+    });
+    var schemeInv = allSchemes.reduce(function(acc,sc){return acc+(sc.invested||0);},0);
+    var schemeVal = allSchemes.reduce(function(acc,sc){return acc+(sc.value||0);},0);
     return {
       inv: schemeInv||r.inv||0,
       val: schemeVal||r.valApr26||r.val||0,
       xirr: r.xirr||null,
-      schemes: schemes,
+      schemes: allSchemes,
     };
   };
 
@@ -4102,7 +4109,7 @@ function MutualFundsTab() {
                           <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>{isExp?"▲":"▼"}</span>
                         </div>
                         {isExp&&(
-                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:10}}>
                             <div>
                               <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>INVESTED</div>
                               <div style={{fontSize:11,fontFamily:"monospace",color:"#8899bb",fontWeight:600}}>{cr(sc.invested||0)}</div>
@@ -4114,6 +4121,14 @@ function MutualFundsTab() {
                             <div>
                               <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>P&L</div>
                               <div style={{fontSize:11,fontFamily:"monospace",color:isGain?"#10b981":"#ef4444",fontWeight:700}}>{isGain?"+":""}{cr(spl)}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>NAV</div>
+                              <div style={{fontSize:11,fontFamily:"monospace",color:"#7eb8ff",fontWeight:700}}>₹{sc.nav!=null?sc.nav.toFixed(2):"—"}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>UNITS</div>
+                              <div style={{fontSize:11,fontFamily:"monospace",color:"#a0aabb"}}>{sc.units!=null?sc.units.toLocaleString("en-IN"):"—"}</div>
                             </div>
                             <div>
                               <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>XIRR</div>
@@ -4170,8 +4185,16 @@ function MembersTab() {
     if (!m) return null;
     var reg  = typeof MF_REGISTRY!=="undefined" ? MF_REGISTRY : {};
     var fols = typeof MEMBER_MF_FOLIOS!=="undefined" ? MEMBER_MF_FOLIOS : {};
+    var coin = typeof COIN_MF_ADDITIONAL!=="undefined" ? COIN_MF_ADDITIONAL : {};
     var regData = reg[m.n] || null;
-    var schemes = fols[m.n] || [];
+    var rachSchemes = fols[m.n] || [];
+    var coinSchemes = coin[m.n] || [];
+    /* Merge: deduplicate by folio */
+    var schemes = rachSchemes.slice();
+    coinSchemes.forEach(function(cs){
+      var exists = schemes.some(function(rs){return rs.folio===cs.folio;});
+      if(!exists) schemes.push(cs);
+    });
     if (!regData && !schemes.length) return null;
     var inv = schemes.length>0 ? schemes.reduce(function(s,sc){return s+(sc.invested||0);},0) : ((regData&&regData.inv)||0);
     var val = schemes.length>0 ? schemes.reduce(function(s,sc){return s+(sc.value||0);},0) : ((regData&&(regData.valApr26||regData.val))||0);
@@ -5093,7 +5116,7 @@ function FamilyApp() {
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
           <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Holdings")}/>
-          <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Funds")}/>
+          <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
           <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
           <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa"/>
@@ -5712,7 +5735,7 @@ function FamilyApp() {
       {tab==="SIP Tracker"&&<SIPTracker/>}
       {tab==="Watchlist"&&<WatchlistTab/>}
       {tab==="Profiles"&&<ProfilesTab/>}
-       {tab==="Funds"&&<MutualFundsTab/>}
+       {tab==="Mutual Funds"&&<MutualFundsTab/>}
        {tab==="P&L"&&<PLTab plCol={plCol} setPlCol={setPlCol} plDir={plDir} setPlDir={setPlDir} plView={plView} setPlView={setPlView} plFilter={plFilter} setPlFilter={setPlFilter}/>}
        
        {tab==="MTF"&&<MTFTab/>}
@@ -6199,11 +6222,11 @@ const MEMBERS = [
    cas:"Vasumati Shah",broker:null,icici:null,holdingsRef:"V129",
    custodian:["Sushil Financial","ICICI Direct","Zerodha"],casApr26:232585964,
    casTrend:[{m:"May'25",v:220000000},{m:"Jun'25",v:225000000},{m:"Oct'25",v:228000000},{m:"Apr'26",v:232585964}]},
-  {n:"Rasiklal HUF",   i:"RH",c:"#1d9e75",stocks:78042000, mf:589560,  bank:375950,
+  {n:"Rasiklal HUF",   i:"RH",c:"#1d9e75",stocks:78042000, mf:1455643,  bank:375950,
    cas:"Rasiklal HUF", broker:null,icici:null,holdingsRef:"RASIKLAL_HUF",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:116548032,
    casTrend:[{m:"May'25",v:168000000},{m:"Oct'25",v:172000000},{m:"Apr'26",v:174525606},{m:"Jun'26",v:116548032}]},
-  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:147774287, mf:1001867,  bank:8069366,
+  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:147774287, mf:6209170,  bank:8069366,
    cas:"Rasiklal Shah",broker:null,icici:null,holdingsRef:"RM",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:159326952,
    casTrend:[{m:"May'25",v:150000000},{m:"Oct'25",v:155000000},{m:"Apr'26",v:159326952}]},
@@ -6239,7 +6262,7 @@ const MEMBERS = [
    cas:"Chetan Shah", broker:null,icici:null,holdingsRef:"CHETAN",
    custodian:["Zerodha","Sushil Financial"],casApr26:10743001,
    casTrend:[{m:"May'25",v:9500000},{m:"Apr'26",v:10743001}]},
-    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:2450109, bank:43200,
+    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:3851044, bank:43200,
    cas:"Honey Chetan Shah",broker:null,icici:null,holdingsRef:"HONEY",
    custodian:["Zerodha (VE7649)"],casApr26:15757289,
    casTrend:[{m:"Apr'26",v:15757289}]},
@@ -8991,6 +9014,31 @@ const STOCK_MASTER_DB = {
   "Zee Learn": "Zee Learn",
   "ZYDUSLIFE": "Zydus Lifesciences",
 };
+/* ── Additional MF holdings — Zerodha Coin (uploaded Jun 2026) ── */
+/* These are ADDITIONAL schemes not in RACH PDF — merge with MEMBER_MF_FOLIOS */
+/* ── COIN_MF_ADDITIONAL — Zerodha Coin holdings (Jun 2026) ── */
+const COIN_MF_ADDITIONAL = {
+  "Rasiklal Shah": [
+    {scheme:"Aditya Birla Multicap Fund",         folio:"1039639634",  cat:"Equity", platform:"Zerodha Coin", invested:518168,  value:1207025, gain:688857,  units:1302.0,    nav:927.05, xirr:null},
+    {scheme:"Kotak Focused Equity Fund",          folio:"7027008",     cat:"Equity", platform:"Zerodha Coin", invested:686295,  value:1876518, gain:1190223, units:70663.0,   nav:26.56,  xirr:null},
+    {scheme:"ICICI Prudential Flexicap Fund",     folio:"14880962",    cat:"Equity", platform:"Zerodha Coin", invested:285000,  value:552194,  gain:267194,  units:28552.0,   nav:19.34,  xirr:null},
+    {scheme:"Mirae Asset Multicap Fund",          folio:"77727237226", cat:"Equity", platform:"Zerodha Coin", invested:685833,  value:1571566, gain:885733,  units:47499.533, nav:33.09,  xirr:null},
+  ],
+  "Rasiklal HUF": [
+    {scheme:"Aditya Birla Multicap Fund",         folio:"1039987666",  cat:"Equity", platform:"Zerodha Coin", invested:50000,   value:103010,  gain:53010,   units:1673.0,    nav:61.57,  xirr:null},
+    {scheme:"Parag Parikh ELSS Tax Saver Fund",   folio:"10828987",    cat:"ELSS",   platform:"Zerodha Coin", invested:100000,  value:178271,  gain:78271,   units:6088.0,    nav:29.28,  xirr:null},
+    {scheme:"Axis Large & Midcap Fund",           folio:"91088038675", cat:"Equity", platform:"Zerodha Coin", invested:99997,   value:184644,  gain:84647,   units:1954.244,  nav:94.48,  xirr:null},
+    {scheme:"Canara Robeco Equity Tax Saver Fund",folio:"17737097806", cat:"ELSS",   platform:"Zerodha Coin", invested:50000,   value:75859,   gain:25859,   units:432.542,   nav:175.38, xirr:null},
+    {scheme:"Mirae Asset Multicap Fund",          folio:"77729705305", cat:"Equity", platform:"Zerodha Coin", invested:149995,  value:324299,  gain:174304,  units:6517.132,  nav:49.76,  xirr:null},
+  ],
+  "Honey Chetan Shah": [
+    {scheme:"Parag Parikh Flexi Cap Fund",        folio:"10447975",    cat:"Equity", platform:"Zerodha Coin", invested:304696,  value:621854,  gain:317158,  units:7527.0,    nav:82.62,  xirr:null},
+    {scheme:"Kotak Multicap Fund",                folio:"8334582",     cat:"Equity", platform:"Zerodha Coin", invested:59997,   value:105064,  gain:45067,   units:5322.0,    nav:19.74,  xirr:null},
+    {scheme:"Canara Robeco Multicap Fund",        folio:"17726918405", cat:"Equity", platform:"Zerodha Coin", invested:59997,   value:107048,  gain:47051,   units:7433.94,   nav:14.40,  xirr:null},
+    {scheme:"Mirae Asset Small Cap Fund",         folio:"77730636132", cat:"Equity", platform:"Zerodha Coin", invested:334982,  value:544495,  gain:209513,  units:37929.982, nav:14.36,  xirr:null},
+    {scheme:"Quant Small Cap Fund",               folio:"51038900381", cat:"Equity", platform:"Zerodha Coin", invested:20000,   value:22474,   gain:2474,    units:34.558,    nav:650.33, xirr:null},
+  ],
+};
 
 var FAMILY_TOP = (function() {
   var all = [];
@@ -10762,7 +10810,7 @@ const MF_REGISTRY = {
   "Praful Shah HUF":  {inv:800000,  valApr26:1099002,  xirr:14.84},
   "Rasiklal HUF":     {inv:150000,  valApr26:589560,   xirr:15.28},
   "Jash Shah":        {inv:57294,   valApr26:146628,   xirr:11.46},
-  "Honey Chetan Shah":{inv:1610000, valApr26:2450109,  xirr:13.07},
+  "Honey Chetan Shah":{inv:2389672,  valApr26:3851044,  xirr:13.07},
   "Riya Shah":        {inv:57294,   valApr26:146628,   xirr:11.46},
   "Amit Gandhi HUF":  {inv:675000,  valApr26:1612399,  xirr:15.29},
 };
@@ -12005,7 +12053,7 @@ const SIDEBAR_SECTIONS = [
   {title:"Portfolio", tabs:["Trend","Meeting Mode"]},
   {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Advisors","Profiles","Estate","Changelog"]},
 ];
-const TABS = ["Overview","Holdings","Members","Bank","Funds","P&L","Tax","Advisors"];
+const TABS = ["Overview","Holdings","Members","Bank","Mutual Funds","P&L","Tax","Advisors"];
 const Panel = ({children, title, style}) => (
   <div style={{background:"linear-gradient(155deg,#10142a 0%,#0c1020 100%)",
     border:"1px solid #1c2440",borderRadius:16,padding:"18px 20px",marginBottom:14,
