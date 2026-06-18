@@ -1145,8 +1145,35 @@ function FamilyMeetingTab() {
   const totalBank = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0),0);
   const grandTotal = totalEquity+totalMF+totalBank;
 
-  const topGainers = [...allH].filter(h=>h.val>0&&h.inv>0).sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,5);
-  const topLosers = [...allH].filter(h=>h.val>0&&h.inv>0&&h.val<h.inv).sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,5);
+  /* ── Today's Gainers/Losers — uses live chgPct (today's % move) ── */
+  const todayGainers = React.useMemo(function(){
+    /* deduplicate by stock name, pick highest chgPct */
+    var seen = {};
+    allH.forEach(function(h){
+      if(!h||!h.s||!h.chgPct||h.val<=0) return;
+      if(!seen[h.s]||h.chgPct>seen[h.s].chgPct) seen[h.s]=h;
+    });
+    return Object.values(seen)
+      .filter(function(h){return h.chgPct>0;})
+      .sort(function(a,b){return b.chgPct-a.chgPct;})
+      .slice(0,6);
+  }, [allH, priceVersion]);
+  const todayLosers = React.useMemo(function(){
+    var seen = {};
+    allH.forEach(function(h){
+      if(!h||!h.s||!h.chgPct||h.val<=0) return;
+      if(!seen[h.s]||h.chgPct<seen[h.s].chgPct) seen[h.s]=h;
+    });
+    return Object.values(seen)
+      .filter(function(h){return h.chgPct<0;})
+      .sort(function(a,b){return a.chgPct-b.chgPct;})
+      .slice(0,6);
+  }, [allH, priceVersion]);
+  /* keep legacy overall P&L gainers/losers as fallback when no live prices */
+  const topGainers = todayGainers.length>0 ? todayGainers :
+    [...allH].filter(h=>h.val>0&&h.inv>0).sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,6);
+  const topLosers = todayLosers.length>0 ? todayLosers :
+    [...allH].filter(h=>h.val>0&&h.inv>0&&h.val<h.inv).sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,6);
   const topByVal = Object.values(allH.reduce((m,h)=>{ if(!h||!h.s||!(h.val>0)) return m; if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0}; m[h.s].val+=h.val; m[h.s].inv+=h.inv; return m; },{})).sort((a,b)=>b.val-a.val).slice(0,5);
 
   const SLIDES = [
@@ -2669,13 +2696,18 @@ function DailyDigest() {
         <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>📉 Under Pressure</div>
           {bot5.map((h,i)=>{
-            const r=((h.val-h.inv)/h.inv*100);
+            var dispPct = hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0);
+            var dispLabel = hasLivePct ? "today" : "overall";
+            var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
             return (
-              <div key={i} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #1f0d0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120}}>{h.s}</div>
+              <div key={i} style={{padding:"8px 14px",borderBottom:i<5?"1px solid #1f0d0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>{r.toFixed(1)}%</div>
-                  {h.dayPL!=null&&h.dayPL!==0&&<div style={{fontSize:8,color:"#ef444499",fontFamily:"monospace"}}>{h.dayPL>=0?"+":""}{cr(h.dayPL)} today</div>}
+                  <div style={{fontSize:12,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>▼{Math.abs(dispPct).toFixed(2)}%</div>
+                  <div style={{fontSize:8,color:"#ef444499",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                 </div>
               </div>
             );
@@ -5863,6 +5895,20 @@ function PinLockScreen({ onUnlock }) {
     if (locked && lockTimer === 0) setLocked(false);
   }, [locked, lockTimer]);
 
+  /* ── Keyboard input ── */
+  React.useEffect(function() {
+    var handleKey = function(e) {
+      if (locked) return;
+      if (e.key >= "0" && e.key <= "9") {
+        handleDigit(e.key);
+      } else if (e.key === "Backspace") {
+        handleBack();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return function() { window.removeEventListener("keydown", handleKey); };
+  }, [pin, locked]);
+
   const handleDigit = (d) => {
     if (locked) return;
     const newPin = pin + d;
@@ -5922,6 +5968,10 @@ function PinLockScreen({ onUnlock }) {
         ))}
       </div>
 
+      {/* Keyboard hint */}
+      <div style={{fontSize:10,color:"#2a3a50",marginBottom:8,textAlign:"center"}}>
+        Use keyboard or keypad below
+      </div>
       {/* Error / lock message */}
       <div style={{height:20, marginBottom:16, textAlign:"center"}}>
         {error && !locked && <span style={{fontSize:11, color:"#f87171"}}>Incorrect PIN{attempts > 2 ? ` · ${5-attempts} attempts left` : ""}</span>}
@@ -6004,7 +6054,7 @@ function AppWithLock() {
       const ts = localStorage.getItem("shah_unlocked_v1");
       if (!ts) return false;
       /* Session valid for 24 hours */
-      return (Date.now() - parseInt(ts)) < 24 * 60 * 60 * 1000;
+      return (Date.now() - parseInt(ts)) < 2 * 60 * 60 * 1000;
     } catch(e) { return false; }
   });
 
