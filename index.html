@@ -2492,58 +2492,119 @@ function GlobalIndicesWidget() {
     if (v.p >= 10000) return Math.round(v.p).toLocaleString("en-IN");
     return v.p.toFixed(2);
   };
+  var pct = function(v) {
+    if (!v || v.pct == null) return null;
+    return v.pct;
+  };
 
-  /* All indices in one row */
-  var ALL = [
-    {l:"NIFTY",      k:"NIFTY50",   fx:false, flag:"🇮🇳"},
-    {l:"SENSEX",     k:"SENSEX",    fx:false, flag:"🇮🇳"},
-    {l:"BNKN",       k:"BANKNIFTY", fx:false, flag:"🇮🇳"},
-    {l:"USD/INR",    k:"USDINR",    fx:true,  flag:"💱"},
-    {l:"GOLD",       k:"GOLD",      fx:true,  flag:"🥇"},
-    {l:"OIL",        k:"CRUDEOIL",  fx:true,  flag:"🛢"},
-    {l:"S&P 500",    k:"SP500",     fx:false, flag:"🇺🇸"},
-    {l:"NASDAQ",     k:"NASDAQ",    fx:false, flag:"🇺🇸"},
-    {l:"DOW",        k:"DOW",       fx:false, flag:"🇺🇸"},
-    {l:"NIKKEI",     k:"NIKKEI",    fx:false, flag:"🇯🇵"},
-    {l:"FTSE",       k:"FTSE100",   fx:false, flag:"🇬🇧"},
+  /* Ticker items: indices + key family holdings + surprise picks */
+  var ITEMS = [
+    /* ── Indices ── */
+    {l:"NIFTY 50",   k:"NIFTY50",    fx:false, cat:"index"},
+    {l:"SENSEX",     k:"SENSEX",     fx:false, cat:"index"},
+    {l:"BANK NIFTY", k:"BANKNIFTY",  fx:false, cat:"index"},
+    {l:"NIFTY IT",   k:"NIFTYIT",    fx:false, cat:"index"},
+    {l:"NIFTY MID",  k:"NIFTYMIDCAP",fx:false, cat:"index"},
+    /* ── FX / Commodities ── */
+    {l:"USD/INR",    k:"USDINR",     fx:true,  cat:"fx"},
+    {l:"GOLD",       k:"GOLD",       fx:true,  cat:"commodity"},
+    {l:"SILVER",     k:"SILVER",     fx:true,  cat:"commodity"},
+    {l:"CRUDE OIL",  k:"CRUDEOIL",   fx:true,  cat:"commodity"},
+    /* ── Global ── */
+    {l:"S&P 500",    k:"SP500",      fx:false, cat:"global"},
+    {l:"NASDAQ",     k:"NASDAQ",     fx:false, cat:"global"},
+    {l:"DOW",        k:"DOW",        fx:false, cat:"global"},
+    {l:"NIKKEI",     k:"NIKKEI",     fx:false, cat:"global"},
+    {l:"FTSE 100",   k:"FTSE100",    fx:false, cat:"global"},
+    /* ── Family Top Holdings ── */
+    {l:"HITACHI",    k:"ABBPOW",     fx:false, cat:"holding"},
+    {l:"RELIANCE",   k:"RELIANCE",   fx:false, cat:"holding"},
+    {l:"TCS",        k:"TCS",        fx:false, cat:"holding"},
+    {l:"HDFC BANK",  k:"HDFCBANK",   fx:false, cat:"holding"},
+    {l:"INFOSYS",    k:"INFY",       fx:false, cat:"holding"},
+    {l:"BAJAJ FIN",  k:"BAJFINANCE", fx:false, cat:"holding"},
+    {l:"TITAN",      k:"TITAN",      fx:false, cat:"holding"},
+    {l:"ADANI PORTS",k:"ADANIPORTS", fx:false, cat:"holding"},
+    {l:"TECH M",     k:"TECHM",      fx:false, cat:"holding"},
+    {l:"APOLLO HOSP",k:"APOLLOHOSP", fx:false, cat:"holding"},
+    {l:"DR REDDY",   k:"DRREDDY",    fx:false, cat:"holding"},
+    {l:"WIPRO",      k:"WIPRO",      fx:false, cat:"holding"},
+    /* ── Surprise picks ── */
+    {l:"ZOMATO",     k:"ZOMATO",     fx:false, cat:"watch"},
+    {l:"PAYTM",      k:"PAYTM",      fx:false, cat:"watch"},
+    {l:"IRCTC",      k:"IRCTC",      fx:false, cat:"watch"},
+    {l:"DMART",      k:"DMART",      fx:false, cat:"watch"},
+    {l:"NYKAA",      k:"NYKAA",      fx:false, cat:"watch"},
+    {l:"HAL",        k:"HAL",        fx:false, cat:"watch"},
+    {l:"RVNL",       k:"RVNL",       fx:false, cat:"watch"},
+    {l:"TATA MOTORS",k:"TATAMOTORS", fx:false, cat:"watch"},
+    {l:"SUZLON",     k:"SUZLON",     fx:false, cat:"watch"},
+    {l:"BHEL",       k:"BHEL",       fx:false, cat:"watch"},
   ];
 
-  return (
-    <div style={{background:"#070a16",borderBottom:"1px solid #1a2035",padding:"8px 16px",marginBottom:0,overflowX:"auto"}}>
-      <div style={{display:"flex",alignItems:"center",gap:0,minWidth:"max-content"}}>
-        {/* Status */}
-        <div style={{display:"flex",alignItems:"center",gap:4,paddingRight:14,borderRight:"1px solid #1a2035",marginRight:14,flexShrink:0}}>
-          {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#10b981",display:"inline-block",boxShadow:"0 0 5px #10b981"}}/>}
-          {status==="loading"&&<span style={{fontSize:9,color:"#f0b429"}}>⟳</span>}
-          {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠</span>}
-          {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
-          <button onClick={fetch_data} disabled={status==="loading"} style={{background:"none",border:"none",color:"#2a3a50",fontSize:10,cursor:"pointer",padding:"0 2px"}}>↻</button>
-        </div>
+  var catColors = {index:"#7eb8ff", fx:"#f0b429", commodity:"#f0b429", global:"#a78bfa", holding:"#10b981", watch:"#f97316"};
 
-        {/* All indices */}
-        {ALL.map(function(item, i) {
-          var d = data[item.k];
-          var isUp = !d || d.pct >= 0;
-          var c = d ? (isUp ? "#10b981" : "#ef4444") : "#2a3a50";
-          return (
-            <div key={item.k} style={{display:"flex",alignItems:"center",gap:8,paddingRight:16,marginRight:16,borderRight:i<ALL.length-1?"1px solid #1a2035":"none",flexShrink:0}}>
-              <div>
-                <div style={{fontSize:7,color:"#3a4a6a",whiteSpace:"nowrap"}}>{item.flag} {item.l}</div>
-                <div style={{fontSize:11,fontWeight:800,fontFamily:"monospace",color:c,whiteSpace:"nowrap"}}>
-                  {fmt(d, item.fx)}
-                  {d&&d.pct!=null&&(
-                    <span style={{fontSize:8,marginLeft:4,color:c}}>{isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%</span>
-                  )}
-                </div>
+  /* Build ticker string - duplicate for seamless loop */
+  var tickerRef = React.useRef(null);
+
+  /* CSS keyframes injected once */
+  React.useEffect(function() {
+    var styleId = "ticker-style";
+    if (document.getElementById(styleId)) return;
+    var style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = "@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}";
+    document.head.appendChild(style);
+  }, []);
+
+  var isLive = status === "live";
+  var speed = "60s"; /* one full scroll every 60 seconds */
+
+  return (
+    <div style={{background:"#050810",borderBottom:"1px solid #1a2035",height:36,overflow:"hidden",position:"relative"}}>
+      {/* Live/status badge */}
+      <div style={{position:"absolute",left:0,top:0,bottom:0,zIndex:10,background:"#070a16",padding:"0 12px",display:"flex",alignItems:"center",gap:6,borderRight:"1px solid #1a2035"}}>
+        <div style={{width:6,height:6,borderRadius:"50%",background:isLive?"#10b981":status==="loading"?"#f0b429":"#3a4a6a",
+          animation:isLive?"pulse 2s infinite":"none"}}/>
+        <span style={{fontSize:9,fontWeight:700,color:isLive?"#10b981":"#3a4a6a",letterSpacing:"0.1em"}}>
+          {isLive?"LIVE":status==="loading"?"...":"OFF"}
+        </span>
+        {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
+      </div>
+
+      {/* Scrolling ticker */}
+      <div style={{marginLeft:80,overflow:"hidden",height:"100%",display:"flex",alignItems:"center"}}>
+        <div ref={tickerRef} style={{
+          display:"flex",alignItems:"center",gap:0,
+          animation:"ticker-scroll "+speed+" linear infinite",
+          whiteSpace:"nowrap",
+        }}>
+          {[...ITEMS, ...ITEMS].map(function(item, idx) {
+            var v = data[item.k];
+            var price = v ? fmt(v, item.fx) : "—";
+            var change = pct(v);
+            var isUp = change != null && change >= 0;
+            var isDown = change != null && change < 0;
+            var col = catColors[item.cat] || "#7eb8ff";
+            return (
+              <div key={idx} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"0 16px",borderRight:"1px solid #0d1020",height:36}}>
+                <span style={{fontSize:8,fontWeight:700,color:col,letterSpacing:"0.06em"}}>{item.l}</span>
+                <span style={{fontSize:11,fontWeight:700,fontFamily:"monospace",color:isUp?"#10b981":isDown?"#ef4444":"#c8d0e8"}}>
+                  {item.fx?"":""}{price}
+                </span>
+                {change!=null&&(
+                  <span style={{fontSize:9,fontWeight:600,fontFamily:"monospace",color:isUp?"#10b981":"#ef4444"}}>
+                    {isUp?"▲":"▼"}{Math.abs(change).toFixed(2)}%
+                  </span>
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
-
 
 function DailyDigest() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
