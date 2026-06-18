@@ -5075,8 +5075,15 @@ function FamilyApp() {
             {TABS.map(t=>(
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
-            
-            
+            {/* Manual CMP Override Button */}
+            <button onClick={function(){setShowManualCmp(function(v){return !v;});}}
+              title="Manual CMP Override - set prices for stocks without live data"
+              style={{flexShrink:0,marginLeft:4,background:Object.keys(manualCmp).length>0?"#1e3a5f":"#0a0e1e",
+                border:"1px solid "+(Object.keys(manualCmp).length>0?"#3b82f6":"#1d2545"),
+                borderRadius:6,padding:"4px 10px",color:"#7eb8ff",cursor:"pointer",fontSize:10,
+                fontWeight:600,whiteSpace:"nowrap"}}>
+              ✏ CMP{Object.keys(manualCmp).length>0?" ("+Object.keys(manualCmp).length+")":""}
+            </button>
           </div>
         </div>
       </div>
