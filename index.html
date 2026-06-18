@@ -5672,7 +5672,7 @@ function FamilyApp() {
                     const bc=BC[r.bank]||{bg:"#1a2035",tx:"#6a7a9a"};
                     const pct=totalBank>0?(r.b/totalBank*100):0;
                     const barW=Math.min(100,pct*3);
-                    const mem=MEMBERS.find(m=>m.n===r.n||m.n.split(" ").slice(0,2).join(" ")===r.n.split(" ").slice(0,2).join(" "));
+                    const mem=MEMBERS.find(function(m){return m.n&&(m.n===r.n||(m.n.split(" ").slice(0,2).join(" ")===r.n.split(" ").slice(0,2).join(" ")));});
                     const memCol=mem?mem.c:"#4a5a80";
                     return (
                       <tr key={r.n+r.bank} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
