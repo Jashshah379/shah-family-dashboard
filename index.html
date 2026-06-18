@@ -1046,7 +1046,7 @@ function GoalTrackerTab() {
 
       {showForm&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #3a6abf",borderRadius:12,padding:"16px",marginBottom:14}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:9,marginBottom:9}}>
             <div>
               <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>Member</div>
               <select value={form.member} onChange={e=>setForm(f=>({...f,member:e.target.value}))}
@@ -1257,7 +1257,7 @@ function FamilyMeetingTab() {
     {
       title:"Best Performers",subtitle:"Top gainers across all accounts",
       content:()=>(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:16,width:"100%"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:16,width:"100%"}}>
           <div>
             <div style={{fontSize:16,fontWeight:700,color:"#34d399",marginBottom:12}}>📈 Top Gainers</div>
             {topGainers.map((h,i)=>{
@@ -1976,7 +1976,7 @@ function EstatePlanningTab() {
       </div>
 
       {/* Account type breakdown */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:14}}>
         {[{title:"HUF Accounts",items:hufAccounts,c:"#f0b429",note:"Joint family assets — governed by Hindu Succession Act"},{title:"NRE Accounts",items:nreAccounts,c:"#a78bfa",note:"Non-resident accounts — special repatriation rules apply"}].map(({title,items,c,note})=>(
           <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px"}}>
             <div style={{fontSize:10,fontWeight:700,color:c,marginBottom:4}}>{title}</div>
@@ -2249,7 +2249,7 @@ function StockNotesTab() {
                     placeholder="Why you hold this, what to watch for..."
                     style={{width:"100%",background:"#080b18",border:"1px solid #1d2545",borderRadius:6,padding:"8px 10px",color:"#c8d0e8",fontSize:11,boxSizing:"border-box",resize:"vertical"}}/>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:9,marginBottom:9}}>
                   {[{l:"Target Price (₹)",v:editTarget,set:setEditTarget,ph:"e.g. 500"},{l:"Stop Loss (₹)",v:editSL,set:setEditSL,ph:"e.g. 180"}].map(({l,v,set,ph})=>(
                     <div key={l}>
                       <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -2728,7 +2728,7 @@ function DailyDigest({priceVersion, livePrices}) {
       </div>
 
       {/* ══ 4 KEY METRICS ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(130px,45%),1fr))",gap:8}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
         {[
           {l:"Equity",v:cr(totalEq),sub:(retPct>=0?"+":"")+retPct.toFixed(1)+"%",c:"#6366f1"},
           {l:"Mutual Funds",v:cr(totalMF),sub:Object.keys(mfReg).length+" members",c:"#10b981"},
@@ -2744,7 +2744,7 @@ function DailyDigest({priceVersion, livePrices}) {
       </div>
 
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
 
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden"}}>
@@ -3100,7 +3100,7 @@ function BankStatementTab() {
           )}
 
           {/* Top transactions */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(280px,100%),1fr))",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
             {[{title:"Largest Credits",items:topCredits,field:"credit",c:"#34d399"},
               {title:"Largest Debits",items:topDebits,field:"debit",c:"#f87171"}].map(({title,items,field,c})=>(
               <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"12px"}}>
@@ -3650,7 +3650,7 @@ function AdvisorTrackerTab() {
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"20px"}}>
         <div style={{fontSize:13,fontWeight:700,color:"#c8d0e8",marginBottom:16}}>Tag a Stock to an Advisor</div>
 
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:12}}>
 
           {/* Stock search */}
           <div style={{gridColumn:"1/-1",position:"relative"}}>
@@ -3810,7 +3810,7 @@ function AdvisorTrackerTab() {
           </div>
 
           {/* Stats */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(120px,45%),1fr))",gap:8}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:8}}>
             {[
               {l:"Positions",v:adv.count,c:"#e8eaf0"},
               {l:"Total Value",v:cr(adv.totalValue),c:"#7eb8ff"},
@@ -3890,7 +3890,7 @@ function AdvisorTrackerTab() {
         {/* Add new advisor */}
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #3a6abf",borderRadius:12,padding:"16px",marginBottom:14}}>
           <div style={{fontSize:11,fontWeight:700,color:"#7eb8ff",marginBottom:12}}>Add New Advisor</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:9,marginBottom:9}}>
             {[{l:"Name",k:"name",ph:"e.g. Ramesh Mehta"},{l:"Firm / Source",k:"firm",ph:"e.g. Motilal Oswal"}].map(({l,k,ph})=>(
               <div key={k}>
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -4152,7 +4152,7 @@ function MutualFundsTab() {
               </div>
             </div>
             {/* KPIs */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(130px,45%),1fr))",gap:8}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
               {[
                 {l:"Total Invested", v:cr(totalInv), c:"#8899bb"},
                 {l:"Current Value",  v:cr(totalVal), c:"#10b981"},
@@ -4279,7 +4279,7 @@ function MutualFundsTab() {
                           <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>{isExp?"▲":"▼"}</span>
                         </div>
                         {isExp&&(
-                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(120px,45%),1fr))",gap:10}}>
+                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:10}}>
                             <div>
                               <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>INVESTED</div>
                               <div style={{fontSize:11,fontFamily:"monospace",color:"#8899bb",fontWeight:600}}>{cr(sc.invested||0)}</div>
@@ -4634,7 +4634,7 @@ function MembersTab() {
                   {/* Broker / account info */}
                   <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
                     <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>🏦 Account Details</div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
                       {[
                         {l:"Broker ID",v:m.broker||"—"},
                         {l:"ICICI Account",v:m.icici||"—"},
@@ -4677,7 +4677,7 @@ function MembersTab() {
                     <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
                       <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#3b82f6"}}>📘 PPF Account</div>
                       {ppfData.map(function(p,i){return(
-                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
+                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div><div style={{fontSize:11,color:"#7eb8ff",fontFamily:"monospace",fontWeight:600}}>{p.acc}</div></div>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BALANCE</div><div style={{fontSize:11,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>{cr(p.bal)}</div></div>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>OPENED</div><div style={{fontSize:10,color:"#8899bb"}}>{p.opened}</div></div>
@@ -4690,7 +4690,7 @@ function MembersTab() {
                   {/* Wealth summary */}
                   <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
                     <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>💰 Wealth Summary</div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:8}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
                       {[
                         {l:"Equity",v:cr(m.stocks||0),c:"#6366f1"},
                         {l:"Mutual Funds",v:cr(m.mf||0),c:"#10b981"},
@@ -5630,7 +5630,7 @@ function FamilyApp() {
             )}
 
             {/* Two-column: Asset allocation + Sector breakdown */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:14}}>
               {/* Asset Allocation */}
               <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",
                 border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
@@ -5827,7 +5827,7 @@ function FamilyApp() {
           </div>
 
           {/* Bank breakdown charts */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:14}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:14}}>
             {/* By bank */}
             <div style={{background:"#0f1220",border:"1px solid #1a2035",borderRadius:10,padding:"16px"}}>
               <div style={{fontSize:11,fontWeight:600,color:"#3a4a6a",marginBottom:12,textTransform:"uppercase",letterSpacing:"0.06em"}}>Balance by Bank</div>
@@ -12390,7 +12390,7 @@ function PortfolioApp(){
           {l:"Win rate",v:Math.round(wins/traded.length*100)+"%",s:wins+"/"+traded.length+" symbols",ac:"#9d7bea"},
           {l:"SANSERA ⭐",v:"+₹95.6L",s:"Best open position",ac:"#00c2d4"},
         ]}/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10,marginBottom:10}}>
           <div style={box()}>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Realised P/L by FY</div>
             <ResponsiveContainer width="100%" height={185}><BarChart data={fyBar}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>Math.abs(v)>=1e5?Math.round(v/1e5)+"L":Math.abs(v)>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>[(v>=0?"+":"")+"₹"+Math.abs(v).toLocaleString("en-IN"),"P/L"]}/><Bar dataKey="pl" radius={[4,4,0,0]}>{fyBar.map((_,i)=><Cell key={i} fill={_.pl>=0?"#00d68f":"#ff4060"}/>)}</Bar></BarChart></ResponsiveContainer>
@@ -12473,7 +12473,7 @@ function PortfolioApp(){
             </div>
           );})}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10,marginBottom:10}}>
           {[["FY24-25",TB3],["FY23-24",TB4]].map(([label,data])=>{
             const top=[...data].sort((a,b)=>b["Realized PL"]-a["Realized PL"]).slice(0,10);
             return <div key={label} style={box()}>
@@ -12482,7 +12482,7 @@ function PortfolioApp(){
             </div>;
           })}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
           {[["FY24-25",TB3],["FY23-24",TB4]].map(([label,data])=><div key={label}>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{label}</div>
             <div style={{background:S.cd,border:"1px solid "+S.bd,borderRadius:9,overflow:"hidden"}}>
@@ -12503,7 +12503,7 @@ function PortfolioApp(){
           {l:"FY25-26",v:fL(_DT["FY25-26"]||0),s:"5 payments",ac:S.mt},
           {l:"Top payer",v:Object.entries(divSym).sort((a,b)=>b[1]-a[1])[0]&&([][0])[0]||"—",s:fL(Object.entries(divSym).sort((a,b)=>b[1]-a[1])[0]&&([][0])[1]||0),ac:S.gn},
         ]}/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10,marginBottom:10}}>
           <div style={box(0)}><div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Dividends by FY</div><ResponsiveContainer width="100%" height={145}><BarChart data={dvBar}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e5?Math.round(v/1e5)+"L":v>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>["₹"+v.toLocaleString("en-IN"),"Dividends"]}/><Bar dataKey="v" fill="#f5a623" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
           <div style={box(0)}><div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Top 8 payers</div><ResponsiveContainer width="100%" height={145}><BarChart data={Object.entries(divSym).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,v])=>({name,v:Math.round(v)}))}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>["₹"+v.toLocaleString("en-IN"),"Amount"]}/><Bar dataKey="v" fill="#f5a623" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
         </div>
@@ -12615,7 +12615,7 @@ function PortfolioApp(){
 
       {/* - LEADERBOARD - */}
       {tab==="lb"&&<div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10,marginBottom:10}}>
           <div>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Top 20 winners</div>
             <div style={{background:S.cd,border:"1px solid "+S.bd,borderRadius:9,overflow:"hidden"}}>
@@ -12687,7 +12687,7 @@ function PortfolioApp(){
         </div>
 
         {/* Two columns: Open positions + Top realised */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:12}}>
           {/* Open positions */}
           <div style={{background:"#0a0d14",border:"1px solid #1e2540",borderRadius:9,overflow:"hidden"}}>
             <div style={{padding:"10px 12px",borderBottom:"1px solid #1e2540",fontSize:11,fontWeight:600,color:S.mt,display:"flex",justifyContent:"space-between"}}>
@@ -14223,7 +14223,7 @@ function InCredTab() {
 
       {/* - PERFORMANCE - */}
       {view==="performance"&&(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,padding:"18px 20px"}}>
             <div style={{fontSize:11,fontWeight:600,color:"#3a4a6a",marginBottom:14,textTransform:"uppercase",letterSpacing:"0.06em"}}>
               Capital Account
@@ -14408,7 +14408,7 @@ function KarishmaTab() {
 
       {/* - P&L - */}
       {view==="pl"&&(<>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:12}}>
           {/* Winners */}
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",fontSize:11,fontWeight:600,color:"#34d399"}}>
@@ -14489,7 +14489,7 @@ function KarishmaTab() {
 
       {/* - LEDGER - */}
       {view==="ledger"&&(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,padding:"18px 20px"}}>
             <div style={{fontSize:11,fontWeight:600,color:"#3a4a6a",marginBottom:14,textTransform:"uppercase",letterSpacing:"0.06em"}}>Capital Flow</div>
             {[
@@ -15922,7 +15922,7 @@ function LiveStocksTab() {
 
       {/* TOP MOVERS */}
       {lsView==="movers"&&(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
           {[{title:"📈 Top Gainers",data:gainers,pos:true},{title:"📉 Biggest Losers",data:losers,pos:false}].map(({title,data,pos})=>(
             <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
               <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:pos?"#34d399":"#f87171",textTransform:"uppercase",letterSpacing:"0.08em"}}>{title}</div>
@@ -16188,7 +16188,7 @@ function InsightsTab() {
           </div>
 
           {/* Asset allocation + Sector breakdown */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
             {/* Asset allocation donut */}
             <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
               <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Asset Allocation</div>
@@ -16346,7 +16346,7 @@ function InsightsTab() {
       {iView==="family"&&(
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {/* Generational split */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
             {[{l:"Senior Generation",members:seniorGen,val:seniorWealth,c:"#7eb8ff"},{l:"Next Generation",members:nextGen,val:nextWealth,c:"#a78bfa"}].map(({l,members,val,c})=>(
               <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
                 <div style={{fontSize:10,fontWeight:700,color:c,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{l}</div>
@@ -16981,7 +16981,7 @@ function WatchlistTab() {
       {editing&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #3a6abf",borderRadius:12,padding:"16px"}}>
           <div style={{fontSize:10,fontWeight:700,color:"#7eb8ff",marginBottom:12}}>Add to Watchlist</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:9,marginBottom:9}}>
             {[{k:"sym",l:"Stock Symbol / Name",ph:"e.g. NELCO"},{k:"target",l:"Target Price (₹)",ph:"e.g. 500"},{k:"stop",l:"Stop Loss (₹)",ph:"e.g. 180"},{k:"notes",l:"Investment Thesis",ph:"Why watching..."}].map(({k,l,ph})=>(
               <div key={k}>
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -17125,7 +17125,7 @@ function ProfilesTab() {
                 <button onClick={()=>{setEditing(!editing);setEditData({pan:profile.pan||"",phone:profile.phone||"",email:profile.email||"",dob:profile.dob||"",nominee:profile.nominee||""});}} style={{fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid #1d2545",background:"#0a1020",color:"#7eb8ff",cursor:"pointer"}}>✏ Edit</button>
               </div>
               {editing ? (
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:9}}>
                   {[{k:"pan",l:"PAN Number"},{k:"phone",l:"Phone"},{k:"email",l:"Email"},{k:"dob",l:"Date of Birth"},{k:"nominee",l:"Nominee"}].map(({k,l})=>(
                     <div key={k}>
                       <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -17138,7 +17138,7 @@ function ProfilesTab() {
                   </div>
                 </div>
               ) : (
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:9}}>
                   {[{l:"PAN Number",v:profile.pan,sec:true},{l:"Phone",v:profile.phone},{l:"Email",v:profile.email},{l:"Date of Birth",v:profile.dob},{l:"Nominee",v:profile.nominee},{l:"PAN Linked",v:profile.panLinked?"✓ Yes":"✗ No",c:profile.panLinked?"#34d399":"#f87171"}].map(({l,v,sec,c})=>(
                     <div key={l} style={{background:"#080b18",borderRadius:8,padding:"9px 12px"}}>
                       <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -17213,7 +17213,7 @@ function ProfilesTab() {
                 <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
                   <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3b82f6",textTransform:"uppercase",letterSpacing:"0.08em"}}>📘 PPF Account</div>
                   {ppfAcc.map((p,i)=>(
-                    <div key={i} style={{padding:"10px 16px",borderBottom:"1px solid #0d1020",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:8}}>
+                    <div key={i} style={{padding:"10px 16px",borderBottom:"1px solid #0d1020",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
                       <div>
                         <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div>
                         <div style={{fontSize:11,fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{p.acc}</div>
@@ -18114,7 +18114,7 @@ function MTFTab() {
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
             <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Should You Pay Down MTF?</div>
             <div style={{fontSize:10,color:"#4a5a7a",marginBottom:12}}>If your portfolio earns less than {rate}% p.a., paying down MTF gives better risk-adjusted returns.</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
               <div style={{background:"#0a1a10",border:"1px solid #34d39933",borderRadius:10,padding:"12px"}}>
                 <div style={{fontSize:10,fontWeight:700,color:"#34d399",marginBottom:6}}>Pay Down MTF</div>
                 <div style={{fontSize:11,color:"#4a7a5a",lineHeight:1.6}}>
@@ -18169,7 +18169,7 @@ function MTFTab() {
             </table>
           </div>
 
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
             <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
               <div style={{fontSize:10,fontWeight:700,color:"#34d399",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Current Position</div>
               {[
