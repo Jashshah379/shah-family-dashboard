@@ -14599,6 +14599,9 @@ function AllHoldingsTab({livePrices, priceStatus}) {
   const [holView, setHolView] = React.useState("holdings");
   const [colWidths, setColWidths] = React.useState({stock:220,qty:80,avg:90,cmp:90,val:110,pl:110,pct:80,mem:110,cust:110});
   const resizing = React.useRef(null);
+  const [selectedStocks, setSelectedStocks] = React.useState({});
+  const letterRefs = React.useRef({});
+  const tableRef = React.useRef(null);
 
   const startResize = React.useCallback(function(col, e) {
     e.preventDefault();
@@ -14626,6 +14629,46 @@ function AllHoldingsTab({livePrices, priceStatus}) {
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
     if(abs>=1e5) return sign+"₹"+(abs/1e5).toFixed(1)+" L";
     return sign+"₹"+Math.round(abs).toLocaleString("en-IN");
+  };
+
+  /* ── Export helpers ── */
+  var exportToCSV = function(rows, filename) {
+    var headers = ["Stock","NSE Symbol","Member","Broker","Qty","Avg Cost","CMP","Invested","Current Value","P&L","Return %"];
+    var csvRows = [headers.join(",")];
+    rows.forEach(function(r) {
+      var pl = (r.val||0)-(r.inv||0);
+      var ret = r.inv>0?(pl/r.inv*100):0;
+      csvRows.push([
+        '"'+(r.sym||"")+ '"', '"'+(r.nse||r.sym||"")+ '"',
+        '"'+(r.member||"")+ '"', '"'+(r.custodian||"")+ '"',
+        r.qty||0, r.avg||0, r.cmp||0,
+        Math.round(r.inv||0), Math.round(r.val||0),
+        Math.round(pl), ret.toFixed(2)+"%"
+      ].join(","));
+    });
+    var blob = new Blob([csvRows.join("\n")], {type:"text/csv"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  };
+
+  var exportToPrint = function(rows, title) {
+    var fmtN = function(n) { return n!=null?Math.round(n).toLocaleString("en-IN"):"—"; };
+    var fmtC = function(n) { if(!n&&n!==0)return"—"; var a=Math.abs(n),s=n<0?"−":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+"Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+"L":s+"₹"+fmtN(a); };
+    var html = '<html><head><title>'+title+'</title><style>body{font-family:Arial,sans-serif;font-size:11px;color:#111}table{border-collapse:collapse;width:100%}th{background:#1e3a5f;color:#fff;padding:6px 8px;text-align:left}td{padding:5px 8px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f9f9f9}.gain{color:#16a34a}.loss{color:#dc2626}h2{font-size:14px;margin-bottom:8px}@media print{body{font-size:10px}}</style></head><body>';
+    html += '<h2>'+title+'</h2><table><thead><tr><th>#</th><th>Stock</th><th>Member</th><th>Broker</th><th>Qty</th><th>Avg Cost</th><th>CMP</th><th>Invested</th><th>Value</th><th>P&L</th><th>Return</th></tr></thead><tbody>';
+    rows.forEach(function(r,i) {
+      var pl = (r.val||0)-(r.inv||0);
+      var ret = r.inv>0?(pl/r.inv*100):0;
+      var cls = pl>=0?"gain":"loss";
+      html += '<tr><td>'+(i+1)+'</td><td><b>'+(r.sym||"")+'</b></td><td>'+(r.member||"")+'</td><td>'+(r.custodian||"")+'</td><td style="text-align:right">'+(r.qty||0)+'</td><td style="text-align:right">'+fmtC(r.avg)+'</td><td style="text-align:right">'+fmtC(r.cmp)+'</td><td style="text-align:right">'+fmtC(r.inv)+'</td><td style="text-align:right">'+fmtC(r.val)+'</td><td style="text-align:right" class="'+cls+'">'+fmtC(pl)+'</td><td style="text-align:right" class="'+cls+'">'+ret.toFixed(1)+'%</td></tr>';
+    });
+    html += '</tbody></table></body></html>';
+    var w = window.open("","_blank");
+    w.document.write(html);
+    w.document.close();
+    w.print();
   };
 
   // Build consolidated list from all MEMBER_HOLDINGS
@@ -14852,7 +14895,73 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             </span>
             <span style={{fontSize:9,color:"#2a3a50"}}>Click row to expand per-account detail</span>
           </div>
-          <div style={{overflowX:"auto"}}>
+          {/* ── Selection Toolbar ── */}
+          {Object.keys(selectedStocks).length>0&&(
+            <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",marginBottom:8,background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,flexWrap:"wrap"}}>
+              <span style={{fontSize:10,fontWeight:700,color:"#7eb8ff"}}>{Object.keys(selectedStocks).length} selected</span>
+              <button onClick={function(){
+                var rows=[];
+                (groupBy==="stock"?stockGroups:sorted).forEach(function(g){
+                  var sym=g.sym;
+                  if(!selectedStocks[sym])return;
+                  if(g.rows){g.rows.forEach(function(r){rows.push(r);});}else{rows.push(g);}
+                });
+                exportToCSV(rows,"Shah_Holdings_"+new Date().toISOString().slice(0,10)+".csv");
+              }} style={{background:"#0d2a1a",border:"1px solid #166534",color:"#34d399",borderRadius:6,padding:"4px 12px",cursor:"pointer",fontSize:10,fontWeight:600}}>
+                ⬇ Excel/CSV
+              </button>
+              <button onClick={function(){
+                var rows=[];
+                (groupBy==="stock"?stockGroups:sorted).forEach(function(g){
+                  var sym=g.sym;
+                  if(!selectedStocks[sym])return;
+                  if(g.rows){g.rows.forEach(function(r){rows.push(r);});}else{rows.push(g);}
+                });
+                exportToPrint(rows,"Shah Family Holdings — Selected Stocks");
+              }} style={{background:"#1a1a0d",border:"1px solid #854d0e",color:"#fbbf24",borderRadius:6,padding:"4px 12px",cursor:"pointer",fontSize:10,fontWeight:600}}>
+                🖨 Print / PDF
+              </button>
+              <button onClick={function(){
+                var rows=[];
+                (groupBy==="stock"?stockGroups:sorted).forEach(function(g){rows.push(g.rows?g:g);});
+                exportToCSV(rows,"Shah_Holdings_All_"+new Date().toISOString().slice(0,10)+".csv");
+              }} style={{background:"#0d1a2e",border:"1px solid #1e3a5f",color:"#7eb8ff",borderRadius:6,padding:"4px 12px",cursor:"pointer",fontSize:10,fontWeight:600}}>
+                ⬇ Export All
+              </button>
+              <button onClick={function(){setSelectedStocks({});}}
+                style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:10}}>
+                ✕ Clear
+              </button>
+              <button onClick={function(){
+                var all={};
+                (groupBy==="stock"?stockGroups:sorted).forEach(function(g){all[g.sym]=true;});
+                setSelectedStocks(all);
+              }} style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:10}}>
+                Select All
+              </button>
+            </div>
+          )}
+
+          {/* ── A-Z Alphabet Sidebar ── */}
+          <div style={{display:"flex",gap:0,alignItems:"flex-start"}}>
+            <div style={{position:"sticky",top:60,alignSelf:"flex-start",display:"flex",flexDirection:"column",gap:1,marginRight:6,zIndex:10}}>
+              {"ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("").map(function(letter){
+                return (
+                  <button key={letter} onClick={function(){
+                    var el=letterRefs.current[letter];
+                    if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+                  }}
+                    style={{width:16,height:14,background:"none",border:"none",color:"#2a3a5a",cursor:"pointer",fontSize:7,fontWeight:700,padding:0,lineHeight:1,
+                      transition:"color 0.1s"}}
+                    onMouseEnter={function(e){e.target.style.color="#7eb8ff";}}
+                    onMouseLeave={function(e){e.target.style.color="#2a3a5a";}}>
+                    {letter}
+                  </button>
+                );
+              })}
+            </div>
+
+          <div style={{flex:1,overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
@@ -14885,7 +14994,12 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                   const db = STOCK_DB && Object.keys(STOCK_DB).find(k=>g.sym.toLowerCase().includes(k.toLowerCase().slice(0,5)));
                   const sector = db ? STOCK_DB[db].sector : "";
                   return [
-                    <tr key={g.sym} onClick={()=>setExpandedStock(isOpen?null:g.sym)}
+                    <tr key={g.sym} ref={function(el){
+                        var letter=(g.sym||"#")[0].toUpperCase();
+                        if(el&&!letterRefs.current[letter])letterRefs.current[letter]=el;
+                        if(el&&!/[A-Z]/.test(letter)&&!letterRefs.current["#"])letterRefs.current["#"]=el;
+                      }}
+                      onClick={function(){setExpandedStock(isOpen?null:g.sym);}}
                       style={{borderBottom:"1px solid #0d1020",cursor:"pointer",
                         background:isOpen?"#111827":gi%2===0?"transparent":"#080a12"}}>
                       <td style={{padding:"7px 10px"}}>
@@ -15018,6 +15132,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                 </tr>
               </tfoot>
             </table>
+          </div>
           </div>
         </div>
       )}
