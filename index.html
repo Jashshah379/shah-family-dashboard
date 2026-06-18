@@ -5309,22 +5309,23 @@ function FamilyApp() {
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
             {/* Privacy toggle */}
-            {dataIntegrityWarnings.length>0&&(
-              <span title={dataIntegrityWarnings.join("\n")}
-                style={{flexShrink:0,marginLeft:8,background:"#2a0a0a",border:"1px solid #5a1a1a",
-                  borderRadius:6,padding:"4px 8px",color:"#f87171",fontSize:10,fontWeight:700,cursor:"help"}}>
-                ⚠ {dataIntegrityWarnings.length} dup
-              </span>
-            )}
-            <button onClick={function(){setShowFreshness(function(v){return !v;});}}
-              title="Data Freshness Tracker"
-              style={{flexShrink:0,marginLeft:8,
-                background:staleCount>0?"#1a1500":"#0a0e1e",
-                border:"1px solid "+(staleCount>0?"#f0b429":"#1d2545"),
-                borderRadius:6,padding:"4px 10px",color:staleCount>0?"#f0b429":"#3a4a6a",
-                cursor:"pointer",fontSize:10,fontWeight:700,whiteSpace:"nowrap"}}>
-              🕐 {staleCount>0?staleCount+" stale":"fresh"}
-            </button>
+            <div style={{position:"relative",flexShrink:0,marginLeft:8}}>
+              <button onClick={function(){setShowFreshness(function(v){return !v;});}}
+                title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" duplicate(s) · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
+                style={{background:(dataIntegrityWarnings.length>0||staleCount>0)?"#1a1500":"#0a0e1e",
+                  border:"1px solid "+((dataIntegrityWarnings.length>0||staleCount>0)?"#f0b429":"#1d2545"),
+                  borderRadius:8,padding:"5px 9px",color:(dataIntegrityWarnings.length>0||staleCount>0)?"#f0b429":"#3a4a6a",
+                  cursor:"pointer",fontSize:13,lineHeight:1,display:"flex",alignItems:"center"}}>
+                🔔
+              </button>
+              {(dataIntegrityWarnings.length+staleCount)>0&&(
+                <span style={{position:"absolute",top:-4,right:-4,background:"#ef4444",color:"#fff",
+                  borderRadius:"50%",width:16,height:16,fontSize:9,fontWeight:800,
+                  display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid #070a16"}}>
+                  {dataIntegrityWarnings.length+staleCount}
+                </span>
+              )}
+            </div>
             <button onClick={function(){setHideValues(function(v){return !v;});}}
               title={(window.HIDE_VALUES)?"Show values":"Hide sensitive values"}
               style={{flexShrink:0,marginLeft:8,background:(window.HIDE_VALUES)?"#2a1a00":"#0a0e1e",
@@ -18378,13 +18379,37 @@ function MTFTab() {
   <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(420px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
     <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
       <div>
-        <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>Data Freshness</div>
-        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Last updated per account</div>
+        <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>🔔 Notifications</div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Data integrity & freshness</div>
       </div>
       <button onClick={function(){setShowFreshness(false);}} style={{background:"#1d2545",border:"none",color:"#7eb8ff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11}}>✕ Close</button>
     </div>
 
     <div style={{flex:1,overflowY:"auto",padding:"10px 16px"}}>
+      {/* Duplicate warnings section */}
+      {dataIntegrityWarnings.length>0&&(
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:9,color:"#f87171",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,fontWeight:700}}>
+            ⚠ Possible Duplicates ({dataIntegrityWarnings.length})
+          </div>
+          {dataIntegrityWarnings.map(function(w,i){
+            return (
+              <div key={i} style={{padding:"8px 10px",marginBottom:4,background:"#1a0808",borderRadius:8,border:"1px solid #5a1a1a",fontSize:10,color:"#fca5a5"}}>
+                {w}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {dataIntegrityWarnings.length===0&&(
+        <div style={{padding:"8px 10px",marginBottom:14,background:"#0a1f15",borderRadius:8,border:"1px solid #166534",fontSize:10,color:"#34d399"}}>
+          ✓ No duplicate holdings detected
+        </div>
+      )}
+
+      <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,fontWeight:700}}>
+        Account Freshness
+      </div>
       {freshnessReport.map(function(r){
         var statusColor = r.status==="never"?"#6b7280":r.status==="critical"?"#ef4444":r.status==="warning"?"#f0b429":r.status==="notice"?"#7eb8ff":"#34d399";
         var statusBg = r.status==="never"?"#1a1a1a":r.status==="critical"?"#2a0a0a":r.status==="warning"?"#1a1500":r.status==="notice"?"#0a1628":"#0a1f15";
