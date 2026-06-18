@@ -4793,9 +4793,10 @@ function FamilyApp() {
     var seen = {};
     (typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : []).forEach(function(h) {
       if (!h || !h.s || !h._member) return;
-      var key = h._member + "|" + h.s + "|" + (h.qty||0) + "|" + (h.avg||0);
-      if (seen[key]) {
-        warnings.push(h._member + " — " + h.s + " (qty " + h.qty + ") looks duplicated");
+      /* Only flag true duplicates: identical member+custodian+stock+qty+invested amount */
+      var key = h._member + "|" + h._custodian + "|" + h.s + "|" + (h.qty||0) + "|" + (h.inv||0);
+      if (h.qty>0 && h.inv>0 && seen[key]) {
+        warnings.push(h._member + " (" + h._custodian + ") — " + h.s + " qty " + h.qty + " appears twice");
       }
       seen[key] = true;
     });
