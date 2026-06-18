@@ -4713,6 +4713,8 @@ function maskNum(v) {
 
 
 function FamilyApp() {
+  const [hideValues, setHideValues] = React.useState(false);
+  if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
 
   /* ── Patch live prices into holdings data ─────────────────────────────── */
@@ -5254,12 +5256,12 @@ function FamilyApp() {
             ))}
             {/* Privacy toggle */}
             <button onClick={function(){setHideValues(function(v){return !v;});}}
-              title={hideValues?"Show values":"Hide sensitive values"}
-              style={{flexShrink:0,marginLeft:8,background:hideValues?"#2a1a00":"#0a0e1e",
-                border:"1px solid "+(hideValues?"#f0b429":"#1d2545"),
-                borderRadius:6,padding:"4px 10px",color:hideValues?"#f0b429":"#3a4a6a",
+              title={(window.HIDE_VALUES)?"Show values":"Hide sensitive values"}
+              style={{flexShrink:0,marginLeft:8,background:(window.HIDE_VALUES)?"#2a1a00":"#0a0e1e",
+                border:"1px solid "+((window.HIDE_VALUES)?"#f0b429":"#1d2545"),
+                borderRadius:6,padding:"4px 10px",color:(window.HIDE_VALUES)?"#f0b429":"#3a4a6a",
                 cursor:"pointer",fontSize:13,lineHeight:1}}>
-              {hideValues?"👁":"👁‍🗨"}
+              {(window.HIDE_VALUES)?"👁":"👁‍🗨"}
             </button>
           </div>
         </div>
@@ -9390,7 +9392,7 @@ var FAMILY_TOP = (function() {
     {arr: typeof AARYA_SUSHIL_HOLDINGS!=="undefined"?AARYA_SUSHIL_HOLDINGS:[],m:"Aarya Shah",       c:"Sushil Financial"},
     /* ── Riya Shah ── */
     {arr: typeof RIYA_SUSHIL_HOLDINGS!=="undefined"?RIYA_SUSHIL_HOLDINGS:[], m:"Riya Shah",         c:"Sushil Financial"},
-    {arr: typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],     m:"Riya Shah",         c:"NSDL"},
+    {arr: typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],     m:"Riya Shah",         c:"ICICI Direct"},
     {arr: typeof RIYA_ZERODHA_HOLDINGS!=="undefined"?RIYA_ZERODHA_HOLDINGS:[],m:"Riya Shah",        c:"Zerodha"},
     /* ── Honey Chetan Shah ── */
     {arr: typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[],m:"Honey Chetan Shah",c:"Zerodha"},
@@ -9471,7 +9473,7 @@ const MEMBER_HOLDINGS = {
   "JASH":  _tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah",      "Zerodha"),
   "RIYA": [
     ..._tag(typeof RIYA_SUSHIL_HOLDINGS!=="undefined"?RIYA_SUSHIL_HOLDINGS:[],   "Riya Shah", "Sushil Financial"),
-    ..._tag(typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],       "Riya Shah", "NSDL"),
+    ..._tag(typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],       "Riya Shah", "ICICI Direct"),
     ..._tag(typeof RIYA_ZERODHA_HOLDINGS!=="undefined"?RIYA_ZERODHA_HOLDINGS:[], "Riya Shah", "Zerodha"),
   ],
   "HONEY": _tag(typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[], "Honey Chetan Shah", "Zerodha"),
