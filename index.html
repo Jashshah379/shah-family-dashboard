@@ -3938,6 +3938,7 @@ function MutualFundsTab() {
   var members = Object.keys(reg).sort();
   var [selMember, setSelMember] = React.useState(null);
   var [expandedScheme, setExpandedScheme] = React.useState(null);
+  var [showAllMF, setShowAllMF] = React.useState(false);
 
   var totalInv = members.reduce(function(acc,m){return acc+(reg[m].inv||0);},0);
   var totalVal = members.reduce(function(acc,m){return acc+(reg[m].valApr26||reg[m].val||0);},0);
@@ -3979,6 +3980,19 @@ function MutualFundsTab() {
             {totalPL>=0?"+":""}{cr(totalPL)}
           </div>
         </div>
+        {/* All Family row */}
+        <div onClick={function(){setShowAllMF(function(v){return !v;}); setSelMember(null);}}
+          style={{background:showAllMF?"linear-gradient(135deg,#1e3a5f,#162040)":"linear-gradient(155deg,#0a1a0f,#0d1020)",
+            border:showAllMF?"1px solid #3b82f6":"1px solid #1a3a1a",
+            borderRadius:10,padding:"10px 12px",cursor:"pointer",marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
+            <div style={{width:22,height:22,borderRadius:"50%",background:"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:"#fff",flexShrink:0}}>AF</div>
+            <div style={{fontSize:10,fontWeight:700,color:showAllMF?"#7eb8ff":"#10b981"}}>All Family</div>
+          </div>
+          <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(totalVal)}</div>
+          <div style={{fontSize:9,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalPL>=0?"+":""}{cr(totalPL)}</div>
+          <div style={{fontSize:8,color:"#3a4a6a",marginTop:2}}>{members.reduce(function(a,n){return a+(getMemberData(n).schemes.length||0);},0)} schemes</div>
+        </div>
         <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6,paddingLeft:4}}>{members.length} Members</div>
         <div style={{display:"flex",flexDirection:"column",gap:5}}>
           {members.map(function(name){
@@ -4007,10 +4021,85 @@ function MutualFundsTab() {
 
       {/* Right panel */}
       <div style={{flex:1,minWidth:0}}>
-        {!selMember&&(
+        {!selMember&&!showAllMF&&(
           <div style={{padding:"60px 0",textAlign:"center",color:"#3a4a6a"}}>
             <div style={{fontSize:28,marginBottom:12}}>💼</div>
-            <div style={{fontSize:13}}>Select a member to view their mutual fund holdings</div>
+            <div style={{fontSize:13}}>Select a member or All Family to view mutual fund holdings</div>
+          </div>
+        )}
+        {!selMember&&showAllMF&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {/* All Family header */}
+            <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63)",borderRadius:14,padding:"14px 18px",border:"1px solid #2a2a5a",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{width:40,height:40,borderRadius:"50%",background:"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff"}}>AF</div>
+                <div>
+                  <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>All Family</div>
+                  <div style={{fontSize:9,color:"#6a7a9a"}}>Combined Mutual Fund Portfolio · All Members</div>
+                </div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:20,fontWeight:900,color:"#10b981",fontFamily:"monospace"}}>{cr(totalVal)}</div>
+                <div style={{fontSize:10,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalPL>=0?"+":""}{cr(totalPL)} · {totalInv>0?((totalPL/totalInv)*100).toFixed(1)+"%":"—"}</div>
+              </div>
+            </div>
+            {/* KPIs */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
+              {[
+                {l:"Total Invested", v:cr(totalInv), c:"#8899bb"},
+                {l:"Current Value",  v:cr(totalVal), c:"#10b981"},
+                {l:"P&L",            v:(totalPL>=0?"+":"")+cr(totalPL), c:totalPL>=0?"#10b981":"#ef4444"},
+                {l:"Members",        v:members.length, c:"#7eb8ff"},
+              ].map(function(tile){return(
+                <div key={tile.l} style={{background:"#080b18",border:"1px solid #1d2545",borderRadius:10,padding:"10px 14px"}}>
+                  <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{tile.l}</div>
+                  <div style={{fontSize:14,fontWeight:800,fontFamily:"monospace",color:tile.c}}>{tile.v}</div>
+                </div>
+              );})}
+            </div>
+            {/* All schemes grouped by member */}
+            <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+              <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#10b981"}}>
+                {members.reduce(function(a,n){return a+(getMemberData(n).schemes.length||0);},0)} Schemes · All Members
+              </div>
+              <div>
+                {members.map(function(name){
+                  var d = getMemberData(name);
+                  if(!d.schemes.length) return null;
+                  var mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).find(function(x){return x.n===name;});
+                  return (
+                    <div key={name}>
+                      <div style={{padding:"8px 14px",background:"#0a0e1e",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:(mem&&mem.c)||"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:"#fff"}}>{(mem&&mem.i)||(name[0])}</div>
+                          <span style={{fontSize:10,fontWeight:700,color:"#c8d0e8"}}>{name}</span>
+                        </div>
+                        <span style={{fontSize:10,color:"#10b981",fontFamily:"monospace",fontWeight:600}}>{cr(d.val)}</span>
+                      </div>
+                      {d.schemes.map(function(sc,i){
+                        var spl=sc.gain!==undefined?sc.gain:(sc.value||0)-(sc.invested||0);
+                        var isGain=spl>=0;
+                        return (
+                          <div key={i} style={{padding:"9px 14px 9px 28px",borderBottom:"1px solid #080a12",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{fontSize:10,color:"#c8d0e8"}}>{sc.scheme}</div>
+                              <div style={{display:"flex",gap:4,marginTop:2,flexWrap:"wrap"}}>
+                                {sc.cat&&<span style={{fontSize:7,color:"#3a4a6a",background:"#0a0e1e",padding:"1px 5px",borderRadius:3}}>{sc.cat}</span>}
+                                {sc.platform&&<span style={{fontSize:7,color:"#7eb8ff",background:"#1e3a5f",padding:"1px 5px",borderRadius:3}}>{sc.platform}</span>}
+                              </div>
+                            </div>
+                            <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
+                              <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(sc.value||0)}</div>
+                              <div style={{fontSize:9,color:isGain?"#10b981":"#ef4444",fontFamily:"monospace"}}>{isGain?"+":""}{cr(spl)}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
         {selMember&&selData&&(
@@ -6164,18 +6253,18 @@ const BC = {
 
 const BANK = [
   /* ── Individual ICICI Savings — Jun 17, 2026 ── */
-  {n:"Jash Shah",          bank:"ICICI", t:"Savings",  acc:"...0126", b:1469643},
-  {n:"Vasumati Shah",      bank:"ICICI", t:"Savings",  acc:"...0112", b:1074417, ppf:1293608},
-  {n:"Rasiklal Shah",      bank:"ICICI", t:"Savings",  acc:"...0111", b:3203426, ppf:1278777},
+  {n:"Jash Shah",          bank:"ICICI", t:"Savings",  acc:"...0126", b:1130496},
+  {n:"Vasumati Shah",      bank:"ICICI", t:"Savings",  acc:"...0112", b:657108, ppf:1293608},
+  {n:"Rasiklal Shah",      bank:"ICICI", t:"Savings",  acc:"...0111", b:3710764, ppf:1278777},
   {n:"Rasiklal Shah",      bank:"ICICI", t:"Savings2", acc:"...0999", b:3894052},
   {n:"Asha Shah",          bank:"ICICI", t:"Savings",  acc:"...0113", b:705523,  ppf:1297158},
-  {n:"Karishma Shah",      bank:"ICICI", t:"Savings",  acc:"...9227", b:10597},
+  {n:"Karishma Shah",      bank:"ICICI", t:"Savings",  acc:"...9227", b:183366},
   {n:"Chetan Shah",        bank:"ICICI", t:"Savings",  acc:"...0107", b:3967090, ppf:1529269},
   {n:"Chetan Shah",        bank:"ICICI", t:"Savings2", acc:"...0991", b:6773726},
-  {n:"Honey Chetan Shah",  bank:"ICICI", t:"Savings",  acc:"...0109", b:43200,   ppf:1517619},
+  {n:"Honey Chetan Shah",  bank:"ICICI", t:"Savings",  acc:"...0109", b:43084,   ppf:1517619},
   {n:"Maya Shah",          bank:"ICICI", t:"Savings",  acc:"...0108", b:9912,    ppf:1404669},
-  {n:"Riya Shah",          bank:"ICICI", t:"Savings",  acc:"...0110", b:187485,  ppf:1369659},
-  {n:"Aarya Shah",         bank:"ICICI", t:"Savings",  acc:"...9746", b:1494,    ppf:309763},
+  {n:"Riya Shah",          bank:"ICICI", t:"Savings",  acc:"...0110", b:52269,  ppf:1369659},
+  {n:"Aarya Shah",         bank:"ICICI", t:"Savings",  acc:"...9746", b:0,    ppf:309763},
   /* ── Praful Shah ICICI — Jun 17, 2026 ── */
   {n:"Praful Shah",        bank:"ICICI", t:"NRE",      acc:"...5502", b:2998160},
   {n:"Praful Shah",        bank:"ICICI", t:"NRO",      acc:"...5503", b:10695},
@@ -6202,7 +6291,7 @@ const MEMBERS = [
   {n:"All Family",     i:"AF",c:"#e8eaf0",stocks:619940000, mf:21900000,  bank:27700000, _isFamily:true,
    cas:"All Family",broker:null,icici:null,holdingsRef:"ALL_FAMILY",custodian:["All accounts"],
    casApr26:855945651,casTrend:[{m:"May'25",v:800000000},{m:"Jun'25",v:820000000},{m:"Jul'25",v:810000000},{m:"Aug'25",v:830000000},{m:"Sep'25",v:840000000},{m:"Oct'25",v:850000000},{m:"Nov'25",v:845000000},{m:"Dec'25",v:855000000},{m:"Jan'26",v:860000000},{m:"Feb'26",v:855000000},{m:"Mar'26",v:852000000},{m:"Apr'26",v:855945651}]},
-  {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:64550000, mf:1175446, bank:1074417,
+  {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:64550000, mf:1175446, bank:657108,
    cas:"Vasumati Shah",broker:null,icici:null,holdingsRef:"V129",
    custodian:["Sushil Financial","ICICI Direct","Zerodha"],casApr26:232585964,
    casTrend:[{m:"May'25",v:220000000},{m:"Jun'25",v:225000000},{m:"Oct'25",v:228000000},{m:"Apr'26",v:232585964}]},
@@ -6210,7 +6299,7 @@ const MEMBERS = [
    cas:"Rasiklal HUF", broker:null,icici:null,holdingsRef:"RASIKLAL_HUF",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:116548032,
    casTrend:[{m:"May'25",v:168000000},{m:"Oct'25",v:172000000},{m:"Apr'26",v:174525606},{m:"Jun'26",v:116548032}]},
-  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:244044220, mf:6209170,  bank:8069366,
+  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:244044220, mf:6209170,  bank:8576704,
    cas:"Rasiklal Shah",broker:null,icici:null,holdingsRef:"RM",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:159326952,
    casTrend:[{m:"May'25",v:150000000},{m:"Oct'25",v:155000000},{m:"Apr'26",v:159326952}]},
@@ -6226,11 +6315,11 @@ const MEMBERS = [
    cas:"Asha Shah",   broker:"JD0A46",icici:null,holdingsRef:"A46",
    custodian:["Sushil Financial (JD0A46)","IIFL Capital"],casApr26:50266763,
    casTrend:[{m:"May'25",v:48000000},{m:"Oct'25",v:50000000},{m:"Apr'26",v:50266763}]},
-  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146628,   bank:1482146,
+  {n:"Jash Shah",      i:"JS",c:"#639922",stocks:31040127,  mf:146628,   bank:1142999,
    cas:"Jash Shah",   broker:null,icici:null,holdingsRef:"JASH",
    custodian:["Zerodha","ICICI NSDL"],casApr26:31240646,
    casTrend:[{m:"May'25",v:28000000},{m:"Oct'25",v:30000000},{m:"Apr'26",v:31240646}]},
-  {n:"Riya Shah",      i:"RI",c:"#d4537e",stocks:28072229,  mf:146628,   bank:187485,
+  {n:"Riya Shah",      i:"RI",c:"#d4537e",stocks:28072229,  mf:146628,   bank:52269,
    cas:"Riya Shah",   broker:null,icici:"JD0R246",holdingsRef:"RIYA",
    custodian:["ICICI Direct","Sushil Financial","NSDL","Zerodha"],casApr26:25210629,
    casTrend:[{m:"May'25",v:23000000},{m:"Oct'25",v:24000000},{m:"Apr'26",v:25210629}]},
@@ -6246,11 +6335,11 @@ const MEMBERS = [
    cas:"Chetan Shah", broker:null,icici:null,holdingsRef:"CHETAN",
    custodian:["Zerodha","Sushil Financial"],casApr26:10743001,
    casTrend:[{m:"May'25",v:9500000},{m:"Apr'26",v:10743001}]},
-    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:3851044, bank:43200,
+    {n:"Honey Chetan Shah",i:"HC",c:"#f59e0b",stocks:2339162, mf:3851044, bank:43084,
    cas:"Honey Chetan Shah",broker:null,icici:null,holdingsRef:"HONEY",
    custodian:["Zerodha (VE7649)"],casApr26:15757289,
    casTrend:[{m:"Apr'26",v:15757289}]},
-  {n:"Karishma Shah",  i:"KS",c:"#06b6d4",stocks:1924396,   mf:0,        bank:10597,
+  {n:"Karishma Shah",  i:"KS",c:"#06b6d4",stocks:1924396,   mf:0,        bank:183366,
    cas:"Karishma Shah",broker:null,icici:null,holdingsRef:"KARI",
    custodian:["Zerodha (DWL506)"],casApr26:1898102,
    casTrend:[{m:"Apr'26",v:1898102}]},
@@ -6258,7 +6347,7 @@ const MEMBERS = [
    cas:"Praful Shah", broker:"JD0P151",icici:null,holdingsRef:null,
    custodian:["Sushil Financial"],casApr26:3421347,
    casTrend:[{m:"Apr'26",v:3421347}]},
-  {n:"Aarya Shah",     i:"AR",c:"#f43f5e",stocks:730042,    mf:0,        bank:1494,
+  {n:"Aarya Shah",     i:"AR",c:"#f43f5e",stocks:730042,    mf:0,        bank:0,
    cas:"Aarya Shah",  broker:null,icici:null,holdingsRef:"AARYA_NEW",
    custodian:["ICICI Direct"],casApr26:285867,
    casTrend:[{m:"Apr'26",v:285867}]},,
