@@ -2683,33 +2683,6 @@ function DailyDigest() {
         </div>
       </div>
 
-      {/* ══ MEMBER WEALTH BARS ══ */}
-      <div style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:"1px solid #1d2545",borderRadius:14,padding:"14px 16px"}}>
-        <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:12,display:"flex",justifyContent:"space-between"}}>
-          <span>👨‍👩‍👧 Family Wealth Distribution</span>
-          <span style={{fontSize:9,color:"#3a4a6a"}}>{mems.length} members</span>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:"6px 20px"}}>
-          {memberRanked.map((m,i)=>{
-            const w=(m.stocks||0)+(m.mf||0);
-            const barPct=topMemberW>0?(w/topMemberW*100):0;
-            return (
-              <div key={m.n}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:20,height:20,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
-                    <span style={{fontSize:10,color:"#c8d0e8",fontWeight:600}}>{(m.n||"").split(" ")[0]}</span>
-                  </div>
-                  <span style={{fontSize:9,color:"#e8eaf0",fontFamily:"monospace",fontWeight:700}}>{cr(w)}</span>
-                </div>
-                <div style={{height:4,background:"#0d1020",borderRadius:2,overflow:"hidden"}}>
-                  <div style={{height:"100%",width:barPct+"%",background:m.c||"#6366f1",borderRadius:2,transition:"width 1s cubic-bezier(0.34,1.56,0.64,1)"}}/>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ══ QUICK ACTIONS ══ */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
@@ -6226,7 +6199,7 @@ const BANK = [
 
 
 const MEMBERS = [
-  {n:"All Family",     i:"AF",c:"#e8eaf0",stocks:739029908, mf:104835416, bank:12080327, _isFamily:true,
+  {n:"All Family",     i:"AF",c:"#e8eaf0",stocks:619940000, mf:21900000,  bank:27700000, _isFamily:true,
    cas:"All Family",broker:null,icici:null,holdingsRef:"ALL_FAMILY",custodian:["All accounts"],
    casApr26:855945651,casTrend:[{m:"May'25",v:800000000},{m:"Jun'25",v:820000000},{m:"Jul'25",v:810000000},{m:"Aug'25",v:830000000},{m:"Sep'25",v:840000000},{m:"Oct'25",v:850000000},{m:"Nov'25",v:845000000},{m:"Dec'25",v:855000000},{m:"Jan'26",v:860000000},{m:"Feb'26",v:855000000},{m:"Mar'26",v:852000000},{m:"Apr'26",v:855945651}]},
   {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:64550000, mf:1175446, bank:1074417,
@@ -6303,6 +6276,15 @@ const MEMBERS = [
 
 /* Safe filtered MEMBERS for all component use */
 var SAFE_MEMBERS = MEMBERS.filter(Boolean);
+/* Auto-sync All Family totals from individual members */
+(function(){
+  var real = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;});
+  var s = real.reduce(function(a,m){return a+(m.stocks||0);},0);
+  var mf = real.reduce(function(a,m){return a+(m.mf||0);},0);
+  var b = real.reduce(function(a,m){return a+(m.bank||0);},0);
+  var af = MEMBERS.find(function(m){return m&&m._isFamily;});
+  if(af){af.stocks=s;af.mf=mf;af.bank=b;af.total=s+mf+b;}
+})();
 
 
 
