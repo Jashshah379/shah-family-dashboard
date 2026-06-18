@@ -661,7 +661,7 @@ function SmartUploadTab() {
   const handleInput = (e) => processFiles(e.target.files);
 
   const TYPE_INFO = {
-    holdings:    {icon:"📊", color:"#7eb8ff",  label:"Holdings"},
+    holdings:    {icon:"📊", color:"#7eb8ff",  label:"Stock List"},
     pnl:         {icon:"📈", color:"#34d399",  label:"P&L"},
     dividend:    {icon:"💰", color:"#f0b429",  label:"Dividends"},
     tax:         {icon:"📋", color:"#a78bfa",  label:"Tax"},
@@ -2263,7 +2263,7 @@ function ChangelogTab() {
       title:"Stock name deduplication",
       desc:"257 stock name variants merged into canonical forms. Gujarat Fluoroch, Inox Wind Energy, Trent, GAIL India and 50+ others now show unified across all members.",
       impact:"All Holdings, Members, Live Stocks, What-If, Overlap tabs",
-      tags:["Quality","Holdings"],
+      tags:["Quality","Stock List"],
     },
     {
       date:"2026-06-13", version:"v5.7", type:"feature",
@@ -2379,7 +2379,7 @@ function ChangelogTab() {
 
   const [filter, setFilter] = React.useState("All");
   const TYPES = {data:{c:"#7eb8ff",icon:"📊"},feature:{c:"#34d399",icon:"✨"},bugfix:{c:"#f87171",icon:"🐛"}};
-  const TAGS = ["All","Data","Feature","Bugfix","Tax","P&L","Dividends","Holdings","Analytics","Planning","UX","MTF"];
+  const TAGS = ["All","Data","Feature","Bugfix","Tax","P&L","Dividends","Stock List","Analytics","Planning","UX","MTF"];
 
   const filtered = filter==="All" ? CHANGELOG : CHANGELOG.filter(e=>e.tags.includes(filter));
 
@@ -2486,120 +2486,113 @@ function GlobalIndicesWidget() {
     return function() { clearInterval(t); };
   }, [fetch_data]);
 
+  /* Inject keyframes once */
+  React.useEffect(function() {
+    if (document.getElementById("ticker-kf")) return;
+    var s = document.createElement("style");
+    s.id = "ticker-kf";
+    s.textContent = [
+      "@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}",
+      ".ticker-track{display:flex;animation:marquee 90s linear infinite;will-change:transform;}",
+      ".ticker-track:hover{animation-play-state:paused;}",
+      ".ticker-item{display:inline-flex;align-items:center;gap:6px;padding:0 18px;border-right:1px solid #0d1020;height:36px;flex-shrink:0;white-space:nowrap;}",
+    ].join("");
+    document.head.appendChild(s);
+  }, []);
+
   var fmt = function(v, fx) {
-    if (!v || !v.p) return "—";
+    if (!v || !v.p) return null;
     if (fx) return v.p.toFixed(2);
     if (v.p >= 10000) return Math.round(v.p).toLocaleString("en-IN");
     return v.p.toFixed(2);
   };
-  var pct = function(v) {
-    if (!v || v.pct == null) return null;
-    return v.pct;
-  };
 
-  /* Ticker items: indices + key family holdings + surprise picks */
   var ITEMS = [
-    /* ── Indices ── */
-    {l:"NIFTY 50",   k:"NIFTY50",    fx:false, cat:"index"},
-    {l:"SENSEX",     k:"SENSEX",     fx:false, cat:"index"},
-    {l:"BANK NIFTY", k:"BANKNIFTY",  fx:false, cat:"index"},
-    {l:"NIFTY IT",   k:"NIFTYIT",    fx:false, cat:"index"},
-    {l:"NIFTY MID",  k:"NIFTYMIDCAP",fx:false, cat:"index"},
-    /* ── FX / Commodities ── */
-    {l:"USD/INR",    k:"USDINR",     fx:true,  cat:"fx"},
-    {l:"GOLD",       k:"GOLD",       fx:true,  cat:"commodity"},
-    {l:"SILVER",     k:"SILVER",     fx:true,  cat:"commodity"},
-    {l:"CRUDE OIL",  k:"CRUDEOIL",   fx:true,  cat:"commodity"},
-    /* ── Global ── */
-    {l:"S&P 500",    k:"SP500",      fx:false, cat:"global"},
-    {l:"NASDAQ",     k:"NASDAQ",     fx:false, cat:"global"},
-    {l:"DOW",        k:"DOW",        fx:false, cat:"global"},
-    {l:"NIKKEI",     k:"NIKKEI",     fx:false, cat:"global"},
-    {l:"FTSE 100",   k:"FTSE100",    fx:false, cat:"global"},
-    /* ── Family Top Holdings ── */
-    {l:"HITACHI",    k:"ABBPOW",     fx:false, cat:"holding"},
-    {l:"RELIANCE",   k:"RELIANCE",   fx:false, cat:"holding"},
-    {l:"TCS",        k:"TCS",        fx:false, cat:"holding"},
-    {l:"HDFC BANK",  k:"HDFCBANK",   fx:false, cat:"holding"},
-    {l:"INFOSYS",    k:"INFY",       fx:false, cat:"holding"},
-    {l:"BAJAJ FIN",  k:"BAJFINANCE", fx:false, cat:"holding"},
-    {l:"TITAN",      k:"TITAN",      fx:false, cat:"holding"},
-    {l:"ADANI PORTS",k:"ADANIPORTS", fx:false, cat:"holding"},
-    {l:"TECH M",     k:"TECHM",      fx:false, cat:"holding"},
-    {l:"APOLLO HOSP",k:"APOLLOHOSP", fx:false, cat:"holding"},
-    {l:"DR REDDY",   k:"DRREDDY",    fx:false, cat:"holding"},
-    {l:"WIPRO",      k:"WIPRO",      fx:false, cat:"holding"},
-    /* ── Surprise picks ── */
-    {l:"ZOMATO",     k:"ZOMATO",     fx:false, cat:"watch"},
-    {l:"PAYTM",      k:"PAYTM",      fx:false, cat:"watch"},
-    {l:"IRCTC",      k:"IRCTC",      fx:false, cat:"watch"},
-    {l:"DMART",      k:"DMART",      fx:false, cat:"watch"},
-    {l:"NYKAA",      k:"NYKAA",      fx:false, cat:"watch"},
-    {l:"HAL",        k:"HAL",        fx:false, cat:"watch"},
-    {l:"RVNL",       k:"RVNL",       fx:false, cat:"watch"},
-    {l:"TATA MOTORS",k:"TATAMOTORS", fx:false, cat:"watch"},
-    {l:"SUZLON",     k:"SUZLON",     fx:false, cat:"watch"},
-    {l:"BHEL",       k:"BHEL",       fx:false, cat:"watch"},
+    {l:"NIFTY 50",    k:"NIFTY50",     fx:false, cat:"index"},
+    {l:"SENSEX",      k:"SENSEX",      fx:false, cat:"index"},
+    {l:"BANK NIFTY",  k:"BANKNIFTY",   fx:false, cat:"index"},
+    {l:"NIFTY IT",    k:"NIFTYIT",     fx:false, cat:"index"},
+    {l:"NIFTY MID",   k:"NIFTYMIDCAP", fx:false, cat:"index"},
+    {l:"USD/INR",     k:"USDINR",      fx:true,  cat:"fx"},
+    {l:"GOLD",        k:"GOLD",        fx:true,  cat:"commodity"},
+    {l:"SILVER",      k:"SILVER",      fx:true,  cat:"commodity"},
+    {l:"CRUDE OIL",   k:"CRUDEOIL",    fx:true,  cat:"commodity"},
+    {l:"S&P 500",     k:"SP500",       fx:false, cat:"global"},
+    {l:"NASDAQ",      k:"NASDAQ",      fx:false, cat:"global"},
+    {l:"DOW",         k:"DOW",         fx:false, cat:"global"},
+    {l:"NIKKEI",      k:"NIKKEI",      fx:false, cat:"global"},
+    {l:"FTSE 100",    k:"FTSE100",     fx:false, cat:"global"},
+    {l:"HITACHI",     k:"ABBPOW",      fx:false, cat:"holding"},
+    {l:"RELIANCE",    k:"RELIANCE",    fx:false, cat:"holding"},
+    {l:"TCS",         k:"TCS",         fx:false, cat:"holding"},
+    {l:"HDFC BANK",   k:"HDFCBANK",    fx:false, cat:"holding"},
+    {l:"INFOSYS",     k:"INFY",        fx:false, cat:"holding"},
+    {l:"BAJAJ FIN",   k:"BAJFINANCE",  fx:false, cat:"holding"},
+    {l:"TITAN",       k:"TITAN",       fx:false, cat:"holding"},
+    {l:"ADANI PORTS", k:"ADANIPORTS",  fx:false, cat:"holding"},
+    {l:"TECH M",      k:"TECHM",       fx:false, cat:"holding"},
+    {l:"APOLLO HOSP", k:"APOLLOHOSP",  fx:false, cat:"holding"},
+    {l:"DR REDDY",    k:"DRREDDY",     fx:false, cat:"holding"},
+    {l:"WIPRO",       k:"WIPRO",       fx:false, cat:"holding"},
+    {l:"ZOMATO",      k:"ZOMATO",      fx:false, cat:"watch"},
+    {l:"IRCTC",       k:"IRCTC",       fx:false, cat:"watch"},
+    {l:"DMART",       k:"DMART",       fx:false, cat:"watch"},
+    {l:"HAL",         k:"HAL",         fx:false, cat:"watch"},
+    {l:"RVNL",        k:"RVNL",        fx:false, cat:"watch"},
+    {l:"TATA MOTORS", k:"TATAMOTORS",  fx:false, cat:"watch"},
+    {l:"SUZLON",      k:"SUZLON",      fx:false, cat:"watch"},
+    {l:"BHEL",        k:"BHEL",        fx:false, cat:"watch"},
+    {l:"PAYTM",       k:"PAYTM",       fx:false, cat:"watch"},
+    {l:"NYKAA",       k:"NYKAA",       fx:false, cat:"watch"},
   ];
 
   var catColors = {index:"#7eb8ff", fx:"#f0b429", commodity:"#f0b429", global:"#a78bfa", holding:"#10b981", watch:"#f97316"};
-
-  /* Build ticker string - duplicate for seamless loop */
-  var tickerRef = React.useRef(null);
-
-  /* CSS keyframes injected once */
-  React.useEffect(function() {
-    var styleId = "ticker-style";
-    if (document.getElementById(styleId)) return;
-    var style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = "@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}";
-    document.head.appendChild(style);
-  }, []);
-
   var isLive = status === "live";
-  var speed = "60s"; /* one full scroll every 60 seconds */
+
+  /* Render one set of items */
+  var renderItems = function(keyPrefix) {
+    return ITEMS.map(function(item, idx) {
+      var v = data[item.k];
+      var price = fmt(v, item.fx);
+      var change = v ? v.pct : null;
+      var isUp = change != null && change >= 0;
+      var col = catColors[item.cat] || "#7eb8ff";
+      return (
+        React.createElement("div", {key: keyPrefix+idx, className:"ticker-item"},
+          React.createElement("span", {style:{fontSize:8,fontWeight:700,color:col,letterSpacing:"0.06em",minWidth:0}}, item.l),
+          React.createElement("span", {style:{fontSize:12,fontWeight:800,fontFamily:"monospace",color:price?(isUp?"#10b981":"#ef4444"):"#3a4a6a"}},
+            price || "—"
+          ),
+          change != null && React.createElement("span", {style:{fontSize:9,fontWeight:600,fontFamily:"monospace",color:isUp?"#10b981":"#ef4444"}},
+            (isUp?"▲":"▼") + Math.abs(change).toFixed(2) + "%"
+          )
+        )
+      );
+    });
+  };
 
   return (
-    <div style={{background:"#050810",borderBottom:"1px solid #1a2035",height:36,overflow:"hidden",position:"relative"}}>
-      {/* Live/status badge */}
-      <div style={{position:"absolute",left:0,top:0,bottom:0,zIndex:10,background:"#070a16",padding:"0 12px",display:"flex",alignItems:"center",gap:6,borderRight:"1px solid #1a2035"}}>
+    <div style={{background:"#050810",borderBottom:"1px solid #1a2035",height:36,overflow:"hidden",position:"relative",display:"flex",alignItems:"center"}}>
+      {/* Status badge - fixed left */}
+      <div style={{position:"absolute",left:0,top:0,bottom:0,zIndex:10,background:"#070a16",padding:"0 10px",display:"flex",alignItems:"center",gap:5,borderRight:"1px solid #1a2035",flexShrink:0}}>
         <div style={{width:6,height:6,borderRadius:"50%",background:isLive?"#10b981":status==="loading"?"#f0b429":"#3a4a6a",
-          animation:isLive?"pulse 2s infinite":"none"}}/>
-        <span style={{fontSize:9,fontWeight:700,color:isLive?"#10b981":"#3a4a6a",letterSpacing:"0.1em"}}>
+          boxShadow:isLive?"0 0 6px #10b981":"none"}}/>
+        <span style={{fontSize:9,fontWeight:700,color:isLive?"#10b981":"#3a4a6a",letterSpacing:"0.08em"}}>
           {isLive?"LIVE":status==="loading"?"...":"OFF"}
         </span>
         {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
       </div>
 
-      {/* Scrolling ticker */}
-      <div style={{marginLeft:80,overflow:"hidden",height:"100%",display:"flex",alignItems:"center"}}>
-        <div ref={tickerRef} style={{
-          display:"flex",alignItems:"center",gap:0,
-          animation:"ticker-scroll "+speed+" linear infinite",
-          whiteSpace:"nowrap",
-        }}>
-          {[...ITEMS, ...ITEMS].map(function(item, idx) {
-            var v = data[item.k];
-            var price = v ? fmt(v, item.fx) : "—";
-            var change = pct(v);
-            var isUp = change != null && change >= 0;
-            var isDown = change != null && change < 0;
-            var col = catColors[item.cat] || "#7eb8ff";
-            return (
-              <div key={idx} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"0 16px",borderRight:"1px solid #0d1020",height:36}}>
-                <span style={{fontSize:8,fontWeight:700,color:col,letterSpacing:"0.06em"}}>{item.l}</span>
-                <span style={{fontSize:11,fontWeight:700,fontFamily:"monospace",color:isUp?"#10b981":isDown?"#ef4444":"#c8d0e8"}}>
-                  {item.fx?"":""}{price}
-                </span>
-                {change!=null&&(
-                  <span style={{fontSize:9,fontWeight:600,fontFamily:"monospace",color:isUp?"#10b981":"#ef4444"}}>
-                    {isUp?"▲":"▼"}{Math.abs(change).toFixed(2)}%
-                  </span>
-                )}
-              </div>
-            );
-          })}
+      {/* Scrolling area */}
+      <div style={{marginLeft:72,overflow:"hidden",height:"100%",display:"flex",alignItems:"center",flex:1}}>
+        {/* Two identical tracks side by side — when first finishes, second takes over seamlessly */}
+        <div style={{display:"flex",flex:"none"}}>
+          <div className="ticker-track">
+            {renderItems("a")}
+          </div>
+          <div className="ticker-track">
+            {renderItems("b")}
+          </div>
         </div>
       </div>
     </div>
@@ -2786,7 +2779,7 @@ function DailyDigest() {
       {/* ══ QUICK ACTIONS ══ */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
         {[
-          {l:"📋 Holdings",tab:"Holdings"},
+          {l:"📋 Holdings",tab:"Stock List"},
           {l:"💰 P&L",tab:"P&L"},
           {l:"🏦 Bank",tab:"Bank"},
           {l:"💼 Funds",tab:"Mutual Funds"},
@@ -5296,7 +5289,7 @@ function FamilyApp() {
         <DailyDigest/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
-          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Holdings")}/>
+          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
           <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
@@ -5885,7 +5878,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Holdings"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
+      {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
       {tab==="Tax"&&<TaxTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
@@ -12383,7 +12376,7 @@ const SIDEBAR_SECTIONS = [
   {title:"Portfolio", tabs:["Trend","Meeting Mode"]},
   {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Advisors","Profiles","Estate","Changelog"]},
 ];
-const TABS = ["Overview","Holdings","Members","Bank","Mutual Funds","P&L","Tax","Advisors"];
+const TABS = ["Overview","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Advisors"];
 const Panel = ({children, title, style}) => (
   <div style={{background:"linear-gradient(155deg,#10142a 0%,#0c1020 100%)",
     border:"1px solid #1c2440",borderRadius:16,padding:"18px 20px",marginBottom:14,
@@ -14807,23 +14800,31 @@ function AllHoldingsTab({livePrices, priceStatus}) {
 
   const startResize = React.useCallback(function(col, e) {
     e.preventDefault();
+    e.stopPropagation();
     const startX = e.clientX;
-    const startW = colWidths[col];
+    const startW = colWidths[col] || 90;
     resizing.current = col;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
     const onMove = function(e2) {
       const delta = e2.clientX - startX;
+      const newW = Math.max(50, Math.min(400, startW + delta));
       setColWidths(function(prev) {
-        return {...prev, [col]: Math.max(50, startW + delta)};
+        var n = Object.assign({}, prev);
+        n[col] = newW;
+        return n;
       });
     };
     const onUp = function() {
       resizing.current = null;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [colWidths]); /* holdings | live | sector */
+  }, [colWidths]);
 
   const fC = (n) => {
     if(!n && n!==0) return "—";
@@ -15176,7 +15177,16 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           </div>
 
           <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
+              <colgroup>
+                <col style={{width:36}}/>
+                {[["sym",colWidths.sym||220],["totalQty",colWidths.totalQty||80],["avgCmp",colWidths.avgCmp||90],
+                  ["totalInv",colWidths.totalInv||110],["totalVal",colWidths.totalVal||110],
+                  ["totalDayPL",colWidths.totalDayPL||100],["totalPL",colWidths.totalPL||110],
+                  ["ret",colWidths.ret||80]].map(function(c){return <col key={c[0]} style={{width:c[1]}}/>;})
+                }
+                <col style={{width:colWidths.mem||110}}/>
+              </colgroup>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
                   <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
@@ -15193,17 +15203,18 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       color:sortCol===col?"#7eb8ff":"#3a4a6a",fontWeight:700,fontSize:9,
                       borderBottom:"1px solid #1e2540",textTransform:"uppercase",
                       whiteSpace:"nowrap",userSelect:"none",position:"relative",
-                      width:colWidths[col]||"auto",minWidth:50}}>
+                      width:colWidths[col]||90,minWidth:50,overflow:"hidden"}}>
                       <span onClick={()=>{if(sortCol===col)setSortDir(d=>d*-1);else{setSortCol(col);setSortDir(col==="sym"?1:-1);}}} style={{cursor:"pointer"}}>
                         {label}{sortCol===col?(sortDir<0?" ↓":" ↑"):" ⇅"}
                       </span>
                       {/* Resize handle */}
                       <span onMouseDown={function(e){startResize(col,e);}}
-                        style={{position:"absolute",right:0,top:0,bottom:0,width:6,cursor:"col-resize",
-                          background:"transparent",borderRight:"2px solid #1d2545",opacity:0,
-                          transition:"opacity 0.15s"}}
-                        onMouseEnter={function(e){e.target.style.opacity=1;}}
-                        onMouseLeave={function(e){e.target.style.opacity=0;}}/>
+                        style={{position:"absolute",right:-3,top:0,bottom:0,width:8,cursor:"col-resize",
+                          zIndex:10,display:"flex",alignItems:"center",justifyContent:"center"}}
+                        onMouseEnter={function(e){e.currentTarget.querySelector("div").style.opacity=1;}}
+                        onMouseLeave={function(e){e.currentTarget.querySelector("div").style.opacity=0;}}>
+                        <div style={{width:2,height:"60%",background:"#3b82f6",borderRadius:1,opacity:0,transition:"opacity 0.15s",pointerEvents:"none"}}/>
+                      </span>
                     </th>
                   ))}
                   <th style={{padding:"6px 8px",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1e2540",textTransform:"uppercase",minWidth:80}}>Holders</th>
@@ -15232,8 +15243,8 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                         </div>
                       )}
                     </td>
-                      <td style={{padding:"7px 10px"}}>
-                        <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
+                      <td style={{padding:"7px 10px",overflow:"hidden",maxWidth:0}}>
+                        <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.sym}</div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
                           {sector&&<span style={{fontSize:8,background:"#0f1a2e",color:"#7eb8ff",padding:"1px 6px",borderRadius:8}}>{sector}</span>}
                           <span style={{fontSize:8,color:"#2a3a50"}}>{g.rows.length} account{g.rows.length!==1?"s":""}</span>
@@ -15246,7 +15257,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10}}>
                         {g.avgCmp>0?"₹"+g.avgCmp.toFixed(2):"—"}
                       </td>
-                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10}}>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",overflow:"hidden",fontSize:10}}>
                         {cr(g.totalInv)}
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0"}}>
@@ -15344,7 +15355,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                     {stockGroups.reduce((s,g)=>s+g.totalQty,0).toLocaleString("en-IN")}
                   </td>
                   <td/>
-                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10}}>
+                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",overflow:"hidden",fontSize:10}}>
                     {cr(stockGroups.reduce((s,g)=>s+g.totalInv,0))}
                   </td>
                   <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#7eb8ff",fontSize:12}}>
