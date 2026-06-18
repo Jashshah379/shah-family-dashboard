@@ -1540,7 +1540,7 @@ function GlobalSearchTab() {
     }
 
     /* Member search */
-    const members = realMembers.filter(m=>m.n.toLowerCase().includes(lq)).slice(0,5);
+    const members = realMembers.filter(m=>(m.n||"").toLowerCase().includes(lq)).slice(0,5);
 
     /* Transaction / P&L search */
     const transactions = allPNL.filter(p=>
@@ -1911,9 +1911,9 @@ function EstatePlanningTab() {
 
   const seniorGen = ["Vasumati Shah","Rasiklal Shah","Rasiklal HUF","Asha Shah","Maya Shah","Praful Shah HUF","Praful Shah"];
   const nextGen = ["Jash Shah","Karishma Shah","Aarya Shah","Riya Shah","Chetan Shah","Chetan Shah HUF","Amit Gandhi HUF","Honey Chetan Shah"];
-  const hufAccounts = realMembers.filter(m=>m.n.includes("HUF"));
-  const individualAccounts = realMembers.filter(m=>!m.n.includes("HUF")&&!m.n.includes("NRE"));
-  const nreAccounts = realMembers.filter(m=>m.n.includes("NRE"));
+  const hufAccounts = realMembers.filter(m=>(m.n||"").includes("HUF"));
+  const individualAccounts = realMembers.filter(m=>!(m.n||"").includes("HUF")&&!(m.n||"").includes("NRE"));
+  const nreAccounts = realMembers.filter(m=>(m.n||"").includes("NRE"));
 
   return (
     <div style={{paddingBottom:24}}>
@@ -2698,7 +2698,7 @@ function DailyDigest() {
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
                     <div style={{width:20,height:20,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
-                    <span style={{fontSize:10,color:"#c8d0e8",fontWeight:600}}>{m.n.split(" ")[0]}</span>
+                    <span style={{fontSize:10,color:"#c8d0e8",fontWeight:600}}>{(m.n||"").split(" ")[0]}</span>
                   </div>
                   <span style={{fontSize:9,color:"#e8eaf0",fontFamily:"monospace",fontWeight:700}}>{cr(w)}</span>
                 </div>
@@ -4244,8 +4244,8 @@ function MembersTab() {
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                 <div style={{width:26,height:26,borderRadius:"50%",background:m.c||"#6366f1",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
                 <div>
-                  <div style={{fontSize:10,fontWeight:700,color:selMem===m.n?"#7eb8ff":"#c8d0e8"}}>{m.n.split(" ")[0]}</div>
-                  <div style={{fontSize:8,color:"#3a4a6a"}}>{m.n.split(" ").slice(1).join(" ")}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:selMem===m.n?"#7eb8ff":"#c8d0e8"}}>{(m.n||"").split(" ")[0]}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(m.n||"").split(" ").slice(1).join(" ")}</div>
                 </div>
               </div>
               <div style={{fontSize:10,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(total)}</div>
@@ -5672,7 +5672,7 @@ function FamilyApp() {
                     const bc=BC[r.bank]||{bg:"#1a2035",tx:"#6a7a9a"};
                     const pct=totalBank>0?(r.b/totalBank*100):0;
                     const barW=Math.min(100,pct*3);
-                    const mem=MEMBERS.find(function(m){return m.n&&(m.n===r.n||(m.n.split(" ").slice(0,2).join(" ")===r.n.split(" ").slice(0,2).join(" ")));});
+                    const mem=MEMBERS.find(function(m){return m.n&&(m.n===r.n||((m.n||"").split(" ").slice(0,2).join(" ")===r.n.split(" ").slice(0,2).join(" ")));});
                     const memCol=mem?mem.c:"#4a5a80";
                     return (
                       <tr key={r.n+r.bank} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
@@ -16372,7 +16372,7 @@ function InsightsTab() {
                   return (
                     <div key={m.n} style={{marginBottom:7}}>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-                        <span style={{fontSize:10,color:"#c8d0e8"}}>{m.n.split(" ").slice(0,2).join(" ")}</span>
+                        <span style={{fontSize:10,color:"#c8d0e8"}}>{(m.n||"").split(" ").slice(0,2).join(" ")}</span>
                         <span style={{fontSize:10,fontFamily:"'JetBrains Mono',monospace",color:c}}>{cr(mv)}</span>
                       </div>
                       <div style={{height:3,background:"#1d2545",borderRadius:2}}>
@@ -16765,7 +16765,7 @@ function OverlapHeatmap() {
               <tr>
                 <th style={{padding:"4px 8px",color:"#3a4a6a",fontSize:8}}/>
                 {realMembers.map(m=>(
-                  <th key={m.n} style={{padding:"4px 6px",color:"#3a4a6a",fontSize:8,fontWeight:600,textAlign:"center",whiteSpace:"nowrap",writingMode:"vertical-rl",transform:"rotate(180deg)",maxWidth:60}}>{m.n.split(" ")[0]}</th>
+                  <th key={m.n} style={{padding:"4px 6px",color:"#3a4a6a",fontSize:8,fontWeight:600,textAlign:"center",whiteSpace:"nowrap",writingMode:"vertical-rl",transform:"rotate(180deg)",maxWidth:60}}>{(m.n||"").split(" ")[0]}</th>
                 ))}
               </tr>
             </thead>
@@ -17079,7 +17079,7 @@ function ProfilesTab() {
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                 <div style={{width:28,height:28,borderRadius:"50%",background:m.c||"#7eb8ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
                 <div>
-                  <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8"}}>{m.n.split(" ").slice(0,2).join(" ")}</div>
+                  <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8"}}>{(m.n||"").split(" ").slice(0,2).join(" ")}</div>
                   <div style={{fontSize:8,color:"#3a4a6a"}}>{accs} demat acc{accs!==1?"s":""}</div>
                 </div>
               </div>
