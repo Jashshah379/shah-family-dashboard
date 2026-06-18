@@ -4766,6 +4766,7 @@ function FamilyApp() {
         const totalRet  = totalInv>0?(totalUnrl/totalInv*100):null;
         const isGain    = totalUnrl>=0;
         const avgCmp    = holdings.filter(h=>h.cmp>0).reduce((s,h)=>s+h.cmp,0)/(holdings.filter(h=>h.cmp>0).length||1);
+                    const chgPct = holdings.length>0&&holdings[0].chgPct!=null ? holdings[0].chgPct : null;
         const avgAvg    = totalQty>0?totalInv/totalQty:0;
         /* DB lookup */
         const dbKey = Object.keys(STOCK_DB||{}).find(k=>sym.toLowerCase().includes(k.toLowerCase().slice(0,5))||k.toLowerCase().includes(sym.toLowerCase().slice(0,5)));
@@ -4785,8 +4786,16 @@ function FamilyApp() {
               <div style={{padding:"20px 24px",borderBottom:"1px solid #1a2035",
                 display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                 <div>
-                  <div style={{fontSize:24,fontWeight:800,color:"#e8eaf0",letterSpacing:"-0.02em"}}>{sym}</div>
-                  <div style={{display:"flex",gap:8,marginTop:6,flexWrap:"wrap"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginBottom:4}}>
+                    <div style={{fontSize:24,fontWeight:800,color:"#e8eaf0",letterSpacing:"-0.02em"}}>{sym}</div>
+                    {avgCmp>0&&(
+                      <div style={{display:"flex",alignItems:"baseline",gap:6,background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:"5px 14px"}}>
+                        <span style={{fontSize:22,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace",letterSpacing:"-0.02em"}}>₹{avgCmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
+                        {chgPct!=null&&<span style={{fontSize:12,fontWeight:700,color:chgPct>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{chgPct>=0?"▲":"▼"}{Math.abs(chgPct).toFixed(2)}%</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     {db.sector&&<span style={{fontSize:10,background:"#0f1a2e",color:"#7eb8ff",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{db.sector}</span>}
                     {db.mcap&&<span style={{fontSize:10,background:"#1a1a0a",color:"#f0b429",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{db.mcap} Cap</span>}
                     {holdings.length>0&&<span style={{fontSize:10,background:"#0a1a0a",color:"#34d399",padding:"3px 10px",borderRadius:12,fontWeight:600}}>Held in {holdings.length} account{holdings.length!==1?"s":""}</span>}
