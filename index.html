@@ -2625,7 +2625,8 @@ function DailyDigest() {
   const totalPL   = totalVal-totalInv;
   const retPct    = totalInv>0?(totalPL/totalInv*100):0;
   const totalDayPL = allH.reduce((s,h)=>s+(h.dayPL||0),0);
-  const hasLive   = allH.some(h=>h.dayPL!=null&&h.dayPL!==0);
+  const hasLive    = allH.some(h=>h.dayPL!=null&&h.dayPL!==0);
+  const hasLivePct = allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
 
   /* Top 5 performers and losers */
   const withRet = allH.filter(h=>h.inv>5000);
@@ -2740,13 +2741,18 @@ function DailyDigest() {
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}>📈 Top Gainers</div>
           {top5.map((h,i)=>{
-            const r=((h.val-h.inv)/h.inv*100);
+            var dispPct = hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0);
+            var dispLabel = hasLivePct ? "today" : "overall";
+            var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
             return (
-              <div key={i} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #0d1f0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120}}>{h.s}</div>
+              <div key={i} style={{padding:"8px 14px",borderBottom:i<5?"1px solid #0d1f0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>+{r.toFixed(1)}%</div>
-                  {h.dayPL!=null&&h.dayPL!==0&&<div style={{fontSize:8,color:"#10b98199",fontFamily:"monospace"}}>{h.dayPL>=0?"+":""}{cr(h.dayPL)} today</div>}
+                  <div style={{fontSize:12,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>▲{Math.abs(dispPct||0).toFixed(2)}%</div>
+                  <div style={{fontSize:8,color:"#10b98199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                 </div>
               </div>
             );
@@ -15173,7 +15179,14 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
-                  <th style={{width:32,padding:"4px 6px",background:"#0a0e1e",borderBottom:"1px solid #1e2540"}}>{selectionMode?<input type="checkbox" style={{cursor:"pointer",accentColor:"#3b82f6",width:14,height:14}} checked={stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length} onChange={function(e){if(e.target.checked){var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}else{setSelectedStocks({});}}}/>:<span style={{display:"block",width:14,height:14}}/>}</th>
+                  <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
+                    {selectionMode&&(
+                      <div onClick={function(e){e.stopPropagation();var allSel=stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length;if(allSel){setSelectedStocks({});}else{var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}}}
+                        style={{width:16,height:16,border:"2px solid "+(stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length?"#3b82f6":"#4a5a7a"),borderRadius:4,background:stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0}}>
+                        {stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1}}>✓</span>}
+                      </div>
+                    )}
+                  </th>
 
                   {[["sym","Stock",false],["totalQty","Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
                     <th key={col} style={{padding:"6px 8px",textAlign:r?"right":"left",
@@ -15212,7 +15225,13 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       onClick={function(){setExpandedStock(isOpen?null:g.sym);}}
                       style={{borderBottom:"1px solid #0d1020",cursor:"pointer",
                         background:isOpen?"#111827":gi%2===0?"transparent":"#080a12"}}>
-                      <td style={{width:32,padding:"4px 6px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();}}>{selectionMode?<input type="checkbox" checked={!!selectedStocks[g.sym]} onChange={function(e){e.stopPropagation();setSelectedStocks(function(p){var n=Object.assign({},p);if(e.target.checked)n[g.sym]=true;else delete n[g.sym];return n;});}} style={{cursor:"pointer",accentColor:"#3b82f6",width:14,height:14}}/>:<span style={{display:"block",width:14,height:14}}/>}</td>
+                      <td style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;return n;});}}>
+                      {selectionMode&&(
+                        <div style={{width:16,height:16,border:"2px solid "+(selectedStocks[g.sym]?"#3b82f6":"#4a5a7a"),borderRadius:4,background:selectedStocks[g.sym]?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none"}}>
+                          {selectedStocks[g.sym]&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1}}>✓</span>}
+                        </div>
+                      )}
+                    </td>
                       <td style={{padding:"7px 10px"}}>
                         <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
