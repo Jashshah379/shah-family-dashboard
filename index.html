@@ -5075,15 +5075,6 @@ function FamilyApp() {
             {TABS.map(t=>(
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
-            {/* Manual CMP Override Button */}
-            <button onClick={function(){setShowManualCmp(function(v){return !v;});}}
-              title="Manual CMP Override - set prices for stocks without live data"
-              style={{flexShrink:0,marginLeft:4,background:Object.keys(manualCmp).length>0?"#1e3a5f":"#0a0e1e",
-                border:"1px solid "+(Object.keys(manualCmp).length>0?"#3b82f6":"#1d2545"),
-                borderRadius:6,padding:"4px 10px",color:"#7eb8ff",cursor:"pointer",fontSize:10,
-                fontWeight:600,whiteSpace:"nowrap"}}>
-              ✏ CMP{Object.keys(manualCmp).length>0?" ("+Object.keys(manualCmp).length+")":""}
-            </button>
           </div>
         </div>
       </div>
@@ -18181,7 +18172,21 @@ function MTFTab() {
       {iView==="overlap"&&<OverlapHeatmap/>}
       {iView==="period"&&<HoldingPeriodTab/>}
 
-{/* ── Manual CMP Override Panel ── */}
+
+      {/* ── Manual CMP Floating Action Button ── */}
+      <button onClick={function(){setShowManualCmp(function(v){return !v;});}}
+        title="Manual CMP Override"
+        style={{position:"fixed",bottom:20,right:20,zIndex:900,
+          background:Object.keys(manualCmp).length>0?"#1e3a5f":"#0d1122",
+          border:"2px solid "+(Object.keys(manualCmp).length>0?"#3b82f6":"#2a3a5a"),
+          borderRadius:12,padding:"10px 16px",color:"#7eb8ff",cursor:"pointer",
+          fontSize:12,fontWeight:700,boxShadow:"0 4px 20px #000a",
+          display:"flex",alignItems:"center",gap:6}}>
+        <span style={{fontSize:16}}>✏</span>
+        <span>CMP{Object.keys(manualCmp).length>0?" · "+Object.keys(manualCmp).length+" set":""}</span>
+      </button>
+
+      {/* ── Manual CMP Override Panel ── */}
 {showManualCmp&&(
   <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(380px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
     {/* Header */}
