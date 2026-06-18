@@ -1009,7 +1009,7 @@ function GoalTrackerTab() {
   const [form, setForm] = React.useState({member:"Jash Shah",target:"",year:"2030",label:""});
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const save = (list) => { setGoals(list); try{localStorage.setItem(STORAGE_KEY,JSON.stringify(list));}catch{} };
 
   const addGoal = () => {
@@ -1035,7 +1035,7 @@ function GoalTrackerTab() {
               <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>Member</div>
               <select value={form.member} onChange={e=>setForm(f=>({...f,member:e.target.value}))}
                 style={{width:"100%",background:"#080b18",border:"1px solid #1d2545",borderRadius:6,padding:"7px 10px",color:"#c8d0e8",fontSize:11}}>
-                {realMembers.map(m=><option key={m.n} value={m.n}>{m.n}</option>)}
+                {realMembers.filter(function(m){return m&&m.n;}).map(m=><option key={m.n} value={m.n}>{m.n}</option>)}
               </select>
             </div>
             <div>
@@ -1469,7 +1469,7 @@ function GlobalSearchTab() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
   /* ── Build stock map ── */
   const stockMap = React.useMemo(()=>{
@@ -1905,7 +1905,7 @@ function DividendCalendarTab() {
 /* ═══════════════════════════ ESTATE PLANNING */
 function EstatePlanningTab() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const profiles = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES:{};
   const grandTotal = realMembers.reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
 
@@ -2522,7 +2522,7 @@ function DailyDigest() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
-  const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const bank  = (typeof BANK!=="undefined"?BANK:[]);
   const ppf   = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]);
   const mfReg = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
@@ -3439,7 +3439,7 @@ function AdvisorTrackerTab() {
 
   /* ── Stock data ── */
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
   const stockMap = React.useMemo(()=>{
     const m = {};
@@ -3638,7 +3638,7 @@ function AdvisorTrackerTab() {
             <select value={tagForm.member} onChange={e=>setTagForm(f=>({...f,member:e.target.value}))}
               style={{width:"100%",background:"#080b18",border:"1px solid #1d2545",borderRadius:8,padding:"10px 12px",color:tagForm.member?"#c8d0e8":"#3a4a6a",fontSize:12,boxSizing:"border-box"}}>
               <option value="">Family (all)</option>
-              {realMembers.map(m=><option key={m.n} value={m.n}>{m.n}</option>)}
+              {realMembers.filter(function(m){return m&&m.n;}).map(m=><option key={m.n} value={m.n}>{m.n}</option>)}
             </select>
           </div>
 
@@ -4163,7 +4163,7 @@ function MembersTab() {
 
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
   /* ── Get holdings for a member ── */
   const getMemberHoldings = React.useCallback(function(m) {
@@ -4944,7 +4944,7 @@ function FamilyApp() {
                 {new Date().toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})}
               </div>
             </div>
-          <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}><span style={{color:"#34d399",marginRight:4}}>●</span>Live · {new Date().getFullYear()} · {MEMBERS.filter(m=>!m._isFamily).length} members · ₹{(grandTotal/1e7).toFixed(1)} Cr</div>
+          <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}><span style={{color:"#34d399",marginRight:4}}>●</span>Live · {new Date().getFullYear()} · {MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).length} members · ₹{(grandTotal/1e7).toFixed(1)} Cr</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           {/* Global search */}
@@ -5289,7 +5289,7 @@ function FamilyApp() {
         const grandTrend = (allFamilyMember||{}).casTrend||[];
 
         // Current values
-        const curStocks = MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.stocks||0),0);
+        const curStocks = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0),0);
         const curMF     = Object.values(MF_REGISTRY).reduce((s,r)=>s+(r.valJun26||r.valApr26||0),0);
         const curBank   = BANK.reduce((s,r)=>s+(r.b||0),0);
         const grandNow  = curStocks + curMF + curBank;
@@ -5337,7 +5337,7 @@ function FamilyApp() {
                 {l:"Total Portfolio",    v:fC(grandNow),  c:"#7eb8ff",
                  s:"Equities + MF + Bank"},
                 {l:"Equity Holdings",    v:fC(curStocks), c:"#a78bfa",
-                 s:MEMBERS.filter(m=>!m._isFamily).filter(m=>m.stocks>0).length+" members holding"},
+                 s:MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).filter(m=>m.stocks>0).length+" members holding"},
                 {l:"Mutual Funds",       v:fC(curMF),     c:"#34d399",
                  s:"Jun 2026 · "+Object.keys(MF_REGISTRY).length+" members"},
                 {l:"Bank & Cash",        v:fC(curBank),   c:"#f0b429",
@@ -6296,7 +6296,7 @@ const MEMBERS = [
    custodian:["ICICI Direct"],
    casTrend:[], casApr26:0,
    ppf:0}
-].map(m=>({...m,
+].filter(m=>m&&m.n!==undefined).map(m=>({...m,
   total:(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0),
   html: m.n,
 }));
@@ -6304,11 +6304,11 @@ const MEMBERS = [
 
 const totalBank  = BANK.reduce((s,r)=>s+r.b, 0);
 
-const totalMF    = MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.mf||0), 0);
+const totalMF    = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0), 0);
 
-const totalStocks= MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.stocks||0), 0);
+const totalStocks= MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0), 0);
 
-const grandTotal = MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0), 0);
+const grandTotal = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0), 0);
 
 
 
@@ -7378,7 +7378,7 @@ const VS_TXN_YEARLY = [
   {year:"FY26",buy:10000000,sell:8000000, net:2000000},
 ];
 
-const HTML_MEMBER_SUMMARY = MEMBERS.filter(m=>!m._isFamily).map(m=>({
+const HTML_MEMBER_SUMMARY = MEMBERS.filter(m=>!m._isFamily&&m.n).map(m=>({
   n:m.n, stocks:m.stocks, mf:m.mf, bank:m.bank, total:(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0), c:m.c, i:m.i,
 }));
 
@@ -17054,7 +17054,7 @@ function ProfilesTab() {
   const [editData, setEditData] = React.useState({});
   const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v); if(a>=1e7) return "₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return "₹"+(a/1e5).toFixed(1)+" L"; return "₹"+Math.round(a).toLocaleString("en-IN"); };
   const profiles = typeof FAMILY_PROFILES !== "undefined" ? FAMILY_PROFILES : {};
-  const realMembers = MEMBERS.filter(m=>!m._isFamily);
+  const realMembers = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;});
   const selected = selMem ? realMembers.find(m=>m.n===selMem) : null;
   const profile = selMem ? (profiles[selMem]||{dematAccounts:[],bankAccounts:[]}) : null;
 
@@ -17279,8 +17279,8 @@ function NetWorthReportTab() {
   const trend = (familyM||{}).casTrend||[];
 
   /* Build FY snapshots from CAS trend data + MEMBERS stocks/mf */
-  const totalEquity = MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.stocks||0),0);
-  const totalMF = MEMBERS.filter(m=>!m._isFamily).reduce((s,m)=>s+(m.mf||0),0);
+  const totalEquity = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0),0);
+  const totalMF = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0),0);
   const totalBank = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0),0);
   const totalRealised = (typeof R75_PNL!=="undefined"?R75_PNL.reduce((s,p)=>s+(p.pl||0),0):0)
                        +(typeof V129_PNL!=="undefined"?V129_PNL.reduce((s,p)=>s+(p.pl||0),0):0)
@@ -17686,7 +17686,7 @@ function HoldingPeriodTab() {
   const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const allH = (typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS["ALL_FAMILY"] : null) || [];
   const [selMem, setSelMem] = React.useState("All");
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
   /* Classify by holding period using buy date if available */
   /* Since we don't have buy dates for all, classify by unrealised gain %:
