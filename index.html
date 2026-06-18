@@ -972,7 +972,7 @@ function WhatIfTab() {
                 {results.holders.map((h,i)=>{
                   const newHolderVal = results.tp * h.qty;
                   const gl = newHolderVal - h.val;
-                  const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(m=>m.n===h.member);
+                  const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).find(function(m){return m.n===h.member;});
                   return (
                     <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                       <td style={{padding:"8px 12px"}}>
@@ -1919,8 +1919,8 @@ function EstatePlanningTab() {
     <div style={{paddingBottom:24}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:9,marginBottom:14}}>
         {[
-          {l:"Senior Generation",v:cr(realMembers.filter(m=>seniorGen.includes(m.n)).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)),c:"#7eb8ff",s:"to be passed on"},
-          {l:"Next Generation",v:cr(realMembers.filter(m=>nextGen.includes(m.n)).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)),c:"#a78bfa",s:"already in next gen names"},
+          {l:"Senior Generation",v:cr(realMembers.filter(function(m){return m&&m.n&&seniorGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)),c:"#7eb8ff",s:"to be passed on"},
+          {l:"Next Generation",v:cr(realMembers.filter(function(m){return m&&m.n&&nextGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)),c:"#a78bfa",s:"already in next gen names"},
           {l:"HUF Accounts",v:hufAccounts.length,c:"#f0b429",s:"Hindu Undivided Family"},
           {l:"Accounts with Nominees",v:Object.values(profiles).filter(p=>p&&p.nominee).length,c:"#34d399",s:"of "+Object.keys(profiles).length+" total"},
         ].map(({l,v,c,s})=>(
@@ -3226,7 +3226,7 @@ function StockDetailPanel({ sym, onClose }) {
                       {holdings.map((h,i)=>{
                         const pl = h.val - h.inv;
                         const ret = h.inv>0?(pl/h.inv*100):0;
-                        const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(m=>m.n===h._member);
+                        const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).find(function(m){return m.n===h._member;});
                         return (
                           <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                             <td style={{padding:"7px 12px"}}>
@@ -3915,7 +3915,7 @@ function PPFTab() {
               const matDate = new Date(p.matures.split("/").reverse().join("-"));
               const yearsLeft = Math.max(0, ((matDate - today) / (365.25*24*3600*1000))).toFixed(1);
               const projVal = Math.round(p.bal * Math.pow(1+RATE, parseFloat(yearsLeft)));
-              const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(m=>m.n===p.member);
+              const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).find(function(m){return m.n===p.member;});
               return (
                 <tr key={p.acc} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                   <td style={{padding:"9px 12px"}}>
@@ -6054,7 +6054,7 @@ function StockDetailPage({ sym, onBack }) {
             <tbody>
               {holdings.map((h,i)=>{
                 const pl=h.val-h.inv; const ret=h.inv>0?(pl/h.inv*100):0;
-                const mem=(typeof MEMBERS!=="undefined"?MEMBERS:[]).find(m=>m.n===h._member);
+                const mem=(typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).find(function(m){return m.n===h._member;});
                 return (
                   <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                     <td style={{padding:"7px 12px"}}>
@@ -6300,6 +6300,10 @@ const MEMBERS = [
   total:(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0),
   html: m.n,
 }));
+
+/* Safe filtered MEMBERS for all component use */
+var SAFE_MEMBERS = MEMBERS.filter(Boolean);
+
 
 
 const totalBank  = BANK.reduce((s,r)=>s+r.b, 0);
@@ -14032,7 +14036,7 @@ function PortfolioDetailTab() {
             HTML Portfolio vs Main Dashboard MEMBERS (Stocks+MF)
           </div>
           {PERSONS.map(p=>{
-            const mem = MEMBERS.find(m=>m.n===p.id);
+            const mem = MEMBERS.filter(Boolean).find(function(m){return m.n===p.id;});
             if(!mem) return null;
             const dashTotal = mem.stocks + mem.mf;
             const htmlTotal = p.summary.equity + p.summary.mf;
@@ -15049,7 +15053,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       <td style={{padding:"7px 10px"}}>
                         <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
                           {[...g.members].map(mn=>{
-                            const mem=MEMBERS.find(m=>m.n===mn);
+                            const mem=MEMBERS.filter(Boolean).find(function(m){return m.n===mn;});
                             return <div key={mn} title={mn}
                               style={{width:16,height:16,borderRadius:"50%",background:((mem&&mem.c)||"#7eb8ff"),
                                 display:"flex",alignItems:"center",justifyContent:"center",
@@ -15883,7 +15887,7 @@ function LiveStocksTab() {
               <tbody>
                 {stockDetail.holders.map((h,i)=>{
                   const ret = h.inv>0?((h.val-h.inv)/h.inv*100):null;
-                  const mem = MEMBERS.find(m=>m.n===h.member);
+                  const mem = MEMBERS.filter(Boolean).find(function(m){return m.n===h.member;});
                   const profile = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES[h.member]:null;
                   const accCode = ((profile||{})[dematAccounts]||[].find(d=>d.broker===h.custodian)||{}).clientId||"";
                   return (
@@ -16022,7 +16026,7 @@ function LiveStocksTab() {
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
                   {c.members.map(mem=>{
                     const memVal=custStocks.filter(h=>h._member===mem).reduce((s,h)=>s+(h.val||0),0);
-                    const mObj=MEMBERS.find(m=>m.n===mem);
+                    const mObj=MEMBERS.filter(Boolean).find(function(m){return m.n===mem;});
                     return (
                       <div key={mem} style={{background:"#080b18",borderRadius:7,padding:"5px 10px",display:"flex",alignItems:"center",gap:5}}>
                         <div style={{width:16,height:16,borderRadius:"50%",background:(mObj||{}).c||"#7eb8ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:700,color:"#fff"}}>{(mObj||{}).i||mem[0]}</div>
@@ -16129,8 +16133,8 @@ function InsightsTab() {
   /* ── Generational split ── */
   const seniorGen = ["Vasumati Shah","Rasiklal Shah","Rasiklal HUF","Asha Shah","Maya Shah","Praful Shah HUF","Praful Shah"];
   const nextGen   = ["Jash Shah","Karishma Shah","Aarya Shah","Riya Shah","Chetan Shah","Chetan Shah HUF","Amit Gandhi HUF","Honey Chetan Shah"];
-  const seniorWealth = realMembers.filter(m=>seniorGen.includes(m.n)).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
-  const nextWealth   = realMembers.filter(m=>nextGen.includes(m.n)).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
+  const seniorWealth = realMembers.filter(function(m){return m&&m.n&&seniorGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
+  const nextWealth   = realMembers.filter(function(m){return m&&m.n&&nextGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
 
   /* ── Benchmark data (Nifty 50 approximate annual returns) ── */
   const niftyReturns = [{y:"FY20",r:-26},{y:"FY21",r:71},{y:"FY22",r:18},{y:"FY23",r:-4},{y:"FY24",r:29},{y:"FY25",r:5}];
@@ -16366,7 +16370,7 @@ function InsightsTab() {
                 <div style={{fontSize:10,fontWeight:700,color:c,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{l}</div>
                 <div style={{fontSize:22,fontWeight:800,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace",marginBottom:8}}>{cr(val)}</div>
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:10}}>{((val/(seniorWealth+nextWealth||1))*100).toFixed(0)}% of family portfolio</div>
-                {realMembers.filter(m=>members.includes(m.n)).map(m=>{
+                {realMembers.filter(function(m){return m&&m.n&&members.includes(m.n);}).map(m=>{
                   const mv=(m.stocks||0)+(m.mf||0);
                   const pct=val>0?(mv/val*100):0;
                   return (
@@ -16450,7 +16454,7 @@ function InsightsTab() {
                       <thead><tr style={{background:"#0a0c14"}}>{["Member","Custodian","Account","Qty","Avg Cost","Current Value","P&L","Return"].map(h=><th key={h} style={{padding:"5px 12px",textAlign:h==="Member"||h==="Custodian"||h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                       <tbody>
                         {holders.map((h,hi)=>{
-                          const mem=MEMBERS.find(m=>m.n===h._member);
+                          const mem=MEMBERS.filter(Boolean).find(function(m){return m.n===h._member;});
                           const profile=typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES[h._member]:null;
                           const accCode=((profile||{})[dematAccounts]||[].find(d=>d.broker===h._custodian)||{}).clientId||"—";
                           const ret=h.inv>0?((h.val-h.inv)/h.inv*100):null;
@@ -16892,7 +16896,7 @@ function SIPTracker() {
   /* Estimated SIPs derived from MF_REGISTRY monthly data */
   const sipData = Object.entries(MF_REGISTRY||{}).filter(([,r])=>r.inv>50000&&(r.valJun26||r.valApr26||r.val31mar26||0)>0).slice(0,12).map(([name,r])=>{
     const lat = r.valJun26||r.valApr26||r.val31mar26||0;
-    const mem = MEMBERS.find(m=>m.n===name||m.cas===name);
+    const mem = MEMBERS.filter(Boolean).find(function(m){return m.n===name||m.cas===name;});
     return {member:name,color:(mem&&mem.c)||"#7eb8ff",inv:r.inv,val:lat,gain:lat-r.inv,ret:r.inv>0?((lat-r.inv)/r.inv*100):0};
   }).sort((a,b)=>b.inv-a.inv);
 
