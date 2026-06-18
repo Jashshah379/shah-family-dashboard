@@ -309,7 +309,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
       </button>
 
       <style>{`
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}} .val-hidden{filter:blur(4px);transition:filter 0.3s;user-select:none;}
         @keyframes spin{to{transform:rotate(360deg)}}
         @media(max-width:768px){
           .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
@@ -333,7 +333,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
 function BreezeImportTab() {
   const [breezeData, setBreezeData] = React.useState(null);
   const [importing, setImporting] = React.useState(false);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -505,7 +505,7 @@ function SmartUploadTab() {
   const [dragging, setDragging] = React.useState(false);
   const [processing, setProcessing] = React.useState(false);
   const [results, setResults] = React.useState([]);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── File type detector ── */
   const detectFileType = (name, content) => {
@@ -812,7 +812,7 @@ function WhatIfTab() {
   const [targetPrice, setTargetPrice] = React.useState("");
   const [results, setResults] = React.useState(null);
   const [suggestions, setSuggestions] = React.useState([]);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
@@ -1007,7 +1007,7 @@ function GoalTrackerTab() {
   });
   const [showForm, setShowForm] = React.useState(false);
   const [form, setForm] = React.useState({member:"Jash Shah",target:"",year:"2030",label:""});
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const save = (list) => { setGoals(list); try{localStorage.setItem(STORAGE_KEY,JSON.stringify(list));}catch{} };
@@ -1136,7 +1136,7 @@ function GoalTrackerTab() {
 function FamilyMeetingTab() {
   const [slide, setSlide] = React.useState(0);
   const [playing, setPlaying] = React.useState(false);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0)).sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
@@ -1315,7 +1315,7 @@ function FamilyMeetingTab() {
 
 /* ═══════════════════════════ TAX OPTIMISER */
 function TaxOptimiserTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [selMem, setSelMem] = React.useState("All");
   const LTCG_EXEMPT = 125000;
   const LTCG_RATE = 0.125;
@@ -1493,7 +1493,7 @@ function GlobalSearchTab() {
   const [activeIdx, setActiveIdx] = React.useState(-1);
   const inputRef = React.useRef(null);
 
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -1931,7 +1931,7 @@ function DividendCalendarTab() {
 
 /* ═══════════════════════════ ESTATE PLANNING */
 function EstatePlanningTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const profiles = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES:{};
   const grandTotal = realMembers.reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
@@ -2021,7 +2021,7 @@ function XIRRTab() {
   ]);
   const [xirr, setXirr] = React.useState(null);
   const [member, setMember] = React.useState("Custom");
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* Newton-Raphson XIRR solver */
   const calcXIRR = (flows) => {
@@ -2600,7 +2600,7 @@ function GlobalIndicesWidget() {
 }
 
 function DailyDigest() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
   const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -2659,7 +2659,7 @@ function DailyDigest() {
           const lg=sw>Math.PI?1:0;
           return <path key={i} d={`M${x1},${y1} A${r},${r} 0 ${lg},1 ${x2},${y2} L${ix2},${iy2} A${ri},${ri} 0 ${lg},0 ${ix1},${iy1} Z`} fill={a.c} stroke="#070a16" strokeWidth={2}/>;
         })}
-        <text x={52} y={49} textAnchor="middle" fill="#e8eaf0" fontSize={10} fontWeight={800}>{cr(totalWealth).split("₹")[1]||""}</text>
+        <text x={52} y={49} textAnchor="middle" fill="#e8eaf0" fontSize={10} fontWeight={800}>{(typeof window!=="undefined"&&window.HIDE_VALUES)?"••••":cr(totalWealth).split("₹")[1]||""}</text>
         <text x={52} y={61} textAnchor="middle" fill="#3a4a6a" fontSize={7}>Total</text>
       </svg>
     );
@@ -2803,7 +2803,7 @@ function BankStatementTab() {
   const [parsed, setParsed] = React.useState([]);
   const [processing, setProcessing] = React.useState(false);
   const [activeStatement, setActiveStatement] = React.useState(0);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Detect bank from content ── */
   const detectBank = (text) => {
@@ -3477,7 +3477,7 @@ const DEFAULT_ADVISORS = [
 ];
 
 function AdvisorTrackerTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Persistent state ── */
   const [advisors, setAdvisors] = React.useState(()=>{
@@ -3933,7 +3933,7 @@ function AdvisorTrackerTab() {
 }
 
 function PPFTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const ppf = typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[];
   const total = ppf.reduce((s,p)=>s+p.bal,0);
   const RATE = 0.071; // 7.1% current PPF rate
@@ -4315,7 +4315,7 @@ function MembersTab() {
   const [selMem, setSelMem] = React.useState(null);
   const [subTab, setSubTab] = React.useState("equity");
 
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
@@ -4697,6 +4697,20 @@ function MembersTab() {
     </div>
   );
 }
+
+
+/* ── Global value masking for privacy toggle ── */
+function maskVal(v, placeholder) {
+  if (typeof window !== "undefined" && window.HIDE_VALUES) {
+    return placeholder || "••••••";
+  }
+  return v;
+}
+function maskNum(v) {
+  if (typeof window !== "undefined" && window.HIDE_VALUES) return "••••";
+  return v;
+}
+
 
 function FamilyApp() {
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
@@ -5238,6 +5252,15 @@ function FamilyApp() {
             {TABS.map(t=>(
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
+            {/* Privacy toggle */}
+            <button onClick={function(){setHideValues(function(v){return !v;});}}
+              title={hideValues?"Show values":"Hide sensitive values"}
+              style={{flexShrink:0,marginLeft:8,background:hideValues?"#2a1a00":"#0a0e1e",
+                border:"1px solid "+(hideValues?"#f0b429":"#1d2545"),
+                borderRadius:6,padding:"4px 10px",color:hideValues?"#f0b429":"#3a4a6a",
+                cursor:"pointer",fontSize:13,lineHeight:1}}>
+              {hideValues?"👁":"👁‍🗨"}
+            </button>
           </div>
         </div>
       </div>
@@ -6138,7 +6161,7 @@ window.FamilyApp = FamilyApp;
    price chart (from available data)
 ═══════════════════════════════════════════════════════════ */
 function StockDetailPage({ sym, onBack }) {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
@@ -13829,6 +13852,7 @@ function PortfolioDetailTab() {
   const [subView, setSubView] = React.useState("holdings");
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -14279,6 +14303,7 @@ function InCredTab() {
   const [sortDir, setSortDir] = React.useState(1);
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -14546,6 +14571,7 @@ function KarishmaTab() {
   const [view, setView] = React.useState("holdings");
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -14827,6 +14853,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
   }, [colWidths]);
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -15475,7 +15502,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
 /* ═══════════════════════════════════════════════ TAX P/L TAB (REBUILD) */
 function TaxTab() {
   const [taxView,setTaxView] = React.useState("summary");
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Collect tax data from all accounts ── */
   const ACCOUNTS = [
@@ -17790,7 +17817,7 @@ function DivYieldTab() {
 
 /* ═══════════════════════════ CORPORATE ACTIONS REGISTER */
 function CorporateActionsTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [filter, setFilter] = React.useState("all");
 
   /* Corporate actions — manually maintained, auto-cross-referenced with holdings */
@@ -17908,7 +17935,7 @@ function CorporateActionsTab() {
 
 /* ═══════════════════════════ HOLDING PERIOD ANALYSIS */
 function HoldingPeriodTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const allH = (typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS["ALL_FAMILY"] : null) || [];
   const [selMem, setSelMem] = React.useState("All");
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -18202,7 +18229,7 @@ function MTFTab() {
     ],
   };
 
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── CALCULATIONS ─────────────────────────────────────────────────────────*/
   const funding      = MTF_SUMMARY.total_funding;
