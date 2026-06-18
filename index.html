@@ -311,18 +311,34 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}} .val-hidden{filter:blur(4px);transition:filter 0.3s;user-select:none;}
         @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ── Mobile responsive ── */
         @media(max-width:768px){
-          .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
-          .grid-resp-3{grid-template-columns:repeat(2,1fr)!important;}
+          /* Grids */
+          .grid-resp-4,.grid-resp-3{grid-template-columns:repeat(2,1fr)!important;}
           .grid-resp-2{grid-template-columns:1fr!important;}
+          /* Sidebars */
           .sidebar-resp{flex-direction:column!important;}
-          .sidebar-resp>div:first-child{width:100%!important;max-height:200px;overflow-y:auto;}
+          .sidebar-resp>div:first-child{width:100%!important;max-height:180px;overflow-y:auto;}
+          /* Text */
           .hero-resp{font-size:26px!important;}
           .hide-sm{display:none!important;}
+          /* Tables */
+          .tbl-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch;}
+          .tbl-wrap table{min-width:600px;}
+          /* Popup */
+          .popup-wrap{width:100vw!important;max-width:100vw!important;left:0!important;right:0!important;border-radius:0!important;}
+          /* Cards */
+          .card-row{flex-direction:column!important;}
+          /* Tab bar */
+          .tab-bar{padding-bottom:4px;}
+          /* Padding */
+          .pg-pad{padding:8px!important;}
         }
         @media(max-width:480px){
           .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
           .hero-resp{font-size:20px!important;}
+          .hide-xs{display:none!important;}
         }
       `}</style>
     </div>
@@ -1030,7 +1046,7 @@ function GoalTrackerTab() {
 
       {showForm&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #3a6abf",borderRadius:12,padding:"16px",marginBottom:14}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
             <div>
               <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>Member</div>
               <select value={form.member} onChange={e=>setForm(f=>({...f,member:e.target.value}))}
@@ -1241,7 +1257,7 @@ function FamilyMeetingTab() {
     {
       title:"Best Performers",subtitle:"Top gainers across all accounts",
       content:()=>(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,width:"100%"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:16,width:"100%"}}>
           <div>
             <div style={{fontSize:16,fontWeight:700,color:"#34d399",marginBottom:12}}>📈 Top Gainers</div>
             {topGainers.map((h,i)=>{
@@ -1960,7 +1976,7 @@ function EstatePlanningTab() {
       </div>
 
       {/* Account type breakdown */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:14}}>
         {[{title:"HUF Accounts",items:hufAccounts,c:"#f0b429",note:"Joint family assets — governed by Hindu Succession Act"},{title:"NRE Accounts",items:nreAccounts,c:"#a78bfa",note:"Non-resident accounts — special repatriation rules apply"}].map(({title,items,c,note})=>(
           <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px"}}>
             <div style={{fontSize:10,fontWeight:700,color:c,marginBottom:4}}>{title}</div>
@@ -2233,7 +2249,7 @@ function StockNotesTab() {
                     placeholder="Why you hold this, what to watch for..."
                     style={{width:"100%",background:"#080b18",border:"1px solid #1d2545",borderRadius:6,padding:"8px 10px",color:"#c8d0e8",fontSize:11,boxSizing:"border-box",resize:"vertical"}}/>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:9}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
                   {[{l:"Target Price (₹)",v:editTarget,set:setEditTarget,ph:"e.g. 500"},{l:"Stop Loss (₹)",v:editSL,set:setEditSL,ph:"e.g. 180"}].map(({l,v,set,ph})=>(
                     <div key={l}>
                       <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -2712,7 +2728,7 @@ function DailyDigest() {
       </div>
 
       {/* ══ 4 KEY METRICS ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(130px,45%),1fr))",gap:8}}>
         {[
           {l:"Equity",v:cr(totalEq),sub:(retPct>=0?"+":"")+retPct.toFixed(1)+"%",c:"#6366f1"},
           {l:"Mutual Funds",v:cr(totalMF),sub:Object.keys(mfReg).length+" members",c:"#10b981"},
@@ -2728,7 +2744,7 @@ function DailyDigest() {
       </div>
 
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
 
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden"}}>
@@ -3084,7 +3100,7 @@ function BankStatementTab() {
           )}
 
           {/* Top transactions */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(280px,100%),1fr))",gap:12}}>
             {[{title:"Largest Credits",items:topCredits,field:"credit",c:"#34d399"},
               {title:"Largest Debits",items:topDebits,field:"debit",c:"#f87171"}].map(({title,items,field,c})=>(
               <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"12px"}}>
@@ -3337,7 +3353,7 @@ function StockDetailPanel({ sym, onClose }) {
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {totalDivReceived > 0 ? (
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",maxWidth:280,margin:"0 auto",gap:9}}>
                     {[
                       {l:"Total Dividends Received",v:cr(totalDivReceived),c:"#f0b429"},
                       {l:"Yield on Cost",v:yoc>0?yoc.toFixed(2)+"%":"—",c:"#f0b429"},
@@ -3634,7 +3650,7 @@ function AdvisorTrackerTab() {
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"20px"}}>
         <div style={{fontSize:13,fontWeight:700,color:"#c8d0e8",marginBottom:16}}>Tag a Stock to an Advisor</div>
 
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:12}}>
 
           {/* Stock search */}
           <div style={{gridColumn:"1/-1",position:"relative"}}>
@@ -3794,7 +3810,7 @@ function AdvisorTrackerTab() {
           </div>
 
           {/* Stats */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:8}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(120px,45%),1fr))",gap:8}}>
             {[
               {l:"Positions",v:adv.count,c:"#e8eaf0"},
               {l:"Total Value",v:cr(adv.totalValue),c:"#7eb8ff"},
@@ -3874,7 +3890,7 @@ function AdvisorTrackerTab() {
         {/* Add new advisor */}
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #3a6abf",borderRadius:12,padding:"16px",marginBottom:14}}>
           <div style={{fontSize:11,fontWeight:700,color:"#7eb8ff",marginBottom:12}}>Add New Advisor</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
             {[{l:"Name",k:"name",ph:"e.g. Ramesh Mehta"},{l:"Firm / Source",k:"firm",ph:"e.g. Motilal Oswal"}].map(({l,k,ph})=>(
               <div key={k}>
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -4136,7 +4152,7 @@ function MutualFundsTab() {
               </div>
             </div>
             {/* KPIs */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(130px,45%),1fr))",gap:8}}>
               {[
                 {l:"Total Invested", v:cr(totalInv), c:"#8899bb"},
                 {l:"Current Value",  v:cr(totalVal), c:"#10b981"},
@@ -4263,7 +4279,7 @@ function MutualFundsTab() {
                           <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>{isExp?"▲":"▼"}</span>
                         </div>
                         {isExp&&(
-                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:10}}>
+                          <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(120px,45%),1fr))",gap:10}}>
                             <div>
                               <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>INVESTED</div>
                               <div style={{fontSize:11,fontFamily:"monospace",color:"#8899bb",fontWeight:600}}>{cr(sc.invested||0)}</div>
@@ -4618,7 +4634,7 @@ function MembersTab() {
                   {/* Broker / account info */}
                   <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
                     <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>🏦 Account Details</div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
                       {[
                         {l:"Broker ID",v:m.broker||"—"},
                         {l:"ICICI Account",v:m.icici||"—"},
@@ -4661,7 +4677,7 @@ function MembersTab() {
                     <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
                       <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#3b82f6"}}>📘 PPF Account</div>
                       {ppfData.map(function(p,i){return(
-                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div><div style={{fontSize:11,color:"#7eb8ff",fontFamily:"monospace",fontWeight:600}}>{p.acc}</div></div>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BALANCE</div><div style={{fontSize:11,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>{cr(p.bal)}</div></div>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>OPENED</div><div style={{fontSize:10,color:"#8899bb"}}>{p.opened}</div></div>
@@ -4674,7 +4690,7 @@ function MembersTab() {
                   {/* Wealth summary */}
                   <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
                     <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>💰 Wealth Summary</div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:8}}>
                       {[
                         {l:"Equity",v:cr(m.stocks||0),c:"#6366f1"},
                         {l:"Mutual Funds",v:cr(m.mf||0),c:"#10b981"},
@@ -4770,6 +4786,21 @@ function FamilyApp() {
 
   const [tab,setTab]=React.useState("Overview");
   const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
+  /* ── Data integrity check: detect duplicate stock entries within same custodian ── */
+  var dataIntegrityWarnings = React.useMemo(function() {
+    var warnings = [];
+    var seen = {};
+    (typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : []).forEach(function(h) {
+      if (!h || !h.s || !h._member || !h._custodian) return;
+      var key = h._member + "|" + h._custodian + "|" + h.s;
+      if (seen[key]) {
+        warnings.push(h._member + " — " + h.s + " appears twice in " + h._custodian);
+      }
+      seen[key] = true;
+    });
+    return warnings;
+  }, [priceVersion]);
+
   const [manualCmp, setManualCmp] = React.useState({});
   const [showManualCmp, setShowManualCmp] = React.useState(false);
   const [manualInput, setManualInput] = React.useState({sym:"", price:""});
@@ -5255,6 +5286,13 @@ function FamilyApp() {
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
             {/* Privacy toggle */}
+            {dataIntegrityWarnings.length>0&&(
+              <span title={dataIntegrityWarnings.join("\n")}
+                style={{flexShrink:0,marginLeft:8,background:"#2a0a0a",border:"1px solid #5a1a1a",
+                  borderRadius:6,padding:"4px 8px",color:"#f87171",fontSize:10,fontWeight:700,cursor:"help"}}>
+                ⚠ {dataIntegrityWarnings.length} dup
+              </span>
+            )}
             <button onClick={function(){setHideValues(function(v){return !v;});}}
               title={(window.HIDE_VALUES)?"Show values":"Hide sensitive values"}
               style={{flexShrink:0,marginLeft:8,background:(window.HIDE_VALUES)?"#2a1a00":"#0a0e1e",
@@ -5591,7 +5629,7 @@ function FamilyApp() {
             )}
 
             {/* Two-column: Asset allocation + Sector breakdown */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:14}}>
               {/* Asset Allocation */}
               <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",
                 border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
@@ -5788,7 +5826,7 @@ function FamilyApp() {
           </div>
 
           {/* Bank breakdown charts */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:14}}>
             {/* By bank */}
             <div style={{background:"#0f1220",border:"1px solid #1a2035",borderRadius:10,padding:"16px"}}>
               <div style={{fontSize:11,fontWeight:600,color:"#3a4a6a",marginBottom:12,textTransform:"uppercase",letterSpacing:"0.06em"}}>Balance by Bank</div>
@@ -11353,16 +11391,22 @@ const SYMBOL_MAP = {
   "Aegis Logistics": "AEGISLOG",
   "Affle India": "AFFLE",
   "Ajmera Realty": "AJMERA",
+  "Alicon Castalloy": "ALICON",
   "Alkem Lab": "ALKEM",
   "Allcargo Gati": "ALLCARGO",
   "Amara Raja Energy & Mobility": "ARE&M",
   "Ambuja Cements": "AMBUJACEM",
   "Angel One": "ANGELONE",
   "Apollo Hospitals": "APOLLOHOSP",
+  "Apollo Tyres": "APOLLOTYRE",
   "Arman Financial": "ARMANFIN",
+  "Arvind": "ARVINDLTD",
+  "Arvind Fashions": "ARVINDSFAS",
   "Astral": "ASTRAL",
   "Atul": "ATUL",
   "Axis Bank": "AXISBANK",
+  "Axiscades Technologies": "AXISCADES",
+  "BCL Industries": "BCLIND",
   "BHEL": "BHEL",
   "BPCL": "BPCL",
   "BSE": "BSE",
@@ -11378,59 +11422,96 @@ const SYMBOL_MAP = {
   "Bharat Electronics": "BEL",
   "Bharti Airtel": "BHARTIARTL",
   "Birla Cable": "BIRLACABLE",
+  "Bombay Dyeing": "BOMBDYEING",
   "Bosch": "BOSCHLTD",
+  "Brand Concepts": "BRANDCONCEPT",
   "Brigade Enterprises": "BRIGADE",
   "CDSL": "CDSL",
   "CESC": "CESC",
   "CG Power": "CGPOWER",
   "Can Fin Homes": "CANFINHOME",
   "Canara Bank": "CANBK",
+  "Cantabil Retail": "CANTABIL",
   "Caplin Point Laboratories": "CAPLIPOINT",
+  "Care Ratings": "CARERATING",
   "Castrol India": "CASTROLIND",
+  "Ceigall India": "CEIGALL",
   "Century Plyboards": "CENTURYPLY",
+  "Chambal Fertilisers": "CHAMBLFERT",
+  "Chennai Petroleum": "CPCL",
   "Cholamandalam Financial": "CHOLAFIN",
   "Clean Science & Technology": "CLEAN",
   "Coal India": "COALINDIA",
   "Coforge": "COFORGE",
   "Concor": "CONCOR",
+  "Control Print": "CONTROLPR",
   "Cummins India": "CUMMINSIND",
+  "Cupid": "CUPID",
+  "D-Link India": "DLINKINDIA",
   "DCB Bank": "DCBBANK",
   "DCM Shriram": "DCMSHRIRAM",
   "DCX Systems": "DCX",
   "DLF": "DLF",
+  "Danlaw Technologies": "DANLAW",
   "Data Patterns": "DATAPATTNS",
+  "Deep Industries": "DEEPIND",
   "Deepak Nitrite": "DEEPAKNTR",
   "Delta Corp": "DELTACORP",
+  "Diamines & Chemicals": "DIAMINESQ",
+  "Disa India": "DISA",
   "Divis Laboratories": "DIVISLAB",
   "Dixon Technologies": "DIXON",
   "Dr Lal PathLabs": "LALPATHLAB",
   "Dr Reddy's Laboratories": "DRREDDY",
+  "Dredging Corporation": "DREDGECORP",
+  "Dynamatic Technologies": "DYNAMATECH",
+  "E2E Networks": "E2ENETWORK",
+  "ECOS Mobility": "ECOINS",
+  "EID Parry India": "EIDPARRY",
+  "Easy Trip Planners": "EASEMYTRIP",
   "Eicher Motors": "EICHERMOT",
+  "Eveready Industries": "EVEREADY",
   "Exide Industries": "EXIDEIND",
+  "Expleo Solutions": "EXPLEOSOL",
   "Federal Bank": "FEDERALBNK",
   "Fine Organic Industries": "FINEORG",
+  "Fineotex Chemical": "FCL",
+  "Firstsource Solutions": "FSL",
   "Five-Star Business Finance": "FIVESTAR",
   "GAIL India": "GAIL",
+  "GEI Industrial Systems": "GEIIL",
+  "GFL": "GFL",
   "GIC Housing Finance": "GICHSGFIN",
   "GNFC": "GNFC",
+  "GOCL Corp": "GOCLCORP",
+  "Genesys International": "GENESYS",
+  "Goa Carbon": "GOACARBON",
+  "Godawari Power": "GPIL",
   "Godrej Industries": "GODREJIND",
   "Godrej Properties": "GODREJPROP",
   "Greaves Cotton": "GREAVESCOT",
   "Greenpanel Industries": "GREENPANEL",
   "Gujarat Fluorochem": "FLUOROCHEM",
   "Gujarat Pipavav Port": "GPPL",
+  "Gujarat State Petronet": "GSPC",
   "HAL": "HAL",
   "HCL Technologies": "HCLTECH",
   "HDFC AMC": "HDFCAMC",
   "HDFC Bank": "HDFCBANK",
   "HDFC Life": "HDFCLIFE",
   "HFCL": "HFCL",
+  "HMT": "HMT",
+  "HPCL": "HINDPETRO",
   "HUDCO": "HUDCO",
+  "Hariom Pipe": "HARIOMPIPE",
   "Havells India": "HAVELLS",
+  "Heritage Foods": "HERITGFOOD",
   "Hero Motocorp": "HEROMOTOCO",
+  "Hexa Tradex": "HEXATRADEX",
   "Hikal": "HIKAL",
   "Hindalco": "HINDALCO",
   "Hindustan Aeronautics": "HAL",
+  "Hindustan Construction": "HCC",
   "Hindustan Unilever": "HINDUNILVR",
   "Hindzinc": "HINDZINC",
   "Hitachi Energy India": "ABBPOW",
@@ -11439,6 +11520,9 @@ const SYMBOL_MAP = {
   "ICICI Lombard": "ICICIGI",
   "ICICI Securities": "ISEC",
   "IDFC First Bank": "IDFCFIRSTB",
+  "IFB Industries": "IFBIND",
+  "IFCI": "IFCI",
+  "IIFL Finance": "IIFL",
   "IRCTC": "IRCTC",
   "IRFC": "IRFC",
   "ITC": "ITC",
@@ -11451,24 +11535,39 @@ const SYMBOL_MAP = {
   "Indraprastha Gas": "IGL",
   "IndusInd Bank": "INDUSINDBK",
   "Infosys": "INFY",
+  "Innova Captab": "INNOVACAP",
+  "Inox Green Energy": "INOXGREEN",
+  "Inox India": "INOXINDIA",
+  "Inox Wind": "INOXWIND",
+  "Ion Exchange India": "IONEXCHANG",
   "J B Chemicals & Pharma": "JBCHEPHARM",
   "JSW Energy": "JSWENERGY",
   "JSW Infrastructure": "JSWINFRA",
   "JSW Steel": "JSWSTEEL",
+  "Jamna Auto": "JAMNAAUTO",
   "Jio Financial Services": "JIOFIN",
+  "Jubilant Agri": "JUBALAGRI",
   "Jubilant Foodworks": "JUBLFOOD",
   "Just Dial": "JUSTDIAL",
+  "KDDL": "KDDL",
   "KEI Industries": "KEI",
+  "KIOCL": "KIOCL",
   "KPIT Technologies": "KPITTECH",
+  "KRN Heat Exchanger": "KRNHEAT",
   "Kajaria Ceramics": "KAJARIACER",
   "Kansai Nerolac": "KANSAINER",
   "Kaynes Technology": "KAYNES",
+  "Kewal Kiran Clothing": "KKCL",
+  "Kirloskar Brothers": "KIRLOSBROS",
   "L&T": "LT",
   "L&T Finance": "LTF",
   "L&T Technology Services": "LTTS",
+  "LG Balakrishnan": "LGBFORGE",
   "LIC Housing Finance": "LICHSGFIN",
   "Lauruslabs": "LAURUSLABS",
+  "Laxmi Organic Industries": "LXCHEM",
   "Linde India": "LINDEINDIA",
+  "Lloyds Engineering": "LLOYDSENGG",
   "MAN Infraconstruction": "MANINFRA",
   "MOIL": "MOIL",
   "MTAR Technologies": "MTAR",
@@ -11485,63 +11584,103 @@ const SYMBOL_MAP = {
   "NMDC": "NMDC",
   "NOCIL": "NOCIL",
   "NTPC": "NTPC",
+  "Nakoda": "NAKODA",
+  "National Fertilizers": "NFL",
+  "National Peroxide": "NATPEROXID",
   "Navin Fluorine": "NAVINFLUOR",
   "Nestle India": "NESTLEIND",
   "Northern Arc Capital": "NORTHARC",
   "Nuvama Wealth": "NUVAMA",
+  "Nuvoco Vistas": "NUVOCO",
   "Nykaa": "NYKAA",
   "ONGC": "ONGC",
   "PFC": "PFC",
   "PI Industries": "PIIND",
+  "PTC Industries": "PTCIND",
+  "PVR Inox": "PVRINOX",
   "Page Industries": "PAGEIND",
   "Paytm": "PAYTM",
+  "Pearl Global Industries": "PGIL",
   "Persistent Systems": "PERSISTENT",
   "Petronet LNG": "PETRONET",
   "Poly Medicure": "POLYMED",
   "Polycab India": "POLYCAB",
+  "Polyplex Corporation": "POLYPLEX",
+  "Pondy Oxides & Chemicals": "PONDYOX",
   "Praj Industries": "PRAJIND",
+  "Premier Energies": "PREMIERENE",
+  "Premier Explosives": "PREMEXPLN",
   "Prestige Estates": "PRESTIGE",
+  "Protean eGov Technologies": "PROTEAN",
   "Punjab National Bank": "PNB",
+  "R K Swamy": "RKSWAMY",
   "RBL Bank": "RBLBANK",
   "RVNL": "RVNL",
   "Rain Industries": "RAIN",
   "Ratnamani Metals": "RATNAMANI",
+  "Ratnaveer Precision": "RATNAVEER",
+  "RattanIndia Enterprises": "RATTAN",
+  "Reliance Communications": "RCOM",
   "Reliance Industries": "RELIANCE",
+  "Reliance Infrastructure": "RELINFRA",
   "Reliance Power": "RPOWER",
   "SAIL": "SAIL",
   "SBI Cards": "SBICARD",
+  "SBI Life": "SBILIFE",
   "SKF India": "SKFINDIA",
   "SRF": "SRF",
+  "Sammaan Capital": "SAMMAAN",
   "Samvardhana Motherson": "MOTHERSON",
   "Sansera Engineering": "SANSERA",
   "Schaeffler India": "SCHAEFFLER",
   "Siemens": "SIEMENS",
+  "Siemens Energy India": "SIEMENSENE",
+  "Siyaram Silk Mills": "SIYSIL",
   "Solar Industries India": "SOLARINDS",
+  "SpiceJet": "SPICEJET",
   "State Bank of India": "SBIN",
+  "Stylam Industries": "STYLAM",
   "Sun Pharma": "SUNPHARMA",
   "Suzlon Energy": "SUZLON",
+  "TCI Express": "TCIEXP",
   "TCS": "TCS",
+  "TV18 Broadcast": "TV18BRDCST",
   "TVS Motor": "TVSMOTOR",
   "Tata Investment Corporation": "TATAINVEST",
   "Tata Motors": "TATAMOTORS",
   "Tata Power": "TATAPOWER",
   "Tata Steel": "TATASTEEL",
+  "TeamLease Services": "TEAMLEASE",
   "Tech Mahindra": "TECHM",
   "Thermax": "THERMAX",
+  "Time Technoplast": "TIMETECHNO",
   "Titan": "TITAN",
   "Trent": "TRENT",
+  "Trigyn Technologies": "TRIGYN",
+  "Tube Investments": "TUBEINVEST",
   "UPL": "UPL",
   "UltraTech Cement": "ULTRACEMCO",
+  "Ultramarine & Pigments": "ULTRAMRINE",
+  "Unichem Labs": "UNICHEMLAB",
   "Union Bank of India": "UNIONBANK",
+  "Uniparts India": "UNIPARTS",
+  "Vadilal Industries": "VADILALIND",
+  "Valor Estate": "VALOR",
   "Vedanta": "VEDL",
   "Venus Pipes": "VENUSPIPES",
+  "Vindhya Telelinks": "VINDHYATEL",
+  "Vishnu Chemicals": "VISHNU",
   "Vodafone Idea": "IDEA",
   "Voltas": "VOLTAS",
   "Waaree Energies": "WAAREEENER",
+  "Wendt India": "WENDT",
   "Wipro": "WIPRO",
   "Wockhardt": "WOCKPHARMA",
+  "Yasho Industries": "YASHO",
+  "Yatharth Hospital": "YATHARTH",
   "Yes Bank": "YESBANK",
   "Zee Entertainment": "ZEEL",
+  "Zee Learn": "ZEELEARN",
   "Zomato": "ZOMATO",
   "Zydus Lifesciences": "ZYDUSLIFE",
 };
@@ -12250,7 +12389,7 @@ function PortfolioApp(){
           {l:"Win rate",v:Math.round(wins/traded.length*100)+"%",s:wins+"/"+traded.length+" symbols",ac:"#9d7bea"},
           {l:"SANSERA ⭐",v:"+₹95.6L",s:"Best open position",ac:"#00c2d4"},
         ]}/>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
           <div style={box()}>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Realised P/L by FY</div>
             <ResponsiveContainer width="100%" height={185}><BarChart data={fyBar}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>Math.abs(v)>=1e5?Math.round(v/1e5)+"L":Math.abs(v)>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>[(v>=0?"+":"")+"₹"+Math.abs(v).toLocaleString("en-IN"),"P/L"]}/><Bar dataKey="pl" radius={[4,4,0,0]}>{fyBar.map((_,i)=><Cell key={i} fill={_.pl>=0?"#00d68f":"#ff4060"}/>)}</Bar></BarChart></ResponsiveContainer>
@@ -12333,7 +12472,7 @@ function PortfolioApp(){
             </div>
           );})}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
           {[["FY24-25",TB3],["FY23-24",TB4]].map(([label,data])=>{
             const top=[...data].sort((a,b)=>b["Realized PL"]-a["Realized PL"]).slice(0,10);
             return <div key={label} style={box()}>
@@ -12342,7 +12481,7 @@ function PortfolioApp(){
             </div>;
           })}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10}}>
           {[["FY24-25",TB3],["FY23-24",TB4]].map(([label,data])=><div key={label}>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{label}</div>
             <div style={{background:S.cd,border:"1px solid "+S.bd,borderRadius:9,overflow:"hidden"}}>
@@ -12363,7 +12502,7 @@ function PortfolioApp(){
           {l:"FY25-26",v:fL(_DT["FY25-26"]||0),s:"5 payments",ac:S.mt},
           {l:"Top payer",v:Object.entries(divSym).sort((a,b)=>b[1]-a[1])[0]&&([][0])[0]||"—",s:fL(Object.entries(divSym).sort((a,b)=>b[1]-a[1])[0]&&([][0])[1]||0),ac:S.gn},
         ]}/>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
           <div style={box(0)}><div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Dividends by FY</div><ResponsiveContainer width="100%" height={145}><BarChart data={dvBar}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e5?Math.round(v/1e5)+"L":v>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>["₹"+v.toLocaleString("en-IN"),"Dividends"]}/><Bar dataKey="v" fill="#f5a623" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
           <div style={box(0)}><div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Top 8 payers</div><ResponsiveContainer width="100%" height={145}><BarChart data={Object.entries(divSym).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,v])=>({name,v:Math.round(v)}))}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>["₹"+v.toLocaleString("en-IN"),"Amount"]}/><Bar dataKey="v" fill="#f5a623" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
         </div>
@@ -12475,7 +12614,7 @@ function PortfolioApp(){
 
       {/* - LEADERBOARD - */}
       {tab==="lb"&&<div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:10,marginBottom:10}}>
           <div>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Top 20 winners</div>
             <div style={{background:S.cd,border:"1px solid "+S.bd,borderRadius:9,overflow:"hidden"}}>
@@ -12547,7 +12686,7 @@ function PortfolioApp(){
         </div>
 
         {/* Two columns: Open positions + Top realised */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:12}}>
           {/* Open positions */}
           <div style={{background:"#0a0d14",border:"1px solid #1e2540",borderRadius:9,overflow:"hidden"}}>
             <div style={{padding:"10px 12px",borderBottom:"1px solid #1e2540",fontSize:11,fontWeight:600,color:S.mt,display:"flex",justifyContent:"space-between"}}>
@@ -14083,7 +14222,7 @@ function InCredTab() {
 
       {/* - PERFORMANCE - */}
       {view==="performance"&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,padding:"18px 20px"}}>
             <div style={{fontSize:11,fontWeight:600,color:"#3a4a6a",marginBottom:14,textTransform:"uppercase",letterSpacing:"0.06em"}}>
               Capital Account
@@ -14268,7 +14407,7 @@ function KarishmaTab() {
 
       {/* - P&L - */}
       {view==="pl"&&(<>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12,marginBottom:12}}>
           {/* Winners */}
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",fontSize:11,fontWeight:600,color:"#34d399"}}>
@@ -14349,7 +14488,7 @@ function KarishmaTab() {
 
       {/* - LEDGER - */}
       {view==="ledger"&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,padding:"18px 20px"}}>
             <div style={{fontSize:11,fontWeight:600,color:"#3a4a6a",marginBottom:14,textTransform:"uppercase",letterSpacing:"0.06em"}}>Capital Flow</div>
             {[
@@ -14707,7 +14846,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             <span style={{fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
               {stockGroups.length} unique stocks · {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))} total
             </span>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,justifyContent:"flex-start"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,justifyContent:"flex-start",flexWrap:"wrap"}}>
             <button onClick={function(){setSelectionMode(function(v){if(v){setSelectedStocks({});}return !v;});}}
               style={{background:selectionMode?"#1e3a5f":"#0a0e1e",border:"1px solid "+(selectionMode?"#3b82f6":"#1d2545"),
                 borderRadius:7,padding:"5px 14px",color:selectionMode?"#7eb8ff":"#6a7a9a",
@@ -14768,17 +14907,18 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           )}
 
           {/* ── A-Z Alphabet Sidebar — fixed right overlay ── */}
-          <div style={{position:"fixed",right:6,top:"50%",transform:"translateY(-50%)",zIndex:800,
-            background:"#080b18cc",backdropFilter:"blur(4px)",borderRadius:8,padding:"4px 2px",
-            border:"1px solid #1d2545",display:"flex",flexDirection:"column",gap:0}}>
+          <div style={{position:"fixed",right:4,top:"50%",transform:"translateY(-50%)",zIndex:800,
+            background:"#080b18dd",backdropFilter:"blur(6px)",borderRadius:8,padding:"3px 1px",
+            border:"1px solid #1d2545",display:"flex",flexDirection:"column",gap:0,
+            maxHeight:"80vh",overflowY:"auto"}}>
             {"ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("").map(function(letter){
               return (
                 <button key={letter} onClick={function(){
                   var el=letterRefs.current[letter];
                   if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
                 }}
-                  style={{width:18,height:13,background:"none",border:"none",color:"#3a5a7a",
-                    cursor:"pointer",fontSize:7,fontWeight:700,padding:0,lineHeight:1}}
+                  style={{width:22,height:16,background:"none",border:"none",color:"#3a5a7a",
+                    cursor:"pointer",fontSize:8,fontWeight:700,padding:0,lineHeight:1,touchAction:"manipulation"}}
                   onMouseEnter={function(e){e.currentTarget.style.color="#7eb8ff";e.currentTarget.style.background="#1e3a5f";}}
                   onMouseLeave={function(e){e.currentTarget.style.color="#3a5a7a";e.currentTarget.style.background="none";}}>
                   {letter}
@@ -15781,7 +15921,7 @@ function LiveStocksTab() {
 
       {/* TOP MOVERS */}
       {lsView==="movers"&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
           {[{title:"📈 Top Gainers",data:gainers,pos:true},{title:"📉 Biggest Losers",data:losers,pos:false}].map(({title,data,pos})=>(
             <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
               <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:pos?"#34d399":"#f87171",textTransform:"uppercase",letterSpacing:"0.08em"}}>{title}</div>
@@ -16047,7 +16187,7 @@ function InsightsTab() {
           </div>
 
           {/* Asset allocation + Sector breakdown */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
             {/* Asset allocation donut */}
             <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
               <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Asset Allocation</div>
@@ -16205,7 +16345,7 @@ function InsightsTab() {
       {iView==="family"&&(
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {/* Generational split */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
             {[{l:"Senior Generation",members:seniorGen,val:seniorWealth,c:"#7eb8ff"},{l:"Next Generation",members:nextGen,val:nextWealth,c:"#a78bfa"}].map(({l,members,val,c})=>(
               <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
                 <div style={{fontSize:10,fontWeight:700,color:c,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{l}</div>
@@ -16840,7 +16980,7 @@ function WatchlistTab() {
       {editing&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #3a6abf",borderRadius:12,padding:"16px"}}>
           <div style={{fontSize:10,fontWeight:700,color:"#7eb8ff",marginBottom:12}}>Add to Watchlist</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9,marginBottom:9}}>
             {[{k:"sym",l:"Stock Symbol / Name",ph:"e.g. NELCO"},{k:"target",l:"Target Price (₹)",ph:"e.g. 500"},{k:"stop",l:"Stop Loss (₹)",ph:"e.g. 180"},{k:"notes",l:"Investment Thesis",ph:"Why watching..."}].map(({k,l,ph})=>(
               <div key={k}>
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -16984,7 +17124,7 @@ function ProfilesTab() {
                 <button onClick={()=>{setEditing(!editing);setEditData({pan:profile.pan||"",phone:profile.phone||"",email:profile.email||"",dob:profile.dob||"",nominee:profile.nominee||""});}} style={{fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid #1d2545",background:"#0a1020",color:"#7eb8ff",cursor:"pointer"}}>✏ Edit</button>
               </div>
               {editing ? (
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9}}>
                   {[{k:"pan",l:"PAN Number"},{k:"phone",l:"Phone"},{k:"email",l:"Email"},{k:"dob",l:"Date of Birth"},{k:"nominee",l:"Nominee"}].map(({k,l})=>(
                     <div key={k}>
                       <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -16997,7 +17137,7 @@ function ProfilesTab() {
                   </div>
                 </div>
               ) : (
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:9}}>
                   {[{l:"PAN Number",v:profile.pan,sec:true},{l:"Phone",v:profile.phone},{l:"Email",v:profile.email},{l:"Date of Birth",v:profile.dob},{l:"Nominee",v:profile.nominee},{l:"PAN Linked",v:profile.panLinked?"✓ Yes":"✗ No",c:profile.panLinked?"#34d399":"#f87171"}].map(({l,v,sec,c})=>(
                     <div key={l} style={{background:"#080b18",borderRadius:8,padding:"9px 12px"}}>
                       <div style={{fontSize:9,color:"#3a4a6a",marginBottom:3}}>{l}</div>
@@ -17072,7 +17212,7 @@ function ProfilesTab() {
                 <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
                   <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3b82f6",textTransform:"uppercase",letterSpacing:"0.08em"}}>📘 PPF Account</div>
                   {ppfAcc.map((p,i)=>(
-                    <div key={i} style={{padding:"10px 16px",borderBottom:"1px solid #0d1020",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    <div key={i} style={{padding:"10px 16px",borderBottom:"1px solid #0d1020",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:8}}>
                       <div>
                         <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div>
                         <div style={{fontSize:11,fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{p.acc}</div>
@@ -17973,7 +18113,7 @@ function MTFTab() {
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
             <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Should You Pay Down MTF?</div>
             <div style={{fontSize:10,color:"#4a5a7a",marginBottom:12}}>If your portfolio earns less than {rate}% p.a., paying down MTF gives better risk-adjusted returns.</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
               <div style={{background:"#0a1a10",border:"1px solid #34d39933",borderRadius:10,padding:"12px"}}>
                 <div style={{fontSize:10,fontWeight:700,color:"#34d399",marginBottom:6}}>Pay Down MTF</div>
                 <div style={{fontSize:11,color:"#4a7a5a",lineHeight:1.6}}>
@@ -18028,7 +18168,7 @@ function MTFTab() {
             </table>
           </div>
 
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(220px,100%),1fr))",gap:12}}>
             <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px"}}>
               <div style={{fontSize:10,fontWeight:700,color:"#34d399",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Current Position</div>
               {[
@@ -18163,7 +18303,7 @@ function MTFTab() {
 
       {/* ── Manual CMP Override Panel ── */}
 {showManualCmp&&(
-  <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(380px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
+  <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(380px,100vw)",maxWidth:"100vw",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
     {/* Header */}
     <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
       <div>
