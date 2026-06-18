@@ -14600,6 +14600,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
   const [colWidths, setColWidths] = React.useState({stock:220,qty:80,avg:90,cmp:90,val:110,pl:110,pct:80,mem:110,cust:110});
   const resizing = React.useRef(null);
   const [selectedStocks, setSelectedStocks] = React.useState({});
+  const [selectionMode, setSelectionMode] = React.useState(false);
   const letterRefs = React.useRef({});
   const tableRef = React.useRef(null);
 
@@ -14893,10 +14894,21 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             <span style={{fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
               {stockGroups.length} unique stocks · {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))} total
             </span>
-            <span style={{fontSize:9,color:"#2a3a50"}}>Click row to expand per-account detail</span>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <button onClick={function(){setSelectionMode(function(v){if(v){setSelectedStocks({});}return !v;});}}
+              style={{background:selectionMode?"#1e3a5f":"#0a0e1e",border:"1px solid "+(selectionMode?"#3b82f6":"#1d2545"),
+                borderRadius:7,padding:"5px 14px",color:selectionMode?"#7eb8ff":"#6a7a9a",
+                cursor:"pointer",fontSize:10,fontWeight:700}}>
+              {selectionMode?"✕ Cancel Select":"☑ Select"}
+            </button>
+            {selectionMode&&Object.keys(selectedStocks).length>0&&(
+              <span style={{fontSize:10,color:"#7eb8ff",fontWeight:600}}>{Object.keys(selectedStocks).length} selected</span>
+            )}
+          </div>
+          <span style={{fontSize:9,color:"#2a3a50"}}>Click row to expand per-account detail</span>
           </div>
           {/* ── Selection Toolbar ── */}
-          {Object.keys(selectedStocks).length>0&&(
+          {selectionMode&&Object.keys(selectedStocks).length>0&&(
             <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",marginBottom:8,background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,flexWrap:"wrap"}}>
               <span style={{fontSize:10,fontWeight:700,color:"#7eb8ff"}}>{Object.keys(selectedStocks).length} selected</span>
               <button onClick={function(){
