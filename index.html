@@ -311,6 +311,19 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:768px){
+          .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
+          .grid-resp-3{grid-template-columns:repeat(2,1fr)!important;}
+          .grid-resp-2{grid-template-columns:1fr!important;}
+          .sidebar-resp{flex-direction:column!important;}
+          .sidebar-resp>div:first-child{width:100%!important;max-height:200px;overflow-y:auto;}
+          .hero-resp{font-size:26px!important;}
+          .hide-sm{display:none!important;}
+        }
+        @media(max-width:480px){
+          .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
+          .hero-resp{font-size:20px!important;}
+        }
       `}</style>
     </div>
   );
@@ -2554,7 +2567,7 @@ function DailyDigest() {
   const DonutChart = () => {
     const cx=52,cy=52,r=44,ri=30; let angle=-Math.PI/2;
     return (
-      <svg width={104} height={104} viewBox="0 0 104 104">
+      <svg width="clamp(70,10vw,104)" height="clamp(70,10vw,104)" viewBox="0 0 104 104">
         {assets.map((a,i)=>{
           const sw=(a.v/assetTotal)*2*Math.PI;
           const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle); angle+=sw;
@@ -2583,7 +2596,7 @@ function DailyDigest() {
             <div style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Shah Family Office</div>
             <div style={{fontSize:11,color:"#6a7a9a",marginBottom:10}}>{new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</div>
             <div style={{fontSize:11,color:"#a0aabb",marginBottom:3}}>Total Family Wealth</div>
-            <div style={{fontSize:38,fontWeight:900,letterSpacing:"-0.02em",background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontFamily:"'JetBrains Mono',monospace",transform:shown?"translateY(0)":"translateY(8px)",opacity:shown?1:0,transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)"}}>
+            <div style={{fontSize:"clamp(22px,5vw,38px)",fontWeight:900,letterSpacing:"-0.02em",background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontFamily:"'JetBrains Mono',monospace",transform:shown?"translateY(0)":"translateY(8px)",opacity:shown?1:0,transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)"}}>
               {cr(totalWealth)}
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8,marginTop:7,flexWrap:"wrap"}}>
@@ -2617,7 +2630,7 @@ function DailyDigest() {
       </div>
 
       {/* ══ 4 KEY METRICS ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
         {[
           {l:"Equity",v:cr(totalEq),sub:(retPct>=0?"+":"")+retPct.toFixed(1)+"%",c:"#6366f1"},
           {l:"Mutual Funds",v:cr(totalMF),sub:Object.keys(mfReg).length+" members",c:"#10b981"},
@@ -2676,7 +2689,7 @@ function DailyDigest() {
           <span>👨‍👩‍👧 Family Wealth Distribution</span>
           <span style={{fontSize:9,color:"#3a4a6a"}}>{mems.length} members</span>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 20px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:"6px 20px"}}>
           {memberRanked.map((m,i)=>{
             const w=(m.stocks||0)+(m.mf||0);
             const barPct=topMemberW>0?(w/topMemberW*100):0;
@@ -3006,7 +3019,7 @@ function BankStatementTab() {
           )}
 
           {/* Top transactions */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
             {[{title:"Largest Credits",items:topCredits,field:"credit",c:"#34d399"},
               {title:"Largest Debits",items:topDebits,field:"debit",c:"#f87171"}].map(({title,items,field,c})=>(
               <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"12px"}}>
@@ -3976,9 +3989,9 @@ function MutualFundsTab() {
   var selMem  = selMember ? (typeof MEMBERS!=="undefined"?MEMBERS:[]).find(function(x){return x.n===selMember;}) : null;
 
   return (
-    <div style={{display:"flex",gap:14}}>
+    <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
       {/* Left sidebar */}
-      <div style={{width:200,flexShrink:0}}>
+      <div style={{width:"min(200px,100%)",flexShrink:0}}>
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:12,padding:"12px 14px",marginBottom:10}}>
           <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:6}}>Family MF Total</div>
           <div style={{fontSize:18,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>{cr(totalVal)}</div>
@@ -4193,7 +4206,7 @@ function MembersTab() {
   return (
     <div style={{display:"flex",gap:14,height:"auto"}}>
       {/* ── Left: member list ── */}
-      <div style={{width:200,flexShrink:0,display:"flex",flexDirection:"column",gap:6}}>
+      <div style={{width:"min(200px,100%)",flexShrink:0,display:"flex",flexDirection:"column",gap:6}}>
         <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4,paddingLeft:4}}>
           {realMembers.length} Members
         </div>
@@ -4665,7 +4678,7 @@ function FamilyApp() {
         );
         return (
           <div style={{position:"fixed",inset:0,background:"#000000e0",zIndex:9999,
-            display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"24px 16px"}}
+            display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw)) max(8px,min(16px,2vw))"}}
             onClick={e=>{if(e.target===e.currentTarget)setStockDetail(null);}}>
             <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,
               width:"100%",maxWidth:900,boxShadow:"0 24px 80px #00000099",flexShrink:0}}>
@@ -6172,6 +6185,9 @@ const BANK = [
   {n:"Vama Exports",       bank:"ICICI", t:"Business", acc:"",        b:5000000,  entity:"Vama Exports"},
   {n:"Divine Jewels",      bank:"ICICI", t:"Business", acc:"",        b:2000000,  entity:"Divine Jewels"},
   {n:"Siddhi Vinayak",     bank:"ICICI", t:"Business", acc:"",        b:500000,   entity:"Siddhi Vinayak"},
+  /* ── Trust Accounts ── */
+  {n:"Shah Family Trust",  bank:"ICICI", t:"Trust",    acc:"",        b:0,        entity:"Trust"},
+  {n:"Rasiklal Shah Trust",bank:"ICICI", t:"Trust",    acc:"",        b:0,        entity:"Trust"},
 ];
 
 
@@ -6293,7 +6309,7 @@ const PRAFUL_HUF_SUSHIL = [
   {s:"BSE",         qty:435,  avg:154.54,  cmp:3880.00, val:1687800, inv:67225,   unreal:1620575, sector:"BFSI"},
   {s:"PTC Industries",      qty:81,   avg:4140.12, cmp:18523.00,val:1500363, inv:335350,  unreal:1165013, sector:"CAFG"},
   {s:"Atul",            qty:200,  avg:3062.23, cmp:6678.50, val:1335700, inv:612446,  unreal:723254,  sector:"DYPG"},
-  {s:"Astrazeneca Pharma",  qty:100,  avg:2735.95, cmp:8600.00, val:860000,  inv:273595,  unreal:586405,  sector:"PHRM"},
+  {s:"AstraZeneca Pharma",  qty:100,  avg:2735.95, cmp:8600.00, val:860000,  inv:273595,  unreal:586405,  sector:"PHRM"},
   {s:"Jubilant Agri",       qty:306,  avg:1673.99, cmp:1835.80, val:561755,  inv:512241,  unreal:49514,   sector:"CHEM"},
   {s:"Trigyn Technologies", qty:9000, avg:48.61,   cmp:56.44,   val:507960,  inv:437490,  unreal:70470,   sector:"OTHERS"},
   {s:"KIOCL",       qty:1500, avg:247.54,  cmp:405.45,  val:608175,  inv:371310,  unreal:236865,  sector:"OTHERS"},
@@ -6607,7 +6623,7 @@ const V129_PNL = [
   {s:"Arvind Fashions",sell_qty:100,sell_val:10712,buy_val:28087,pl:-17375,avg_sell:107.12,avg_buy:280.87},
   {s:"Ashok Leyland",sell_qty:10000,sell_val:830156,buy_val:552696,pl:277460,avg_sell:83.02,avg_buy:55.27},
   {s:"Aster DM Health.",sell_qty:2500,sell_val:312317,buy_val:258889,pl:53427,avg_sell:124.93,avg_buy:103.56},
-  {s:"Astrazeneca Pharma",sell_qty:300,sell_val:1872812,buy_val:765628,pl:1107184,avg_sell:6242.71,avg_buy:2552.09},
+  {s:"AstraZeneca Pharma",sell_qty:300,sell_val:1872812,buy_val:765628,pl:1107184,avg_sell:6242.71,avg_buy:2552.09},
   {s:"Avantel",sell_qty:675,sell_val:47120,buy_val:46238,pl:882,avg_sell:69.81,avg_buy:68.5},
   {s:"AvenuesAI",sell_qty:12000,sell_val:499915,buy_val:628159,pl:-128244,avg_sell:41.66,avg_buy:52.35},
   {s:"BHEL",sell_qty:30000,sell_val:4737171,buy_val:1739514,pl:2997656,avg_sell:157.91,avg_buy:57.98},
@@ -7312,7 +7328,7 @@ const VASUMATI_ZERODHA_HOLDINGS = [
 
 const VASUMATI_ICICI_HOLDINGS = [
   {s:"AWL Agribusiness",qty:1800,avg:209.44,cmp:188.88,val:339984,inv:376992,unreal:-37008,sector:"AGRO"},
-  {s:"Astrazeneca Pharma",qty:711,avg:8073.29,cmp:8600.0,val:6114600,inv:5740109,unreal:374490,sector:"PHRM"},
+  {s:"AstraZeneca Pharma",qty:711,avg:8073.29,cmp:8600.0,val:6114600,inv:5740109,unreal:374490,sector:"PHRM"},
   {s:"Atul",qty:400,avg:6974.17,cmp:6678.5,val:2671400,inv:2789668,unreal:-118268,sector:"CHEM"},
   {s:"Birla Cable",qty:1080,avg:213.61,cmp:223.9,val:241812,inv:230698,unreal:11113,sector:"CABLE"},
   {s:"Control Print",qty:207,avg:847.47,cmp:610.65,val:126404,inv:175426,unreal:-49021,sector:"PCKG"},
@@ -7703,7 +7719,7 @@ const AARYA_HOLDINGS = [
 ];
 
 const PRAFUL_HUF_SUSHIL_P71 = [
-  {s:"Astrazeneca Pharma",qty:100,cmp:8249.5,val:824950,avg:0,inv:0,unreal:0},
+  {s:"AstraZeneca Pharma",qty:100,cmp:8249.5,val:824950,avg:0,inv:0,unreal:0},
   {s:"Atul",qty:200,cmp:6517.5,val:1303500,avg:0,inv:0,unreal:0},
   {s:"Bajaj Housing Finance",qty:214,cmp:84.59,val:18102,avg:0,inv:0,unreal:0},
   {s:"CDSL",qty:1707,cmp:1227.9,val:2096025,avg:0,inv:0,unreal:0},
@@ -9283,7 +9299,7 @@ const R75_PNL = [
   {s:"Arvind Fashions",sell_qty:100,sell_val:10712,buy_val:29214,pl:-18502,avg_sell:107.12,avg_buy:292.14},
   {s:"Ashok Leyland",sell_qty:400,sell_val:28256,buy_val:22340,pl:5916,avg_sell:70.64,avg_buy:55.85},
   {s:"Aster DM Health.",sell_qty:6768,sell_val:2058130,buy_val:1996474,pl:61656,avg_sell:304.1,avg_buy:294.99},
-  {s:"Astrazeneca Pharma",sell_qty:1924,sell_val:9489205,buy_val:5232003,pl:4257202,avg_sell:4932.02,avg_buy:2719.34},
+  {s:"AstraZeneca Pharma",sell_qty:1924,sell_val:9489205,buy_val:5232003,pl:4257202,avg_sell:4932.02,avg_buy:2719.34},
   {s:"Atul",sell_qty:1313,sell_val:3582045,buy_val:2226583,pl:1355462,avg_sell:2728.14,avg_buy:1695.8},
   {s:"AU Small Finance Bank",sell_qty:474,sell_val:399187,buy_val:393958,pl:5229,avg_sell:842.17,avg_buy:831.13},
   {s:"Avalon Tech",sell_qty:1000,sell_val:490649,buy_val:587123,pl:-96474,avg_sell:490.65,avg_buy:587.12},
@@ -9777,10 +9793,10 @@ const R75_TAX = {
   {s:"Inox Wind Energy",lt:3057310,date:"20-Feb-2024"},
   {s:"Inox Wind Energy",lt:2798350,date:"29-Apr-2024"},
   {s:"Inox Wind Energy",lt:2125459,date:"04-Jan-2024"},
-  {s:"Astrazeneca Pharma",lt:1854498,date:"06-Feb-2024"},
+  {s:"AstraZeneca Pharma",lt:1854498,date:"06-Feb-2024"},
   {s:"Blue Dart Expres",lt:1443317,date:"01-Sep-2022"},
   {s:"Linde India",lt:1143505,date:"15-Feb-2023"},
-  {s:"Astrazeneca Pharma",lt:1070913,date:"28-May-2024"},
+  {s:"AstraZeneca Pharma",lt:1070913,date:"28-May-2024"},
   {s:"Sterlite Tech",lt:936736,date:"18-Jan-2018"},
   {s:"Inox Wind Energy",lt:934775,date:"03-Jan-2024"},
   {s:"Matra Kaushal",lt:915600,date:"08-Jan-2014"},
@@ -9898,9 +9914,9 @@ const R75_DIVIDENDS = {
   {s:"APL Apollo Tubes",date:"19-Sep-2024",qty:290,rate:5.5,amt:1595.0},
   {s:"Archean Chemical",date:"26-May-2025",qty:500,rate:3.0,amt:1500.0},
   {s:"Archean Chemical",date:"05-Jun-2026",qty:500,rate:2.5,amt:1250.0},
-  {s:"Astrazeneca Pharma",date:"21-Aug-2020",qty:345,rate:2.0,amt:690.0},
-  {s:"Astrazeneca Pharma",date:"20-Aug-2021",qty:345,rate:2.0,amt:690.0},
-  {s:"Astrazeneca Pharma",date:"08-Jul-2022",qty:950,rate:8.0,amt:7600.0},
+  {s:"AstraZeneca Pharma",date:"21-Aug-2020",qty:345,rate:2.0,amt:690.0},
+  {s:"AstraZeneca Pharma",date:"20-Aug-2021",qty:345,rate:2.0,amt:690.0},
+  {s:"AstraZeneca Pharma",date:"08-Jul-2022",qty:950,rate:8.0,amt:7600.0},
   {s:"Atul",date:"19-Mar-2020",qty:1000,rate:15.0,amt:15000.0},
   {s:"Atul",date:"17-Jul-2021",qty:1000,rate:20.0,amt:20000.0},
   {s:"Atul",date:"16-Jul-2022",qty:1000,rate:25.0,amt:25000.0},
@@ -10436,7 +10452,7 @@ const V129_DIVIDENDS = {
   {s:"APL Apollo Tubes",date:"19-Sep-2024",qty:110,rate:5.5,amt:605.0},
   {s:"Ashok Leyland",date:"20-Mar-2020",qty:5000,rate:0.5,amt:2500.0},
   {s:"Ashok Leyland",date:"02-Sep-2021",qty:5000,rate:0.6,amt:3000.0},
-  {s:"Astrazeneca Pharma",date:"08-Jul-2022",qty:250,rate:8.0,amt:2000.0},
+  {s:"AstraZeneca Pharma",date:"08-Jul-2022",qty:250,rate:8.0,amt:2000.0},
   {s:"BHEL",date:"16-Sep-2022",qty:19000,rate:0.4,amt:7600.0},
   {s:"BHEL",date:"11-Aug-2023",qty:19000,rate:0.4,amt:7600.0},
   {s:"BHEL",date:"09-Aug-2024",qty:6500,rate:0.25,amt:1625.0},
@@ -10881,7 +10897,7 @@ const A46_TAX = {
   {s:"Inox Wind Energy",lt:1132335,date:"26-Aug-2024"},
   {s:"Inox Wind Energy",lt:1097399,date:"21-Aug-2024"},
   {s:"Inox Wind Energy",lt:1067453,date:"20-Aug-2024"},
-  {s:"Astrazeneca Pharma",lt:1049096,date:"06-Feb-2024"},
+  {s:"AstraZeneca Pharma",lt:1049096,date:"06-Feb-2024"},
   {s:"Inox Wind Energy",lt:1036980,date:"19-Aug-2024"},
   {s:"Atul",lt:1032243,date:"30-Sep-2022"},
   {s:"Alphageo (India)",lt:964813,date:"13-Jan-2017"},
