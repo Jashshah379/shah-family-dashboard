@@ -14894,7 +14894,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             <span style={{fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
               {stockGroups.length} unique stocks · {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))} total
             </span>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,justifyContent:"flex-start"}}>
             <button onClick={function(){setSelectionMode(function(v){if(v){setSelectedStocks({});}return !v;});}}
               style={{background:selectionMode?"#1e3a5f":"#0a0e1e",border:"1px solid "+(selectionMode?"#3b82f6":"#1d2545"),
                 borderRadius:7,padding:"5px 14px",color:selectionMode?"#7eb8ff":"#6a7a9a",
@@ -14954,29 +14954,31 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             </div>
           )}
 
-          {/* ── A-Z Alphabet Sidebar ── */}
-          <div style={{display:"flex",gap:0,alignItems:"flex-start"}}>
-            <div style={{position:"sticky",top:60,alignSelf:"flex-start",display:"flex",flexDirection:"column",gap:1,marginRight:6,zIndex:10}}>
-              {"ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("").map(function(letter){
-                return (
-                  <button key={letter} onClick={function(){
-                    var el=letterRefs.current[letter];
-                    if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
-                  }}
-                    style={{width:16,height:14,background:"none",border:"none",color:"#2a3a5a",cursor:"pointer",fontSize:7,fontWeight:700,padding:0,lineHeight:1,
-                      transition:"color 0.1s"}}
-                    onMouseEnter={function(e){e.target.style.color="#7eb8ff";}}
-                    onMouseLeave={function(e){e.target.style.color="#2a3a5a";}}>
-                    {letter}
-                  </button>
-                );
-              })}
-            </div>
+          {/* ── A-Z Alphabet Sidebar — fixed right overlay ── */}
+          <div style={{position:"fixed",right:6,top:"50%",transform:"translateY(-50%)",zIndex:800,
+            background:"#080b18cc",backdropFilter:"blur(4px)",borderRadius:8,padding:"4px 2px",
+            border:"1px solid #1d2545",display:"flex",flexDirection:"column",gap:0}}>
+            {"ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("").map(function(letter){
+              return (
+                <button key={letter} onClick={function(){
+                  var el=letterRefs.current[letter];
+                  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+                }}
+                  style={{width:18,height:13,background:"none",border:"none",color:"#3a5a7a",
+                    cursor:"pointer",fontSize:7,fontWeight:700,padding:0,lineHeight:1}}
+                  onMouseEnter={function(e){e.currentTarget.style.color="#7eb8ff";e.currentTarget.style.background="#1e3a5f";}}
+                  onMouseLeave={function(e){e.currentTarget.style.color="#3a5a7a";e.currentTarget.style.background="none";}}>
+                  {letter}
+                </button>
+              );
+            })}
+          </div>
 
-          <div style={{flex:1,overflowX:"auto"}}>
+          <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
+                  {selectionMode&&<th style={{width:28,padding:"6px 4px",background:"#0a0e1e"}}><input type="checkbox" style={{cursor:"pointer",accentColor:"#3b82f6"}} onChange={function(e){if(e.target.checked){var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}else{setSelectedStocks({});}}} checked={stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length}/></th>}
                   {[["sym","Stock",false],["totalQty","Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
                     <th key={col} style={{padding:"6px 8px",textAlign:r?"right":"left",
                       color:sortCol===col?"#7eb8ff":"#3a4a6a",fontWeight:700,fontSize:9,
@@ -15014,6 +15016,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       onClick={function(){setExpandedStock(isOpen?null:g.sym);}}
                       style={{borderBottom:"1px solid #0d1020",cursor:"pointer",
                         background:isOpen?"#111827":gi%2===0?"transparent":"#080a12"}}>
+                      {selectionMode&&<td style={{padding:"4px 4px",width:28}} onClick={function(e){e.stopPropagation();}}><input type="checkbox" checked={!!selectedStocks[g.sym]} onChange={function(e){e.stopPropagation();setSelectedStocks(function(p){var n=Object.assign({},p);if(e.target.checked)n[g.sym]=true;else delete n[g.sym];return n;});}} style={{cursor:"pointer",accentColor:"#3b82f6"}}/></td>}
                       <td style={{padding:"7px 10px"}}>
                         <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
@@ -15144,7 +15147,6 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                 </tr>
               </tfoot>
             </table>
-          </div>
           </div>
         </div>
       )}
