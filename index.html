@@ -14978,17 +14978,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
-                  selectionMode
-                    ?(<th style={{width:32,minWidth:32,padding:"6px 6px",background:"#0a0e1e"}}>
-                        <input type="checkbox"
-                          style={{cursor:"pointer",accentColor:"#3b82f6",width:14,height:14}}
-                          checked={stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length}
-                          onChange={function(e){
-                            if(e.target.checked){var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}
-                            else{setSelectedStocks({});}
-                          }}/>
-                      </th>)
-                    :null
+                  {selectionMode?(<th style={{width:32,minWidth:32,padding:"6px 6px",background:"#0a0e1e"}}><input type="checkbox" style={{cursor:"pointer",accentColor:"#3b82f6",width:14,height:14}} checked={stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length} onChange={function(e){if(e.target.checked){var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}else{setSelectedStocks({});}}}/>  </th>):null}
                   {[["sym","Stock",false],["totalQty","Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
                     <th key={col} style={{padding:"6px 8px",textAlign:r?"right":"left",
                       color:sortCol===col?"#7eb8ff":"#3a4a6a",fontWeight:700,fontSize:9,
