@@ -15291,6 +15291,10 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                         {cr(g.totalVal)}
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,
+                        color:g.totalDayPL>0?"#34d399":g.totalDayPL<0?"#f87171":"#3a4a6a",fontSize:10}}>
+                        {g.totalDayPL!=null&&g.totalDayPL!==0?(g.totalDayPL>=0?"+":"")+cr(Math.abs(g.totalDayPL)):"—"}
+                      </td>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,
                         color:isGain?"#34d399":"#f87171",fontSize:10}}>
                         {(isGain?"+":"")+cr(Math.abs(g.totalPL))}
                       </td>
@@ -15388,6 +15392,10 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                   <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#7eb8ff",fontSize:12}}>
                     {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))}
                   </td>
+                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontSize:10,
+                    color:(function(){var d=stockGroups.reduce((s,g)=>s+(g.totalDayPL||0),0);return d>=0?"#34d399":"#f87171";})()}}>
+                    {(function(){var d=stockGroups.reduce((s,g)=>s+(g.totalDayPL||0),0);return d!==0?(d>=0?"+":"")+cr(Math.abs(d)):"—";})()}
+                  </td>
                   <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
                     color:stockGroups.reduce((s,g)=>s+g.totalPL,0)>=0?"#34d399":"#f87171",fontSize:11}}>
                     {(()=>{const t=stockGroups.reduce((s,g)=>s+g.totalPL,0);return (t>=0?"+":"")+cr(Math.abs(t));})()}
@@ -15396,6 +15404,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                     color:stockGroups.reduce((s,g)=>s+g.totalPL,0)>=0?"#34d399":"#f87171",fontSize:10}}>
                     {(()=>{const inv=stockGroups.reduce((s,g)=>s+g.totalInv,0);const pl=stockGroups.reduce((s,g)=>s+g.totalPL,0);return inv>0?(pl>=0?"+":"")+( pl/inv*100).toFixed(1)+"%":"—";})()}
                   </td>
+                  <td/>
                   <td/>
                 </tr>
               </tfoot>
