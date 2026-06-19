@@ -2728,7 +2728,7 @@ function DailyDigest({priceVersion, livePrices}) {
       </div>
 
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
 
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden"}}>
@@ -5368,7 +5368,7 @@ function FamilyApp() {
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
         <DailyDigest priceVersion={priceVersion} livePrices={livePrices}/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,200px))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
           <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
