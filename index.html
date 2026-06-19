@@ -5169,7 +5169,7 @@ function FamilyApp() {
             <input value={searchQ}
               onChange={e=>{setSearchQ(e.target.value);setSearchOpen(e.target.value.length>1);}}
               onBlur={()=>setTimeout(()=>setSearchOpen(false),300)}
-              placeholder="⌕  Search any stock across all accounts…"
+              placeholder="⌕  Search stocks, mutual funds, members, bank accounts…"
               style={{background:"linear-gradient(135deg,#0e1228 0%,#0b0f20 100%)",border:"1px solid "+(searchOpen?"#3a6abf":"#1e2848"),
                 borderRadius:12,padding:"8px 16px",color:"#c8d0e8",fontSize:12.5,
                 outline:"none",width:320,transition:"all .25s cubic-bezier(.4,0,.2,1)",
@@ -5194,7 +5194,14 @@ function FamilyApp() {
                 });
               });
               const hits=Object.values(stockMap).sort((a,b)=>b.totalVal-a.totalVal);
-              if(!hits.length) return null;
+              /* ── MF / Member / Bank search ── */
+              var mfHits=[]; if(q.length>1){var _s=[];
+                if(typeof MEMBER_MF_FOLIOS!=="undefined"){Object.entries(MEMBER_MF_FOLIOS).forEach(function(e2){var mem=e2[0],fls=e2[1];fls.forEach(function(f){if((f.scheme||"").toLowerCase().includes(q))_s.push({member:mem,scheme:f.scheme,value:f.value||0,gain:(f.value||0)-(f.invested||0)});});});}
+                if(typeof COIN_MF_ADDITIONAL!=="undefined"){COIN_MF_ADDITIONAL.forEach(function(f){if((f.scheme||"").toLowerCase().includes(q))_s.push({member:f.member||f.holder||"",scheme:f.scheme,value:f.value||0,gain:(f.value||0)-(f.invested||0)});});}
+                mfHits=_s.slice(0,5);}
+              var memberHits=[]; if(q.length>1){(typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).forEach(function(m){if(!m.n||m._isFamily)return;if((m.n||"").toLowerCase().includes(q))memberHits.push({name:m.n,color:m.c,initial:m.i,total:m.total||0,stocks:m.stocks||0,mf:m.mf||0,bank:m.bank||0});});}
+              var bankHits=[]; if(q.length>1){(typeof BANK!=="undefined"?BANK:[]).forEach(function(b){if((b.n||"").toLowerCase().includes(q)||(b.acc||"").toLowerCase().includes(q))bankHits.push({name:b.n,acc:b.acc,bal:b.b||0});});}
+              if(!hits.length&&!mfHits.length&&!memberHits.length&&!bankHits.length) return null;
               return (
                 <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,width:640,background:"#0a0d1c",
                   border:"1px solid #1e2845",borderRadius:12,zIndex:9999,boxShadow:"0 12px 48px #000000cc",
@@ -5206,6 +5213,40 @@ function FamilyApp() {
                     </span>
                     <span style={{fontSize:9,color:"#2a3a50"}}>Total {cr(hits.reduce((s,h)=>s+h.totalVal,0))} · Click to open detail</span>
                   </div>
+                  {/* Members */}
+                  {memberHits.map(function(m,i){return(
+                    <div key={"mem"+i} onClick={function(){setTab("Members");setSearchQ("");setSearchOpen(false);}}
+                      style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
+                      <div style={{width:28,height:28,borderRadius:"50%",background:m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:"#fff",flexShrink:0}}>{m.initial}</div>
+                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:"#e8eaf0"}}>{m.name}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Stocks {cr(m.stocks)} · MF {cr(m.mf)} · Bank {cr(m.bank)}</div></div>
+                      <div style={{textAlign:"right"}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#7eb8ff",fontSize:13}}>{cr(m.total)}</div><div style={{fontSize:9,color:"#3a4a6a"}}>→ Members</div></div>
+                    </div>
+                  );})}
+                  {/* MF Schemes */}
+                  {mfHits.map(function(f,i){var isGain=f.gain>=0;return(
+                    <div key={"mf"+i} onClick={function(){setTab("Mutual Funds");setSearchQ("");setSearchOpen(false);}}
+                      style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
+                      <div style={{width:28,height:28,borderRadius:8,background:"#10b98122",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#10b981",flexShrink:0}}>MF</div>
+                      <div style={{flex:1,minWidth:0}}><div style={{fontSize:11,fontWeight:600,color:"#e8eaf0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.scheme}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>{f.member}</div></div>
+                      <div style={{textAlign:"right",flexShrink:0}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#10b981",fontSize:12}}>{cr(f.value)}</div><div style={{fontSize:9,color:isGain?"#10b981":"#ef4444"}}>{isGain?"+":""}{cr(f.gain)}</div></div>
+                      <div style={{fontSize:9,color:"#3a4a6a",marginLeft:6}}>→ MF</div>
+                    </div>
+                  );})}
+                  {/* Bank accounts */}
+                  {bankHits.map(function(b,i){return(
+                    <div key={"bnk"+i} onClick={function(){setTab("Bank");setSearchQ("");setSearchOpen(false);}}
+                      style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
+                      <div style={{width:28,height:28,borderRadius:8,background:"#f0b42922",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#f0b429",flexShrink:0}}>₹</div>
+                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:600,color:"#e8eaf0"}}>{b.name}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>{b.acc}</div></div>
+                      <div style={{textAlign:"right"}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#f0b429",fontSize:13}}>{cr(b.bal)}</div><div style={{fontSize:9,color:"#3a4a6a"}}>→ Bank</div></div>
+                    </div>
+                  );})}
+                  {(memberHits.length+mfHits.length+bankHits.length)>0&&hits.length>0&&(
+                    <div style={{padding:"5px 16px",fontSize:9,color:"#3a4a6a",background:"#060810",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em"}}>Stocks ({hits.length})</div>
+                  )}
                   {hits.map((stk,si)=>{
                     const ret=stk.totalInv>0?(stk.totalUnreal/stk.totalInv*100):null;
                     const gain=stk.totalUnreal>=0;
@@ -5972,7 +6013,7 @@ function FamilyApp() {
        {tab==="CAS History"&&<CASHistoryTab/>}
        {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
     
-    </div>
+    </div></div></div>
   );
 }
 
