@@ -333,7 +333,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
 function BreezeImportTab() {
   const [breezeData, setBreezeData] = React.useState(null);
   const [importing, setImporting] = React.useState(false);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -505,7 +505,7 @@ function SmartUploadTab() {
   const [dragging, setDragging] = React.useState(false);
   const [processing, setProcessing] = React.useState(false);
   const [results, setResults] = React.useState([]);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── File type detector ── */
   const detectFileType = (name, content) => {
@@ -661,7 +661,7 @@ function SmartUploadTab() {
   const handleInput = (e) => processFiles(e.target.files);
 
   const TYPE_INFO = {
-    holdings:    {icon:"📊", color:"#7eb8ff",  label:"Holdings"},
+    holdings:    {icon:"📊", color:"#7eb8ff",  label:"Stock List"},
     pnl:         {icon:"📈", color:"#34d399",  label:"P&L"},
     dividend:    {icon:"💰", color:"#f0b429",  label:"Dividends"},
     tax:         {icon:"📋", color:"#a78bfa",  label:"Tax"},
@@ -812,7 +812,7 @@ function WhatIfTab() {
   const [targetPrice, setTargetPrice] = React.useState("");
   const [results, setResults] = React.useState(null);
   const [suggestions, setSuggestions] = React.useState([]);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
@@ -1007,7 +1007,7 @@ function GoalTrackerTab() {
   });
   const [showForm, setShowForm] = React.useState(false);
   const [form, setForm] = React.useState({member:"Jash Shah",target:"",year:"2030",label:""});
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const save = (list) => { setGoals(list); try{localStorage.setItem(STORAGE_KEY,JSON.stringify(list));}catch{} };
@@ -1136,7 +1136,7 @@ function GoalTrackerTab() {
 function FamilyMeetingTab() {
   const [slide, setSlide] = React.useState(0);
   const [playing, setPlaying] = React.useState(false);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0)).sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
@@ -1288,7 +1288,7 @@ function FamilyMeetingTab() {
 
 /* ═══════════════════════════ TAX OPTIMISER */
 function TaxOptimiserTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [selMem, setSelMem] = React.useState("All");
   const LTCG_EXEMPT = 125000;
   const LTCG_RATE = 0.125;
@@ -1466,7 +1466,7 @@ function GlobalSearchTab() {
   const [activeIdx, setActiveIdx] = React.useState(-1);
   const inputRef = React.useRef(null);
 
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -1904,7 +1904,7 @@ function DividendCalendarTab() {
 
 /* ═══════════════════════════ ESTATE PLANNING */
 function EstatePlanningTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const profiles = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES:{};
   const grandTotal = realMembers.reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
@@ -1994,7 +1994,7 @@ function XIRRTab() {
   ]);
   const [xirr, setXirr] = React.useState(null);
   const [member, setMember] = React.useState("Custom");
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* Newton-Raphson XIRR solver */
   const calcXIRR = (flows) => {
@@ -2236,7 +2236,7 @@ function ChangelogTab() {
       title:"Stock name deduplication",
       desc:"257 stock name variants merged into canonical forms. Gujarat Fluoroch, Inox Wind Energy, Trent, GAIL India and 50+ others now show unified across all members.",
       impact:"All Holdings, Members, Live Stocks, What-If, Overlap tabs",
-      tags:["Quality","Holdings"],
+      tags:["Quality","Stock List"],
     },
     {
       date:"2026-06-13", version:"v5.7", type:"feature",
@@ -2352,7 +2352,7 @@ function ChangelogTab() {
 
   const [filter, setFilter] = React.useState("All");
   const TYPES = {data:{c:"#7eb8ff",icon:"📊"},feature:{c:"#34d399",icon:"✨"},bugfix:{c:"#f87171",icon:"🐛"}};
-  const TAGS = ["All","Data","Feature","Bugfix","Tax","P&L","Dividends","Holdings","Analytics","Planning","UX","MTF"];
+  const TAGS = ["All","Data","Feature","Bugfix","Tax","P&L","Dividends","Stock List","Analytics","Planning","UX","MTF"];
 
   const filtered = filter==="All" ? CHANGELOG : CHANGELOG.filter(e=>e.tags.includes(filter));
 
@@ -2518,8 +2518,8 @@ function GlobalIndicesWidget() {
 }
 
 
-function DailyDigest() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+function DailyDigest({priceVersion, livePrices}) {
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
   const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -2539,10 +2539,37 @@ function DailyDigest() {
   const totalDayPL = allH.reduce((s,h)=>s+(h.dayPL||0),0);
   const hasLive   = allH.some(h=>h.dayPL!=null&&h.dayPL!==0);
 
-  /* Top 5 performers and losers */
-  const withRet = allH.filter(h=>h.inv>5000);
-  const top5 = [...withRet].sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,5);
-  const bot5 = [...withRet].sort((a,b)=>((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv)).slice(0,5);
+  /* Top 5 performers and losers — uses live chgPct (today) when available */
+  const hasLivePct = allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
+  const withRet = allH.filter(function(h){return h.inv>5000&&h.val>0;});
+
+  var _seenG={}, _seenL={};
+  withRet.forEach(function(h){
+    if(!h.s) return;
+    if(hasLivePct){
+      if(h.chgPct==null) return;
+      if(!_seenG[h.s]||h.chgPct>_seenG[h.s].chgPct) _seenG[h.s]=h;
+      if(!_seenL[h.s]||h.chgPct<_seenL[h.s].chgPct) _seenL[h.s]=h;
+    } else {
+      var ret=h.inv>0?(h.val-h.inv)/h.inv:0;
+      var prev=_seenG[h.s]?(_seenG[h.s].inv>0?(_seenG[h.s].val-_seenG[h.s].inv)/_seenG[h.s].inv:0):null;
+      if(prev===null||ret>prev) _seenG[h.s]=h;
+      var prevL=_seenL[h.s]?(_seenL[h.s].inv>0?(_seenL[h.s].val-_seenL[h.s].inv)/_seenL[h.s].inv:0):null;
+      if(prevL===null||ret<prevL) _seenL[h.s]=h;
+    }
+  });
+
+  const top5 = Object.values(_seenG)
+    .filter(function(h){return hasLivePct?h.chgPct>0:(h.val>h.inv);})
+    .sort(function(a,b){
+      return hasLivePct ? (b.chgPct-a.chgPct) : (((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv));
+    }).slice(0,6);
+
+  const bot5 = Object.values(_seenL)
+    .filter(function(h){return hasLivePct?h.chgPct<0:(h.val<h.inv);})
+    .sort(function(a,b){
+      return hasLivePct ? (a.chgPct-b.chgPct) : (((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv));
+    }).slice(0,6);
 
   /* Member wealth */
   const memberRanked = [...mems].sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
@@ -2650,15 +2677,20 @@ function DailyDigest() {
 
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden"}}>
-          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}>📈 Top Gainers</div>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}>{hasLivePct?"📈 Today's Gainers (Live)":"📈 Top Gainers"}</div>
           {top5.map((h,i)=>{
-            const r=((h.val-h.inv)/h.inv*100);
+            var dispPct = hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0);
+            var dispLabel = hasLivePct ? "today" : "overall";
+            var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
             return (
-              <div key={i} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #0d1f0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120}}>{h.s}</div>
+              <div key={i} style={{padding:"8px 14px",borderBottom:i<5?"1px solid #0d1f0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>+{r.toFixed(1)}%</div>
-                  {h.dayPL!=null&&h.dayPL!==0&&<div style={{fontSize:8,color:"#10b98199",fontFamily:"monospace"}}>{h.dayPL>=0?"+":""}{cr(h.dayPL)} today</div>}
+                  <div style={{fontSize:12,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>▲{Math.abs(dispPct||0).toFixed(2)}%</div>
+                  <div style={{fontSize:8,color:"#10b98199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                 </div>
               </div>
             );
@@ -2667,15 +2699,20 @@ function DailyDigest() {
 
         {/* Losers */}
         <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:14,overflow:"hidden"}}>
-          <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>📉 Under Pressure</div>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>{hasLivePct?"📉 Today's Losers (Live)":"📉 Under Pressure"}</div>
           {bot5.map((h,i)=>{
-            const r=((h.val-h.inv)/h.inv*100);
+            var dispPct = hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0);
+            var dispLabel = hasLivePct ? "today" : "overall";
+            var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
             return (
-              <div key={i} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #1f0d0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120}}>{h.s}</div>
+              <div key={i} style={{padding:"8px 14px",borderBottom:i<5?"1px solid #1f0d0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>{r.toFixed(1)}%</div>
-                  {h.dayPL!=null&&h.dayPL!==0&&<div style={{fontSize:8,color:"#ef444499",fontFamily:"monospace"}}>{h.dayPL>=0?"+":""}{cr(h.dayPL)} today</div>}
+                  <div style={{fontSize:12,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>▼{Math.abs(dispPct||0).toFixed(2)}%</div>
+                  <div style={{fontSize:8,color:"#ef444499",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                 </div>
               </div>
             );
@@ -2687,7 +2724,7 @@ function DailyDigest() {
       {/* ══ QUICK ACTIONS ══ */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
         {[
-          {l:"📋 Holdings",tab:"Holdings"},
+          {l:"📋 Holdings",tab:"Stock List"},
           {l:"💰 P&L",tab:"P&L"},
           {l:"🏦 Bank",tab:"Bank"},
           {l:"💼 Funds",tab:"Mutual Funds"},
@@ -2711,7 +2748,7 @@ function BankStatementTab() {
   const [parsed, setParsed] = React.useState([]);
   const [processing, setProcessing] = React.useState(false);
   const [activeStatement, setActiveStatement] = React.useState(0);
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Detect bank from content ── */
   const detectBank = (text) => {
@@ -3385,7 +3422,7 @@ const DEFAULT_ADVISORS = [
 ];
 
 function AdvisorTrackerTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Persistent state ── */
   const [advisors, setAdvisors] = React.useState(()=>{
@@ -3841,7 +3878,7 @@ function AdvisorTrackerTab() {
 }
 
 function PPFTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const ppf = typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[];
   const total = ppf.reduce((s,p)=>s+p.bal,0);
   const RATE = 0.071; // 7.1% current PPF rate
@@ -4223,7 +4260,7 @@ function MembersTab() {
   const [selMem, setSelMem] = React.useState(null);
   const [subTab, setSubTab] = React.useState("equity");
 
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
@@ -4607,6 +4644,8 @@ function MembersTab() {
 }
 
 function FamilyApp() {
+  const [hideValues, setHideValues] = React.useState(false);
+  if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
 
   /* ── Patch live prices into holdings data ─────────────────────────────── */
@@ -4662,6 +4701,42 @@ function FamilyApp() {
 
   const [tab,setTab]=React.useState("Overview");
   const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
+
+  /* Data integrity check: detect TRUE duplicate rows */
+  var dataIntegrityWarnings = React.useMemo(function() {
+    var warnings = [];
+    var seen = {};
+    (typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : []).forEach(function(h) {
+      if (!h || !h.s || !h._member) return;
+      var key = h._member + "|" + h._custodian + "|" + h.s + "|" + (h.qty||0) + "|" + (h.inv||0);
+      if (h.qty>0 && h.inv>0 && seen[key]) {
+        warnings.push(h._member + " (" + h._custodian + ") — " + h.s + " qty " + h.qty + " appears twice");
+      }
+      seen[key] = true;
+    });
+    return warnings;
+  }, [priceVersion]);
+
+  /* Data Freshness Tracker */
+  const [showFreshness, setShowFreshness] = React.useState(false);
+  const freshnessReport = React.useMemo(function() {
+    var now = new Date();
+    var rows = [];
+    var df = typeof DATA_FRESHNESS !== "undefined" ? DATA_FRESHNESS : {};
+    Object.keys(df).forEach(function(key) {
+      var entry = df[key];
+      var lastDate = new Date(entry.lastUpdated);
+      var daysAgo = Math.floor((now - lastDate) / (1000*60*60*24));
+      var status = daysAgo > 3650 ? "never" : daysAgo >= 10 ? "critical" : daysAgo >= 5 ? "warning" : daysAgo >= 3 ? "notice" : "fresh";
+      rows.push({
+        const: key, member: entry.member, custodian: entry.custodian,
+        lastUpdated: entry.lastUpdated, daysAgo: daysAgo, status: status,
+      });
+    });
+    rows.sort(function(a,b){ return b.daysAgo - a.daysAgo; });
+    return rows;
+  }, []);
+  const staleCount = freshnessReport.filter(function(r){return r.status==="critical"||r.status==="warning"||r.status==="never";}).length;
   const [manualCmp, setManualCmp] = React.useState({});
   const [showManualCmp, setShowManualCmp] = React.useState(false);
   const [manualInput, setManualInput] = React.useState({sym:"", price:""});
@@ -5048,18 +5123,61 @@ function FamilyApp() {
                 });
               });
               const hits=Object.values(stockMap).sort((a,b)=>b.totalVal-a.totalVal);
-              if(!hits.length) return null;
+              var mfHits=[]; if(q.length>1){var _s=[];
+                if(typeof MEMBER_MF_FOLIOS!=="undefined"){Object.entries(MEMBER_MF_FOLIOS).forEach(function(e2){var mem=e2[0],fls=e2[1];fls.forEach(function(f){if((f.scheme||"").toLowerCase().includes(q))_s.push({member:mem,scheme:f.scheme,value:f.value||0,gain:(f.value||0)-(f.invested||0)});});});}
+                if(typeof COIN_MF_ADDITIONAL!=="undefined"){COIN_MF_ADDITIONAL.forEach(function(f){if((f.scheme||"").toLowerCase().includes(q))_s.push({member:f.member||f.holder||"",scheme:f.scheme,value:f.value||0,gain:(f.value||0)-(f.invested||0)});});}
+                mfHits=_s.slice(0,5);}
+              var memberHits=[]; if(q.length>1){(typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).forEach(function(m){if(!m.n||m._isFamily)return;if((m.n||"").toLowerCase().includes(q))memberHits.push({name:m.n,color:m.c,initial:m.i,total:m.total||0,stocks:m.stocks||0,mf:m.mf||0,bank:m.bank||0});});}
+              var bankHits=[]; if(q.length>1){(typeof BANK!=="undefined"?BANK:[]).forEach(function(b){if((b.n||"").toLowerCase().includes(q)||(b.acc||"").toLowerCase().includes(q))bankHits.push({name:b.n,acc:b.acc,bal:b.b||0});});}
+              if(!hits.length&&!mfHits.length&&!memberHits.length&&!bankHits.length) return null;
               return (
                 <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,width:640,background:"#0a0d1c",
                   border:"1px solid #1e2845",borderRadius:12,zIndex:9999,boxShadow:"0 12px 48px #000000cc",
                   maxHeight:580,overflowY:"auto"}}>
                   <div style={{padding:"10px 16px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",
                     position:"sticky",top:0,background:"#0a0d1c",zIndex:2}}>
-                    <span style={{fontSize:10,color:"#3a4a6a",fontWeight:700,textTransform:"uppercase"}}>
-                      {hits.length} stock{hits.length!==1?"s":""} {q?" matching "+`"${q}"`:"in portfolio"}
+                    <span style={{fontSize:10,fontWeight:700,display:"flex",gap:8,flexWrap:"wrap"}}>
+                      {hits.length>0&&<span style={{color:"#7eb8ff"}}>{hits.length} stock{hits.length!==1?"s":""}</span>}
+                      {mfHits.length>0&&<span style={{color:"#10b981"}}>{mfHits.length} MF</span>}
+                      {memberHits.length>0&&<span style={{color:"#f0b429"}}>{memberHits.length} member{memberHits.length!==1?"s":""}</span>}
+                      {bankHits.length>0&&<span style={{color:"#f0b429"}}>{bankHits.length} bank</span>}
                     </span>
-                    <span style={{fontSize:9,color:"#2a3a50"}}>Total {cr(hits.reduce((s,h)=>s+h.totalVal,0))} · Click to open detail</span>
+                    <span style={{fontSize:9,color:"#2a3a50"}}>matching "{q}"</span>
                   </div>
+                  {/* Members */}
+                  {memberHits.map(function(m,i){return(
+                    <div key={"mem"+i} onClick={function(){setTab("Members");setSearchQ("");setSearchOpen(false);}}
+                      style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
+                      <div style={{width:28,height:28,borderRadius:"50%",background:m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:"#fff",flexShrink:0}}>{m.initial}</div>
+                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:"#e8eaf0"}}>{m.name}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Stocks {cr(m.stocks)} · MF {cr(m.mf)} · Bank {cr(m.bank)}</div></div>
+                      <div style={{textAlign:"right"}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#7eb8ff",fontSize:13}}>{cr(m.total)}</div><div style={{fontSize:9,color:"#3a4a6a"}}>→ Members</div></div>
+                    </div>
+                  );})}
+                  {/* MF Schemes */}
+                  {mfHits.map(function(f,i){var isGain=f.gain>=0;return(
+                    <div key={"mf"+i} onClick={function(){setTab("Mutual Funds");setSearchQ("");setSearchOpen(false);}}
+                      style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
+                      <div style={{width:28,height:28,borderRadius:8,background:"#10b98122",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#10b981",flexShrink:0}}>MF</div>
+                      <div style={{flex:1,minWidth:0}}><div style={{fontSize:11,fontWeight:600,color:"#e8eaf0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.scheme}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>{f.member}</div></div>
+                      <div style={{textAlign:"right",flexShrink:0}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#10b981",fontSize:12}}>{cr(f.value)}</div><div style={{fontSize:9,color:isGain?"#10b981":"#ef4444"}}>{isGain?"+":""}{cr(f.gain)}</div></div>
+                      <div style={{fontSize:9,color:"#3a4a6a",marginLeft:6}}>→ MF</div>
+                    </div>
+                  );})}
+                  {/* Bank accounts */}
+                  {bankHits.map(function(b,i){return(
+                    <div key={"bnk"+i} onClick={function(){setTab("Bank");setSearchQ("");setSearchOpen(false);}}
+                      style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
+                      <div style={{width:28,height:28,borderRadius:8,background:"#f0b42922",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#f0b429",flexShrink:0}}>₹</div>
+                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:600,color:"#e8eaf0"}}>{b.name}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>{b.acc}</div></div>
+                      <div style={{textAlign:"right"}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#f0b429",fontSize:13}}>{cr(b.bal)}</div><div style={{fontSize:9,color:"#3a4a6a"}}>→ Bank</div></div>
+                    </div>
+                  );})}
+                  {(memberHits.length+mfHits.length+bankHits.length)>0&&hits.length>0&&(
+                    <div style={{padding:"5px 16px",fontSize:9,color:"#3a4a6a",background:"#060810",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em"}}>Stocks ({hits.length})</div>
+                  )}
                   {hits.map((stk,si)=>{
                     const ret=stk.totalInv>0?(stk.totalUnreal/stk.totalInv*100):null;
                     const gain=stk.totalUnreal>=0;
@@ -5146,11 +5264,95 @@ function FamilyApp() {
             {TABS.map(t=>(
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
             ))}
+            <button onClick={function(){setShowFreshness(function(v){return !v;});}}
+              title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
+              style={{position:"relative",flexShrink:0,marginLeft:8,background:"none",border:"none",
+                cursor:"pointer",padding:7,display:"flex",alignItems:"center",justifyContent:"center",
+                borderRadius:8,transition:"background 0.15s"}}
+              onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
+              onMouseLeave={function(e){e.currentTarget.style.background="none";}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={(dataIntegrityWarnings.length>0||staleCount>0)?"#f0b429":"#5a6a8a"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {(dataIntegrityWarnings.length+staleCount)>0&&(
+                <span style={{position:"absolute",top:6,right:6,width:7,height:7,borderRadius:"50%",
+                  background:"#f0b429",border:"1.5px solid #070a16",boxShadow:"0 0 4px #f0b429"}}/>
+              )}
+            </button>
+            <button onClick={function(){setHideValues(function(v){return !v;});}}
+              title={(window.HIDE_VALUES)?"Show values":"Hide sensitive values"}
+              style={{flexShrink:0,marginLeft:8,background:(window.HIDE_VALUES)?"#2a1a00":"#0a0e1e",
+                border:"1px solid "+((window.HIDE_VALUES)?"#f0b429":"#1d2545"),
+                borderRadius:6,padding:"4px 10px",color:(window.HIDE_VALUES)?"#f0b429":"#3a4a6a",
+                cursor:"pointer",fontSize:13,lineHeight:1}}>
+              {(window.HIDE_VALUES)?"👁":"👁‍🗨"}
+            </button>
           </div>
         </div>
       </div>
 
       
+      {/* Notifications Panel */}
+{showFreshness&&(
+  <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(420px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
+    <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+      <div>
+        <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>🔔 Notifications</div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Data integrity & freshness</div>
+      </div>
+      <button onClick={function(){setShowFreshness(false);}} style={{background:"#1d2545",border:"none",color:"#7eb8ff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11}}>✕ Close</button>
+    </div>
+
+    <div style={{flex:1,overflowY:"auto",padding:"10px 16px"}}>
+      {dataIntegrityWarnings.length>0&&(
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:9,color:"#f87171",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,fontWeight:700}}>
+            ⚠ Possible Duplicates ({dataIntegrityWarnings.length})
+          </div>
+          {dataIntegrityWarnings.map(function(w,i){
+            return (
+              <div key={i} style={{padding:"8px 10px",marginBottom:4,background:"#1a0808",borderRadius:8,border:"1px solid #5a1a1a",fontSize:10,color:"#fca5a5"}}>
+                {w}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {dataIntegrityWarnings.length===0&&(
+        <div style={{padding:"8px 10px",marginBottom:14,background:"#0a1f15",borderRadius:8,border:"1px solid #166534",fontSize:10,color:"#34d399"}}>
+          ✓ No duplicate holdings detected
+        </div>
+      )}
+
+      <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,fontWeight:700}}>
+        Account Freshness
+      </div>
+      {freshnessReport.map(function(r){
+        var statusColor = r.status==="never"?"#6b7280":r.status==="critical"?"#ef4444":r.status==="warning"?"#f0b429":r.status==="notice"?"#7eb8ff":"#34d399";
+        var statusBg = r.status==="never"?"#1a1a1a":r.status==="critical"?"#2a0a0a":r.status==="warning"?"#1a1500":r.status==="notice"?"#0a1628":"#0a1f15";
+        var statusLabel = r.status==="never"?"NEVER UPLOADED":r.status==="critical"?r.daysAgo+" DAYS — CRITICAL":r.status==="warning"?r.daysAgo+" DAYS — STALE":r.status==="notice"?r.daysAgo+" DAYS":"UP TO DATE";
+        return (
+          <div key={r.const} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",marginBottom:6,background:statusBg,borderRadius:8,border:"1px solid "+statusColor+"33"}}>
+            <div style={{minWidth:0,flex:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{r.member}</div>
+              <div style={{fontSize:9,color:"#6a7a9a",marginTop:1}}>{r.custodian}</div>
+              <div style={{fontSize:8,color:"#3a4a6a",marginTop:2}}>{r.status==="never"?"No data uploaded yet":"Last: "+r.lastUpdated}</div>
+            </div>
+            <div style={{flexShrink:0,marginLeft:10,textAlign:"right"}}>
+              <div style={{fontSize:9,fontWeight:800,color:statusColor}}>{statusLabel}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <div style={{padding:"10px 16px",borderTop:"1px solid #1d2545",fontSize:9,color:"#3a4a6a",flexShrink:0}}>
+      🟢 &lt;3 days &nbsp; 🔵 3-4 days &nbsp; 🟡 5-9 days &nbsp; 🔴 10+ days &nbsp; ⚫ never uploaded
+    </div>
+  </div>
+)}
+
       {/* ── SIDEBAR OVERLAY ── */}
       {sidebarOpen&&(
         <div style={{position:"fixed",top:0,right:0,bottom:0,width:280,background:"#07090f",borderLeft:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0",boxShadow:"-4px 0 24px #00000066"}}>
@@ -5194,10 +5396,10 @@ function FamilyApp() {
         <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
-        <DailyDigest/>
+        <DailyDigest priceVersion={priceVersion} livePrices={livePrices}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
-          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Holdings")}/>
+          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
           <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
@@ -5786,7 +5988,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Holdings"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
+      {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
       {tab==="Tax"&&<TaxTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
@@ -6028,7 +6230,7 @@ window.FamilyApp = FamilyApp;
    price chart (from available data)
 ═══════════════════════════════════════════════════════════ */
 function StockDetailPage({ sym, onBack }) {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
@@ -9249,6 +9451,46 @@ const AMIT_HUF_ICICI_HOLDINGS = [
   {s:"Yes Bank",qty:1000,avg:12.0,cmp:25.11,inv:12000,val:25110,sector:""}
 ];
 
+/* DATA_FRESHNESS — tracks last update date per account */
+const DATA_FRESHNESS = {
+  "AARYA_HOLDINGS": { member:"Aarya Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
+  "AARYA_SUSHIL_HOLDINGS": { member:"Aarya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RIYA_SUSHIL_HOLDINGS": { member:"Riya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RIYA_NSDL_HOLDINGS": { member:"Riya Shah", custodian:"NSDL", lastUpdated:"2026-06-17" },
+  "RIYA_ZERODHA_HOLDINGS": { member:"Riya Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "HONEY_ZERODHA_HOLDINGS": { member:"Honey Chetan Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "VASUMATI_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "V129_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "VASUMATI_ICICI_HOLDINGS": { member:"Vasumati Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
+  "VASUMATI_ZERODHA_HOLDINGS": { member:"Vasumati Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "R124_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RASIKLAL_HUF_SUSHIL_HOLDINGS": { member:"Rasiklal HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "R75_SUSHIL_HOLDINGS": { member:"Rasiklal HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "R75_BOND_HOLDINGS": { member:"Rasiklal HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RASIKLAL_SUSHIL_HOLDINGS": { member:"Rasiklal Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "RM_ICICI_HOLDINGS": { member:"Rasiklal Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
+  "P151_SUSHIL_HOLDINGS": { member:"Rasiklal Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "CHETAN_HUF_SUSHIL_HOLDINGS": { member:"Chetan Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "C31_SUSHIL_HOLDINGS": { member:"Chetan Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "C31_BOND_HOLDINGS": { member:"Chetan Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "CHETAN_HOLDINGS": { member:"Chetan Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "V60_SUSHIL_HOLDINGS": { member:"Chetan Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "CHETAN_V60_SUSHIL_HOLDINGS": { member:"Chetan Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "ASHA_SUSHIL_HOLDINGS": { member:"Asha Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "ASHA_BOND_HOLDINGS": { member:"Asha Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "MAYA_SUSHIL_HOLDINGS": { member:"Maya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "M34_SUSHIL_HOLDINGS": { member:"Maya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "M34_BOND_HOLDINGS": { member:"Maya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "PRAFUL_HUF_SUSHIL": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "PRAFUL_HUF_SUSHIL_P71": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "P71_SUSHIL_HOLDINGS": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "P71_BOND_HOLDINGS": { member:"Praful Shah HUF", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
+  "INCRED_HOLDINGS": { member:"Praful Shah HUF", custodian:"InCred PMS", lastUpdated:"2026-06-19" },
+  "JASH_PORTFOLIO_HOLDINGS": { member:"Jash Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
+  "KARI_HOLDINGS": { member:"Karishma Shah", custodian:"Zerodha", lastUpdated:"1970-01-01" },
+  "RAKESH_HUF_HOLDINGS": { member:"Rakesh Bhansali HUF", custodian:"ICICI Direct", lastUpdated:"1970-01-01" },
+};
+
 var FAMILY_TOP = (function() {
   var all = [];
   var sources = [
@@ -12266,7 +12508,7 @@ const SIDEBAR_SECTIONS = [
   {title:"Portfolio", tabs:["Trend","Meeting Mode"]},
   {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Advisors","Profiles","Estate","Changelog"]},
 ];
-const TABS = ["Overview","Holdings","Members","Bank","Mutual Funds","P&L","Tax","Advisors"];
+const TABS = ["Overview","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Advisors"];
 const Panel = ({children, title, style}) => (
   <div style={{background:"linear-gradient(155deg,#10142a 0%,#0c1020 100%)",
     border:"1px solid #1c2440",borderRadius:16,padding:"18px 20px",marginBottom:14,
@@ -15062,7 +15304,14 @@ function AllHoldingsTab({livePrices, priceStatus}) {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
-                  <th style={{width:32,padding:"4px 6px",background:"#0a0e1e",borderBottom:"1px solid #1e2540"}}>{selectionMode?<input type="checkbox" style={{cursor:"pointer",accentColor:"#3b82f6",width:14,height:14}} checked={stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length} onChange={function(e){if(e.target.checked){var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}else{setSelectedStocks({});}}}/>:<span style={{display:"block",width:14,height:14}}/>}</th>
+                  <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
+                    {selectionMode&&(
+                      <div onClick={function(e){e.stopPropagation();var allSel=stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length;if(allSel){setSelectedStocks({});}else{var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}}}
+                        style={{width:16,height:16,border:"2px solid "+(stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length?"#3b82f6":"#4a5a7a"),borderRadius:4,background:stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0}}>
+                        {stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1}}>✓</span>}
+                      </div>
+                    )}
+                  </th>
 
                   {[["sym","Stock",false],["totalQty","Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
                     <th key={col} style={{padding:"6px 8px",textAlign:r?"right":"left",
@@ -15101,7 +15350,13 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       onClick={function(){setExpandedStock(isOpen?null:g.sym);}}
                       style={{borderBottom:"1px solid #0d1020",cursor:"pointer",
                         background:isOpen?"#111827":gi%2===0?"transparent":"#080a12"}}>
-                      <td style={{width:32,padding:"4px 6px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();}}>{selectionMode?<input type="checkbox" checked={!!selectedStocks[g.sym]} onChange={function(e){e.stopPropagation();setSelectedStocks(function(p){var n=Object.assign({},p);if(e.target.checked)n[g.sym]=true;else delete n[g.sym];return n;});}} style={{cursor:"pointer",accentColor:"#3b82f6",width:14,height:14}}/>:<span style={{display:"block",width:14,height:14}}/>}</td>
+                      <td style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;return n;});}}>
+                      {selectionMode&&(
+                        <div style={{width:16,height:16,border:"2px solid "+(selectedStocks[g.sym]?"#3b82f6":"#4a5a7a"),borderRadius:4,background:selectedStocks[g.sym]?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none"}}>
+                          {selectedStocks[g.sym]&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1}}>✓</span>}
+                        </div>
+                      )}
+                    </td>
                       <td style={{padding:"7px 10px"}}>
                         <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
@@ -15334,7 +15589,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
 /* ═══════════════════════════════════════════════ TAX P/L TAB (REBUILD) */
 function TaxTab() {
   const [taxView,setTaxView] = React.useState("summary");
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Collect tax data from all accounts ── */
   const ACCOUNTS = [
@@ -17649,7 +17904,7 @@ function DivYieldTab() {
 
 /* ═══════════════════════════ CORPORATE ACTIONS REGISTER */
 function CorporateActionsTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [filter, setFilter] = React.useState("all");
 
   /* Corporate actions — manually maintained, auto-cross-referenced with holdings */
@@ -17767,7 +18022,7 @@ function CorporateActionsTab() {
 
 /* ═══════════════════════════ HOLDING PERIOD ANALYSIS */
 function HoldingPeriodTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const allH = (typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS["ALL_FAMILY"] : null) || [];
   const [selMem, setSelMem] = React.useState("All");
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -18061,7 +18316,7 @@ function MTFTab() {
     ],
   };
 
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── CALCULATIONS ─────────────────────────────────────────────────────────*/
   const funding      = MTF_SUMMARY.total_funding;
