@@ -4030,25 +4030,25 @@ function MutualFundsTab() {
     <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
       {/* Left sidebar */}
       <div style={{width:"min(200px,100%)",flexShrink:0}}>
-        <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:12,padding:"12px 14px",marginBottom:10}}>
-          <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:6}}>Family MF Total</div>
-          <div style={{fontSize:18,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>{cr(totalVal)}</div>
-          <div style={{fontSize:9,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace",marginTop:3}}>
-            {totalPL>=0?"+":""}{cr(totalPL)}
-          </div>
-        </div>
-        {/* All Family row */}
+        {/* All Family — combined clickable card */}
         <div onClick={function(){setShowAllMF(function(v){return !v;}); setSelMember(null);}}
           style={{background:showAllMF?"linear-gradient(135deg,#1e3a5f,#162040)":"linear-gradient(155deg,#0a1a0f,#0d1020)",
             border:showAllMF?"1px solid #3b82f6":"1px solid #1a3a1a",
-            borderRadius:10,padding:"10px 12px",cursor:"pointer",marginBottom:8}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
-            <div style={{width:22,height:22,borderRadius:"50%",background:"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:"#fff",flexShrink:0}}>AF</div>
-            <div style={{fontSize:10,fontWeight:700,color:showAllMF?"#7eb8ff":"#10b981"}}>All Family</div>
+            borderRadius:12,padding:"14px",cursor:"pointer",marginBottom:8,
+            boxShadow:showAllMF?"0 0 0 2px #3b82f622":"none",transition:"all 0.15s"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>AF</div>
+            <div>
+              <div style={{fontSize:11,fontWeight:800,color:showAllMF?"#7eb8ff":"#10b981"}}>All Family</div>
+              <div style={{fontSize:8,color:"#3a4a6a"}}>{members.reduce(function(a,n){return a+(getMemberData(n).schemes.length||0);},0)} schemes · {members.length} members</div>
+            </div>
+            <div style={{marginLeft:"auto",fontSize:9,color:showAllMF?"#7eb8ff":"#3a4a6a",fontWeight:600}}>{showAllMF?"▼":"▶"}</div>
           </div>
-          <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(totalVal)}</div>
-          <div style={{fontSize:9,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalPL>=0?"+":""}{cr(totalPL)}</div>
-          <div style={{fontSize:8,color:"#3a4a6a",marginTop:2}}>{members.reduce(function(a,n){return a+(getMemberData(n).schemes.length||0);},0)} schemes</div>
+          <div style={{fontSize:20,fontWeight:900,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(totalVal)}</div>
+          <div style={{fontSize:10,color:totalPL>=0?"#10b981":"#ef4444",fontFamily:"monospace",marginTop:4,fontWeight:600}}>
+            {totalPL>=0?"+":""}{cr(totalPL)} &nbsp;
+            <span style={{fontSize:9,color:"#3a4a6a"}}>({totalInv>0?((totalPL/totalInv)*100).toFixed(1)+"%":"—"})</span>
+          </div>
         </div>
         <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6,paddingLeft:4}}>{members.length} Members</div>
         <div style={{display:"flex",flexDirection:"column",gap:5}}>
