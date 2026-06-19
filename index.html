@@ -2459,6 +2459,19 @@ function GlobalIndicesWidget() {
     return function() { clearInterval(t); };
   }, [fetch_data]);
 
+  /* Inject marquee keyframes once */
+  React.useEffect(function() {
+    if (document.getElementById("ticker-kf")) return;
+    var s = document.createElement("style");
+    s.id = "ticker-kf";
+    s.textContent = [
+      "@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}",
+      ".ticker-track{display:flex;animation:marquee 45s linear infinite;will-change:transform;}",
+      ".ticker-track:hover{animation-play-state:paused;}",
+    ].join("");
+    document.head.appendChild(s);
+  }, []);
+
   var fmt = function(v, fx) {
     if (!v || !v.p) return "—";
     if (fx) return v.p.toFixed(2);
@@ -2481,37 +2494,44 @@ function GlobalIndicesWidget() {
     {l:"FTSE",       k:"FTSE100",   fx:false, flag:"🇬🇧"},
   ];
 
-  return (
-    <div style={{background:"#070a16",borderBottom:"1px solid #1a2035",padding:"8px 16px",marginBottom:0,overflowX:"auto"}}>
-      <div style={{display:"flex",alignItems:"center",gap:0,minWidth:"max-content"}}>
-        {/* Status */}
-        <div style={{display:"flex",alignItems:"center",gap:4,paddingRight:14,borderRight:"1px solid #1a2035",marginRight:14,flexShrink:0}}>
-          {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#10b981",display:"inline-block",boxShadow:"0 0 5px #10b981"}}/>}
-          {status==="loading"&&<span style={{fontSize:9,color:"#f0b429"}}>⟳</span>}
-          {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠</span>}
-          {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
-          <button onClick={fetch_data} disabled={status==="loading"} style={{background:"none",border:"none",color:"#2a3a50",fontSize:10,cursor:"pointer",padding:"0 2px"}}>↻</button>
-        </div>
-
-        {/* All indices */}
-        {ALL.map(function(item, i) {
-          var d = data[item.k];
-          var isUp = !d || d.pct >= 0;
-          var c = d ? (isUp ? "#10b981" : "#ef4444") : "#2a3a50";
-          return (
-            <div key={item.k} style={{display:"flex",alignItems:"center",gap:8,paddingRight:16,marginRight:16,borderRight:i<ALL.length-1?"1px solid #1a2035":"none",flexShrink:0}}>
-              <div>
-                <div style={{fontSize:7,color:"#3a4a6a",whiteSpace:"nowrap"}}>{item.flag} {item.l}</div>
-                <div style={{fontSize:11,fontWeight:800,fontFamily:"monospace",color:c,whiteSpace:"nowrap"}}>
-                  {fmt(d, item.fx)}
-                  {d&&d.pct!=null&&(
-                    <span style={{fontSize:8,marginLeft:4,color:c}}>{isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%</span>
-                  )}
-                </div>
-              </div>
+  var renderItems = function(keyPrefix) {
+    return ALL.map(function(item, i) {
+      var d = data[item.k];
+      var isUp = !d || d.pct >= 0;
+      var c = d ? (isUp ? "#10b981" : "#ef4444") : "#2a3a50";
+      return (
+        <div key={keyPrefix+item.k} style={{display:"flex",alignItems:"center",gap:8,paddingRight:16,marginRight:16,borderRight:"1px solid #1a2035",flexShrink:0}}>
+          <div>
+            <div style={{fontSize:7,color:"#3a4a6a",whiteSpace:"nowrap"}}>{item.flag} {item.l}</div>
+            <div style={{fontSize:11,fontWeight:800,fontFamily:"monospace",color:c,whiteSpace:"nowrap"}}>
+              {fmt(d, item.fx)}
+              {d&&d.pct!=null&&(
+                <span style={{fontSize:8,marginLeft:4,color:c}}>{isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%</span>
+              )}
             </div>
-          );
-        })}
+          </div>
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div style={{background:"#070a16",borderBottom:"1px solid #1a2035",padding:"8px 0",marginBottom:0,overflow:"hidden",display:"flex",alignItems:"center"}}>
+      {/* Status — fixed left, outside scroll */}
+      <div style={{display:"flex",alignItems:"center",gap:4,padding:"0 14px",borderRight:"1px solid #1a2035",marginRight:14,flexShrink:0}}>
+        {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#10b981",display:"inline-block",boxShadow:"0 0 5px #10b981"}}/>}
+        {status==="loading"&&<span style={{fontSize:9,color:"#f0b429"}}>⟳</span>}
+        {status==="error"&&<span style={{fontSize:8,color:"#f87171"}}>⚠</span>}
+        {lastUpdate&&<span style={{fontSize:8,color:"#2a3a50"}}>{lastUpdate}</span>}
+        <button onClick={fetch_data} disabled={status==="loading"} style={{background:"none",border:"none",color:"#2a3a50",fontSize:10,cursor:"pointer",padding:"0 2px"}}>↻</button>
+      </div>
+
+      {/* Scrolling track */}
+      <div style={{overflow:"hidden",flex:1}}>
+        <div style={{display:"flex"}}>
+          <div className="ticker-track">{renderItems("a")}</div>
+          <div className="ticker-track">{renderItems("b")}</div>
+        </div>
       </div>
     </div>
   );
@@ -4750,6 +4770,8 @@ function FamilyApp() {
   }, [priceVersion, manualCmp]);
   const [bBankSubTab,setBBankSubTab]=React.useState("accounts");
   const [stockDetail,setStockDetail]=React.useState(null);
+  const [mfDetail,setMfDetail]=React.useState(null);
+  const [bankDetail,setBankDetail]=React.useState(null);
   React.useEffect(()=>{ window._openStockDetail = s => setStockDetail(s); return ()=>{ delete window._openStockDetail; }; },[]);
   React.useEffect(()=>{ window._setDashTab = setTab; return ()=>{ delete window._setDashTab; }; },[setTab]);
   const [sidebarOpen,setSidebarOpen]=React.useState(false);
@@ -5050,6 +5072,102 @@ function FamilyApp() {
         );
       })()}
 
+      {/* ── Mutual Fund Detail Tray ── */}
+{mfDetail&&(()=>{
+  var f = mfDetail;
+  var isGain = (f.gain||0) >= 0;
+  var retPct = f.invested>0 ? ((f.gain||0)/f.invested*100) : null;
+  return (
+    <div style={{position:"fixed",inset:0,background:"#000000e0",zIndex:9999,
+      display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw)) max(8px,min(16px,2vw))"}}
+      onClick={function(e){if(e.target===e.currentTarget)setMfDetail(null);}}>
+      <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,
+        width:"100%",maxWidth:560,boxShadow:"0 24px 80px #00000099",flexShrink:0,marginTop:"min(60px,8vh)"}}>
+        <div style={{padding:"20px 24px",borderBottom:"1px solid #1a2035",
+          display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:800,color:"#e8eaf0",letterSpacing:"-0.01em",maxWidth:380}}>{f.scheme}</div>
+            <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+              <span style={{fontSize:10,background:"#0a1f15",color:"#34d399",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{f.member}</span>
+              {f.cat&&<span style={{fontSize:10,background:"#0f1a2e",color:"#7eb8ff",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{f.cat}</span>}
+              {f.platform&&<span style={{fontSize:10,background:"#1a1a0a",color:"#f0b429",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{f.platform}</span>}
+            </div>
+          </div>
+          <button onClick={function(){setMfDetail(null);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,flexShrink:0}}>✕ Close</button>
+        </div>
+        <div style={{padding:"20px 24px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:16}}>
+            <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:4}}>Current Value</div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#10b981"}}>{cr(f.value)}</div>
+            </div>
+            <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:4}}>Invested</div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#8899bb"}}>{cr(f.invested)}</div>
+            </div>
+            <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:4}}>Gain/Loss</div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:isGain?"#10b981":"#ef4444"}}>{isGain?"+":""}{cr(f.gain)}</div>
+            </div>
+            <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:4}}>Return</div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:isGain?"#10b981":"#ef4444"}}>{retPct!=null?(isGain?"+":"")+retPct.toFixed(1)+"%":"—"}</div>
+            </div>
+          </div>
+          {(f.folio||f.units||f.nav||f.xirr!=null)&&(
+            <div style={{background:"#080a14",border:"1px solid #1a2035",borderRadius:10,padding:"12px 14px",display:"flex",flexWrap:"wrap",gap:16}}>
+              {f.folio&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>Folio</div><div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>{f.folio}</div></div>}
+              {f.units&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>Units</div><div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>{f.units}</div></div>}
+              {f.nav&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>NAV</div><div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>₹{f.nav}</div></div>}
+              {f.xirr!=null&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>XIRR</div><div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>{f.xirr}%</div></div>}
+            </div>
+          )}
+          <button onClick={function(){setTab("Mutual Funds");setMfDetail(null);}}
+            style={{marginTop:14,width:"100%",background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:12,fontWeight:600}}>
+            View in Mutual Funds tab →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})()}
+
+{/* ── Bank Account Detail Tray ── */}
+{bankDetail&&(()=>{
+  var b = bankDetail;
+  return (
+    <div style={{position:"fixed",inset:0,background:"#000000e0",zIndex:9999,
+      display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw)) max(8px,min(16px,2vw))"}}
+      onClick={function(e){if(e.target===e.currentTarget)setBankDetail(null);}}>
+      <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,
+        width:"100%",maxWidth:480,boxShadow:"0 24px 80px #00000099",flexShrink:0,marginTop:"min(60px,8vh)"}}>
+        <div style={{padding:"20px 24px",borderBottom:"1px solid #1a2035",
+          display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:800,color:"#e8eaf0"}}>{b.name}</div>
+            <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+              {b.bank&&<span style={{fontSize:10,background:"#1a1a0a",color:"#f0b429",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{b.bank}</span>}
+              {b.acc&&<span style={{fontSize:10,background:"#0f1a2e",color:"#7eb8ff",padding:"3px 10px",borderRadius:12,fontWeight:600,fontFamily:"monospace"}}>{b.acc}</span>}
+            </div>
+          </div>
+          <button onClick={function(){setBankDetail(null);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,flexShrink:0}}>✕ Close</button>
+        </div>
+        <div style={{padding:"20px 24px"}}>
+          <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"16px"}}>
+            <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:6}}>Available Balance</div>
+            <div style={{fontSize:24,fontWeight:900,fontFamily:"monospace",color:"#f0b429"}}>{cr(b.bal)}</div>
+          </div>
+          <button onClick={function(){setTab("Bank");setBankDetail(null);}}
+            style={{marginTop:14,width:"100%",background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"10px",cursor:"pointer",fontSize:12,fontWeight:600}}>
+            View in Bank tab →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})()}
+
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
         *{font-family:'Inter',system-ui,sans-serif}
@@ -5156,7 +5274,7 @@ function FamilyApp() {
                   );})}
                   {/* MF Schemes */}
                   {mfHits.map(function(f,i){var isGain=f.gain>=0;return(
-                    <div key={"mf"+i} onClick={function(){setTab("Mutual Funds");setSearchQ("");setSearchOpen(false);}}
+                    <div key={"mf"+i} onClick={function(){setMfDetail(f);setSearchQ("");setSearchOpen(false);}}
                       style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
                       onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
                       <div style={{width:28,height:28,borderRadius:8,background:"#10b98122",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#10b981",flexShrink:0}}>MF</div>
@@ -5167,7 +5285,7 @@ function FamilyApp() {
                   );})}
                   {/* Bank accounts */}
                   {bankHits.map(function(b,i){return(
-                    <div key={"bnk"+i} onClick={function(){setTab("Bank");setSearchQ("");setSearchOpen(false);}}
+                    <div key={"bnk"+i} onClick={function(){setBankDetail(b);setSearchQ("");setSearchOpen(false);}}
                       style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
                       onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
                       <div style={{width:28,height:28,borderRadius:8,background:"#f0b42922",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#f0b429",flexShrink:0}}>₹</div>
