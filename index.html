@@ -340,12 +340,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
           .hero-resp{font-size:20px!important;}
           .hide-xs{display:none!important;}
         }
-        @media(max-width:600px){
-          .search-wrap{order:1;flex:1 1 100%!important;}
-          .search-wrap input{width:100%!important;min-width:0!important;}
-          .tabs-action-row{order:2;}
-        }
-      `}</style>
+              `}</style>
     </div>
   );
 }
@@ -5170,14 +5165,14 @@ function FamilyApp() {
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           {/* Global search */}
-          <div className="search-wrap" style={{position:"relative",flex:"1 1 auto",minWidth:140}}>
+          <div style={{position:"relative"}}>
             <input value={searchQ}
               onChange={e=>{setSearchQ(e.target.value);setSearchOpen(e.target.value.length>1);}}
               onBlur={()=>setTimeout(()=>setSearchOpen(false),300)}
               placeholder="⌕  Search stocks, mutual funds, members, bank accounts…"
               style={{background:"linear-gradient(135deg,#0e1228 0%,#0b0f20 100%)",border:"1px solid "+(searchOpen?"#3a6abf":"#1e2848"),
-                borderRadius:12,padding:"8px 14px",color:"#c8d0e8",fontSize:12.5,
-                outline:"none",width:"min(320px,40vw)",minWidth:120,boxSizing:"border-box",transition:"all .25s cubic-bezier(.4,0,.2,1)",
+                borderRadius:12,padding:"8px 16px",color:"#c8d0e8",fontSize:12.5,
+                outline:"none",width:320,transition:"all .25s cubic-bezier(.4,0,.2,1)",
                 boxShadow:searchOpen?"0 0 0 3px #1e3a7a44, 0 4px 20px #00000044":"inset 0 1px 3px #00000033"}}/>
             {searchOpen&&(()=>{
               const q=searchQ.toLowerCase();
@@ -5201,7 +5196,7 @@ function FamilyApp() {
               const hits=Object.values(stockMap).sort((a,b)=>b.totalVal-a.totalVal);
               if(!hits.length) return null;
               return (
-                <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,width:"min(640px,92vw)",background:"#0a0d1c",
+                <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,width:640,background:"#0a0d1c",
                   border:"1px solid #1e2845",borderRadius:12,zIndex:9999,boxShadow:"0 12px 48px #000000cc",
                   maxHeight:580,overflowY:"auto"}}>
                   <div style={{padding:"10px 16px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",
@@ -5288,7 +5283,7 @@ function FamilyApp() {
             })()}
           </div>
           {/* Primary Tabs + Sidebar Toggle + Action Icons */}
-          <div className="tabs-action-row" style={{display:"flex",alignItems:"center",gap:2,width:"100%"}}>
+          <div style={{display:"flex",alignItems:"center",gap:2}}>
           <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:4,msOverflowStyle:"none",scrollbarWidth:"none",flex:1,minWidth:0}}>
             <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
               style={{background:"none",border:"none",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
@@ -5300,7 +5295,7 @@ function FamilyApp() {
             ))}
           </div>
           {/* ── Action icons — outside scrollable tab strip so they're always clickable ── */}
-          <div style={{display:"flex",alignItems:"center",gap:2,flexShrink:0,marginLeft:6}} className="action-icons">
+          <div style={{display:"flex",alignItems:"center",gap:2,flexShrink:0,marginLeft:6}}>
             <button onClick={function(){setShowFreshness(function(v){return !v;});}}
               title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
               style={{position:"relative",flexShrink:0,background:"none",border:"none",
