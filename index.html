@@ -426,7 +426,7 @@ function BreezeImportTab() {
           {/* Holdings summary */}
           {(acc.holdings||[]).length>0&&(
             <div style={{maxHeight:200,overflowY:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+              <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                 <thead><tr style={{background:"#080a12"}}>{["Stock","Qty","Avg","CMP","Value","P&L"].map(h=><th key={h} style={{padding:"5px 10px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                 <tbody>
                   {(acc.holdings||[]).slice(0,20).map((h,i)=>{
@@ -448,7 +448,7 @@ function BreezeImportTab() {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           )}
 
@@ -457,7 +457,7 @@ function BreezeImportTab() {
             <div style={{marginTop:10}}>
               <div style={{fontSize:9,fontWeight:700,color:"#f87171",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>MTF Positions</div>
               <div style={{maxHeight:150,overflowY:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                   <thead><tr style={{background:"#1a0808"}}>{["Stock","Qty","Avg","CMP","Value","MTF Used","Interest"].map(h=><th key={h} style={{padding:"5px 10px",textAlign:h==="Stock"?"left":"right",color:"#6a3a3a",fontSize:8,fontWeight:700,borderBottom:"1px solid #2a1010",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                   <tbody>
                     {(acc.mtf_holdings||[]).map((h,i)=>{
@@ -481,7 +481,7 @@ function BreezeImportTab() {
                       );
                     })}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           )}
@@ -980,7 +980,7 @@ function WhatIfTab() {
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
               Impact per Member & Account
             </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Member","Custodian","Qty","Avg Cost","Current Value","New Value","Gain/Loss"].map(h=>(
                 <th key={h} style={{padding:"7px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
               ))}</tr></thead>
@@ -1007,7 +1007,7 @@ function WhatIfTab() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -1414,7 +1414,7 @@ function TaxOptimiserTab() {
       <div style={{background:"linear-gradient(155deg,#0a1f0a,#080b18)",border:"1px solid #34d39933",borderRadius:14,padding:"16px",marginBottom:12}}>
         <div style={{fontSize:11,fontWeight:700,color:"#34d399",marginBottom:4}}>Strategy 1 — Use Your ₹1.25L LTCG Exemption (FY27)</div>
         <div style={{fontSize:10,color:"#3a6a4a",marginBottom:12}}>Sell these positions before March 31, 2027 to book ₹1.25L gain tax-free. Re-buy immediately to reset cost basis.</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#060d06"}}>{["Stock","Member","Gain to Book","Action","Tax Saved"].map(h=>(
             <th key={h} style={{padding:"6px 12px",textAlign:h==="Stock"||h==="Member"?"left":"right",color:"#2a5a2a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1a3a1a",textTransform:"uppercase"}}>{h}</th>
           ))}</tr></thead>
@@ -1435,7 +1435,7 @@ function TaxOptimiserTab() {
               <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#34d399"}}>{cr(harvestTaxSaved)}</td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* Strategy 2: Loss harvesting */}
@@ -1443,7 +1443,7 @@ function TaxOptimiserTab() {
         <div style={{background:"linear-gradient(155deg,#1a0a0a,#080b18)",border:"1px solid #f8717133",borderRadius:14,padding:"16px",marginBottom:12}}>
           <div style={{fontSize:11,fontWeight:700,color:"#f87171",marginBottom:4}}>Strategy 2 — Book Losses to Offset Gains</div>
           <div style={{fontSize:10,color:"#6a3a3a",marginBottom:12}}>Realise these losses before March 31, 2027 to offset capital gains and reduce tax outflow by {cr(taxSavingFromLoss)}.</div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
             <thead><tr style={{background:"#0d0606"}}>{["Stock","Member","Loss","Can Offset","Tax Saving"].map(h=>(
               <th key={h} style={{padding:"6px 12px",textAlign:h==="Stock"||h==="Member"?"left":"right",color:"#5a2a2a",fontSize:9,fontWeight:700,borderBottom:"1px solid #3a1a1a",textTransform:"uppercase"}}>{h}</th>
             ))}</tr></thead>
@@ -1461,14 +1461,14 @@ function TaxOptimiserTab() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 
       {/* Per-member tax table */}
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Estimated Tax Liability per Member (FY27)</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["Member","Unrealised Gains","Unrealised Losses","Est. Tax","After Harvesting","Saving"].map(h=>(
             <th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
           ))}</tr></thead>
@@ -1489,7 +1489,7 @@ function TaxOptimiserTab() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
         <div style={{padding:"10px 16px",fontSize:9,color:"#2a3a50"}}>
           * Based on unrealised P&L in current holdings. Assumes LTCG @12.5% above ₹1.25L exemption. Actual tax depends on holding period and lot dates. Consult your CA.
         </div>
@@ -1772,7 +1772,7 @@ function GlobalSearchTab() {
         <div style={{marginBottom:16}}>
           <div style={{fontSize:10,fontWeight:700,color:"#f0b429",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>💰 Dividends ({results.dividends.length})</div>
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:10,overflow:"hidden"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Date","Account","Rate","Amount"].map(h=>(
                 <th key={h} style={{padding:"6px 12px",textAlign:h==="Stock"||h==="Date"||h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
               ))}</tr></thead>
@@ -1787,7 +1787,7 @@ function GlobalSearchTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -1797,7 +1797,7 @@ function GlobalSearchTab() {
         <div>
           <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Realised Trades ({results.transactions.length})</div>
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:10,overflow:"hidden"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Account","Qty","Sell Value","Buy Value","P&L","Return"].map(h=>(
                 <th key={h} style={{padding:"6px 12px",textAlign:h==="Stock"||h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
               ))}</tr></thead>
@@ -1814,7 +1814,7 @@ function GlobalSearchTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -1902,7 +1902,7 @@ function DividendCalendarTab() {
       {/* Monthly calendar */}
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,padding:"16px",marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Estimated Monthly Dividend Income (FY27)</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(110px,1fr))",gap:8}}>
           {months.map((m,i)=>{
             const v = monthlyIncome[i];
             const h = Math.max(8,v/maxMonth*80);
@@ -1924,7 +1924,7 @@ function DividendCalendarTab() {
       {/* Top dividend payers */}
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Dividend Payers — Held Stocks</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Value","Est. Yield","Est. Annual Div","Source"].map(h=>(
             <th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
           ))}</tr></thead>
@@ -1939,7 +1939,7 @@ function DividendCalendarTab() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );
@@ -1995,7 +1995,7 @@ function EstatePlanningTab() {
       {/* Nominee mapping */}
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Nominee Register</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["Account","Wealth","Nominee","Status"].map(h=>(
             <th key={h} style={{padding:"7px 12px",textAlign:h==="Account"||h==="Nominee"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
           ))}</tr></thead>
@@ -2019,7 +2019,7 @@ function EstatePlanningTab() {
               );
             })}
           </tbody>
-        </table>
+        </table></div>
         <div style={{padding:"10px 16px",fontSize:9,color:"#2a3a50"}}>
           Update nominees in the Profiles tab. Missing nominees create legal complications for wealth transfer.
         </div>
@@ -2110,7 +2110,7 @@ function XIRRTab() {
         <div style={{fontSize:10,fontWeight:700,color:"#7eb8ff",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Custom XIRR Calculator</div>
         <div style={{fontSize:10,color:"#3a4a6a",marginBottom:12}}>Enter investment dates (negative = money out), current value (positive = money in). Calculator uses Newton-Raphson iteration.</div>
 
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,marginBottom:10}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11,marginBottom:10}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["Date","Amount (₹)","Label",""].map(h=><th key={h} style={{padding:"6px 10px",textAlign:"left",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
           <tbody>
             {cashflows.map((row,i)=>(
@@ -2135,7 +2135,7 @@ function XIRRTab() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
 
         <div style={{display:"flex",gap:8,marginBottom:12}}>
           <button onClick={addRow} style={{padding:"6px 14px",borderRadius:6,border:"1px solid #1d2545",background:"#0a1020",color:"#7eb8ff",fontSize:11,cursor:"pointer"}}>+ Add Row</button>
@@ -2143,7 +2143,7 @@ function XIRRTab() {
         </div>
 
         {xirr !== null && (
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9}}>
             {[
               {l:"XIRR (Annualised)",v:(xirr>=0?"+":"")+xirr.toFixed(2)+"% p.a.",c:xirr>=0?"#34d399":"#f87171",big:true},
               {l:"Total Invested",v:cr(totalInvested),c:"#3a4a6a"},
@@ -2412,7 +2412,7 @@ function ChangelogTab() {
       </div>
 
       {/* Summary stats */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
         {[
           {l:"Data Updates",v:CHANGELOG.filter(e=>e.type==="data").length,c:"#7eb8ff",icon:"📊"},
           {l:"Features Added",v:CHANGELOG.filter(e=>e.type==="feature").length,c:"#34d399",icon:"✨"},
@@ -3105,7 +3105,7 @@ function BankStatementTab() {
               All Transactions · {st.txns.length} entries
             </div>
             <div style={{maxHeight:400,overflowY:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+              <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                 <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>
                   {["Date","Description","Category","Debit","Credit","Balance"].map(h=>(
                     <th key={h} style={{padding:"6px 10px",textAlign:h==="Description"||h==="Category"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
@@ -3125,7 +3125,7 @@ function BankStatementTab() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
 
@@ -3285,7 +3285,7 @@ function StockDetailPanel({ sym, onClose }) {
               {holdings.length > 0 && (
                 <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
                   <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Family Holdings</div>
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                  <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                     <thead><tr style={{background:"#080a12"}}>{["Member","Custodian","Qty","Avg","CMP","Value","P&L","Return"].map(h=><th key={h} style={{padding:"6px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                     <tbody>
                       {holdings.map((h,i)=>{
@@ -3320,7 +3320,7 @@ function StockDetailPanel({ sym, onClose }) {
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:retPct>=0?"#34d399":"#f87171"}}>{(retPct>=0?"+":"")+retPct.toFixed(1)}%</td>
                       </tr></tfoot>
                     )}
-                  </table>
+                  </table></div>
                 </div>
               )}
 
@@ -3337,7 +3337,7 @@ function StockDetailPanel({ sym, onClose }) {
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {totalDivReceived > 0 ? (
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",maxWidth:280,margin:"0 auto",gap:9}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",maxWidth:280,margin:"0 auto",gap:9}}>
                     {[
                       {l:"Total Dividends Received",v:cr(totalDivReceived),c:"#f0b429"},
                       {l:"Yield on Cost",v:yoc>0?yoc.toFixed(2)+"%":"—",c:"#f0b429"},
@@ -3374,7 +3374,7 @@ function StockDetailPanel({ sym, onClose }) {
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {realisedTrades.length > 0 ? (
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:9}}>
                     {[
                       {l:"Total Realised",v:cr(totalRealised),c:totalRealised>=0?"#34d399":"#f87171"},
                       {l:"Trade Count",v:realisedTrades.length,c:"#7eb8ff"},
@@ -3387,7 +3387,7 @@ function StockDetailPanel({ sym, onClose }) {
                     ))}
                   </div>
 
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,background:"linear-gradient(155deg,#11152c,#0d1122)",borderRadius:12,overflow:"hidden"}}>
+                  <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11,background:"linear-gradient(155deg,#11152c,#0d1122)",borderRadius:12,overflow:"hidden"}}>
                     <thead><tr style={{background:"#0a0e1e"}}>{["Member","Realised P&L","Return %"].map(h=>(
                       <th key={h} style={{padding:"8px 14px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
                     ))}</tr></thead>
@@ -3400,7 +3400,7 @@ function StockDetailPanel({ sym, onClose }) {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </>
               ) : (
                 <div style={{padding:"40px",textAlign:"center",color:"#3a4a6a",fontSize:12}}>No realised P&L found for {sym}</div>
@@ -3413,7 +3413,7 @@ function StockDetailPanel({ sym, onClose }) {
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {taxLots.length > 0 ? (
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:9}}>
                     {[
                       {l:"LTCG",v:cr(taxLots.filter(t=>t.type==="LTCG").reduce((s,t)=>s+t.gain,0)),c:"#34d399"},
                       {l:"STCG",v:cr(taxLots.filter(t=>t.type==="STCG").reduce((s,t)=>s+t.gain,0)),c:"#f0b429"},
@@ -3426,7 +3426,7 @@ function StockDetailPanel({ sym, onClose }) {
                     ))}
                   </div>
 
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,background:"linear-gradient(155deg,#11152c,#0d1122)",borderRadius:12,overflow:"hidden"}}>
+                  <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11,background:"linear-gradient(155deg,#11152c,#0d1122)",borderRadius:12,overflow:"hidden"}}>
                     <thead><tr style={{background:"#0a0e1e"}}>{["Member","Type","Sale Date","Gain"].map(h=>(
                       <th key={h} style={{padding:"7px 12px",textAlign:h==="Member"||h==="Type"||h==="Sale Date"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
                     ))}</tr></thead>
@@ -3440,7 +3440,7 @@ function StockDetailPanel({ sym, onClose }) {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </>
               ) : (
                 <div style={{padding:"40px",textAlign:"center",color:"#3a4a6a",fontSize:12}}>No tax lot data for {sym}</div>
@@ -3968,7 +3968,7 @@ function PPFTab() {
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
           PPF Accounts — {ppf.length} accounts · {cr(total)} total corpus
         </div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>
             {["Member","Account No","Balance","Annual Interest","Opened","Matures","Years Left"].map(h=>(
               <th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>
@@ -4012,7 +4012,7 @@ function PPFTab() {
               <td colSpan={3}/>
             </tr>
           </tfoot>
-        </table>
+        </table></div>
       </div>
 
       {/* Projection note */}
@@ -4214,7 +4214,7 @@ function MutualFundsTab() {
             </div>
 
             {/* KPIs */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8}}>
               {[
                 {l:"Invested",     v:cr(selData.inv),                                        c:"#8899bb"},
                 {l:"Current Value",v:cr(selData.val),                                        c:"#10b981"},
@@ -4381,7 +4381,7 @@ function MembersTab() {
   ];
 
   return (
-    <div style={{display:"flex",gap:14,height:"auto"}}>
+    <div style={{display:"flex",gap:14,height:"auto",flexWrap:"wrap"}}>
       {/* ── Left: member list ── */}
       <div style={{width:"min(200px,100%)",flexShrink:0,display:"flex",flexDirection:"column",gap:6}}>
         <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4,paddingLeft:4}}>
@@ -4466,7 +4466,7 @@ function MembersTab() {
                 <div>
                   {/* KPI strip */}
                   {totalInv>0&&(
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:8,marginBottom:12}}>
                       {[
                         {l:"Invested",v:cr(totalInv),c:"#8899bb"},
                         {l:"Current Value",v:cr(totalVal),c:"#e8eaf0"},
@@ -4530,7 +4530,7 @@ function MembersTab() {
                     </div>
                   ) : (
                     <>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:8}}>
                         {[
                           {l:"Invested",v:cr(mfData.inv||0),c:"#8899bb"},
                           {l:"Current Value",v:cr(mfData.val||0),c:"#10b981"},
@@ -4549,7 +4549,7 @@ function MembersTab() {
                           <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#10b981"}}>
                             {mfData.schemes.length} Schemes
                           </div>
-                          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                             <thead><tr style={{background:"#0a0e1e"}}>
                               {["Scheme","Invested","Current Value","P&L","XIRR"].map(function(h){return(
                                 <th key={h} style={{padding:"6px 12px",textAlign:h==="Scheme"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
@@ -4568,7 +4568,7 @@ function MembersTab() {
                                 );
                               })}
                             </tbody>
-                          </table>
+                          </table></div>
                         </div>
                       )}
                     </>
@@ -4884,7 +4884,7 @@ function FamilyApp() {
   ];
 
   return (
-    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw"}}>
+    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"max(8px,min(18px,3vw))",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",boxSizing:"border-box"}}>
 
       {/* - STOCK DETAIL PAGE - */}
       {stockDetail&&(()=>{
@@ -5059,7 +5059,7 @@ function FamilyApp() {
                     <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",fontSize:9,color:"#3a4a6a",fontWeight:700,textTransform:"uppercase"}}>
                       Full position summary
                     </div>
-                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                    <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                       <thead>
                         <tr style={{background:"#0a0e1e"}}>
                           {["Member","Custodian","Qty","Avg Cost","CMP","Value","P/L","Return"].map(h=>(
@@ -5111,7 +5111,7 @@ function FamilyApp() {
                           </td>
                         </tr>
                       </tfoot>
-                    </table>
+                    </table></div>
                   </div>
 
                 </div>
@@ -5172,7 +5172,7 @@ function FamilyApp() {
               placeholder="⌕  Search stocks, mutual funds, members, bank accounts…"
               style={{background:"linear-gradient(135deg,#0e1228 0%,#0b0f20 100%)",border:"1px solid "+(searchOpen?"#3a6abf":"#1e2848"),
                 borderRadius:12,padding:"8px 16px",color:"#c8d0e8",fontSize:12.5,
-                outline:"none",width:320,transition:"all .25s cubic-bezier(.4,0,.2,1)",
+                outline:"none",width:320,maxWidth:"60vw",transition:"all .25s cubic-bezier(.4,0,.2,1)",
                 boxShadow:searchOpen?"0 0 0 3px #1e3a7a44, 0 4px 20px #00000044":"inset 0 1px 3px #00000033"}}/>
             {searchOpen&&(()=>{
               const q=searchQ.toLowerCase();
@@ -5196,7 +5196,7 @@ function FamilyApp() {
               const hits=Object.values(stockMap).sort((a,b)=>b.totalVal-a.totalVal);
               if(!hits.length) return null;
               return (
-                <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,width:640,background:"#0a0d1c",
+                <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,width:640,maxWidth:"94vw",background:"#0a0d1c",
                   border:"1px solid #1e2845",borderRadius:12,zIndex:9999,boxShadow:"0 12px 48px #000000cc",
                   maxHeight:580,overflowY:"auto"}}>
                   <div style={{padding:"10px 16px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",
@@ -6272,7 +6272,7 @@ function StockDetailPage({ sym, onBack }) {
       {holdings.length>0&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden",marginBottom:14}}>
           <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Family Holdings — {holdings.length} accounts</div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
             <thead><tr style={{background:"#0a0e1e"}}>{["Member","Custodian","Qty","Avg Cost","CMP","Value","P&L","Return"].map(h=>(
               <th key={h} style={{padding:"6px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
             ))}</tr></thead>
@@ -6299,7 +6299,7 @@ function StockDetailPage({ sym, onBack }) {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 
@@ -6321,7 +6321,7 @@ function StockDetailPage({ sym, onBack }) {
             </div>
           )}
           <div style={{maxHeight:200,overflowY:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Date","Account","Qty","Rate (₹)","Amount"].map(h=>(
                 <th key={h} style={{padding:"5px 10px",textAlign:h==="Date"||h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
               ))}</tr></thead>
@@ -6336,7 +6336,7 @@ function StockDetailPage({ sym, onBack }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -6347,7 +6347,7 @@ function StockDetailPage({ sym, onBack }) {
           <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
             Realised P&L History · {cr(totalRealised)} total
           </div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
             <thead><tr style={{background:"#0a0e1e"}}>{["Account","Qty Sold","Avg Sell","Avg Buy","Realised P&L","Return"].map(h=>(
               <th key={h} style={{padding:"6px 12px",textAlign:h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
             ))}</tr></thead>
@@ -6363,7 +6363,7 @@ function StockDetailPage({ sym, onBack }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 
@@ -12206,7 +12206,7 @@ function Modal({sym,onClose}){
         </div>
         {t&&t["Buy Value"]>0&&<>
           <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:7}}>Trade Summary</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:7,marginBottom:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:7,marginBottom:12}}>
             {[["Avg buy","₹"+t.avg_buy.toFixed(2)],["Avg sell",t.avg_sell>0?"₹"+t.avg_sell.toFixed(2):"—"],
               ["Qty traded",fN(t.Quantity)],["Buy value",fL(t["Buy Value"])],["Sell value",fL(t["Sell Value"])],
               ["Realised P&L",sg(t["Realized PL"])+fL(t["Realized PL"])],
@@ -12220,7 +12220,7 @@ function Modal({sym,onClose}){
         </>}
         {o&&o["Open Value"]>0&&<>
           <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:7}}>Open Position</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:7,marginBottom:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:7,marginBottom:12}}>
             {[["Qty held",fN(o["Open Qty"])],["Avg cost","₹"+o.avg_buy.toFixed(2)],
               ["Last price","₹"+o["Prev Close"].toFixed(2)],["Cost value",fL(o["Open Value"])],
               ["Mkt value",fL(o["Mkt Value"])],["Unrealised P&L",sg(o["Unrealised PL"])+fL(o["Unrealised PL"])],
@@ -12670,7 +12670,7 @@ function PortfolioApp(){
 
       {tab==="tb"&&<div>
         {/* - TRADE BOOK — Jash Shah 8506630426 · Aug 2022 – Jun 2026 - */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
           {[
             {l:"Total Trades",       v:JASH_SUMMARY.totalTrades.toLocaleString("en-IN"), c:"#e8eaf0"},
             {l:"Unique Stocks",      v:JASH_SUMMARY.uniqueStocks,                        c:"#7eb8ff"},
@@ -12715,7 +12715,7 @@ function PortfolioApp(){
               <span style={{color:"#7eb8ff"}}>₹{(JASH_PORTFOLIO_SUMMARY.totalMkt/1e7).toFixed(2)}Cr mkt</span>
             </div>
             <div style={{maxHeight:320,overflowY:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead>
                   <tr style={{background:"#0a0d1c",position:"sticky",top:0}}>
                     {["Stock","Qty","Avg","CMP","Mkt Val","P&L%"].map(h=>(
@@ -12737,7 +12737,7 @@ function PortfolioApp(){
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
 
@@ -12747,7 +12747,7 @@ function PortfolioApp(){
               Top Realised P/L (per stock)
             </div>
             <div style={{maxHeight:320,overflowY:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead>
                   <tr style={{background:"#0a0d1c",position:"sticky",top:0}}>
                     {["Stock","Buy Qty","Sell Qty","Realised P&L"].map(h=>(
@@ -12772,7 +12772,7 @@ function PortfolioApp(){
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
         </div>
@@ -12780,7 +12780,7 @@ function PortfolioApp(){
         {/* Yearly summary */}
         <div style={{background:"#0a0d14",border:"1px solid #1e2540",borderRadius:9,padding:"14px"}}>
           <div style={{fontSize:11,fontWeight:600,color:S.mt,marginBottom:10}}>Yearly Activity Summary</div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Year","Trades","Bought","Sold","Net","Charges","STT"].map(h=>(
@@ -12808,7 +12808,7 @@ function PortfolioApp(){
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
           <div style={{fontSize:10,color:S.mt,marginTop:8,textAlign:"right"}}>
             Source: Zerodha Trade Book 8506630426 · Aug 2022 – Jun 2026
           </div>
@@ -13000,7 +13000,7 @@ function CASHistoryTab() {
       </div>
 
       {/* Grand total KPIs */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:9,marginBottom:14}}>
         {[
           {l:"Jan 2023",  v:CAS_GRAND[0], sub:"Earliest snapshot"},
           {l:"Peak (Jan 2025)", v:CAS_GRAND[3], sub:"All-time high · ₹88.06 Cr"},
@@ -13116,7 +13116,7 @@ function CASHistoryTab() {
       {/* - TABLE VIEW - */}
       {view==="table"&&(
         <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:900}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:900}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 <th style={{padding:"10px 12px",textAlign:"left",color:"#3a4a6a",fontWeight:600,fontSize:10,letterSpacing:"0.05em",textTransform:"uppercase",borderBottom:"1px solid #1a2035",position:"sticky",left:0,background:"#0a0d1c"}}>Member</th>
@@ -13157,7 +13157,7 @@ function CASHistoryTab() {
                 ))}
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </div>
@@ -13370,7 +13370,7 @@ function BrokerLedgerTab() {
 
       {/* - SUMMARY - */}
       {subView==="summary"&&(<>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
           {[
             {l:"Funds Received",    v:fC(acc.summary.fundsIn),            c:"#7eb8ff", sub:"Into broker account"},
             {l:"Funds Paid Out",    v:fC(acc.summary.fundsOut),           c:"#f59e0b", sub:"Returned to Jilmill"},
@@ -13384,7 +13384,7 @@ function BrokerLedgerTab() {
             </div>
           ))}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:9,marginBottom:14}}>
           {[
             {l:"SLB Lending Income", v:fC(acc.summary.slbIncome),      c:"#34d399", sub:"Securities Lending & Borrowing"},
             {l:"Total Net P&L",      v:fC(acc.summary.totalNetPL),     c:"#34d399", sub:"Derivatives + SLB combined"},
@@ -13471,7 +13471,7 @@ function BrokerLedgerTab() {
           <div style={{padding:"12px 16px",borderBottom:"1px solid #1a2035",fontSize:11,color:"#3a4a6a",fontWeight:600}}>
             Key Transactions — Fund movements ≥ ₹50,000
           </div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Date","Type","Narration","Amount"].map(h=>(
@@ -13495,13 +13495,13 @@ function BrokerLedgerTab() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 
       {/* - TRADES - */}
       {subView==="trades"&&acc.trades&&(<>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
           {[
             {l:"Total Bought",v:fC(acc.trades.totalBuyVal),c:"#7eb8ff",sub:`${acc.trades.totalBuyQty.toLocaleString("en-IN")} qty`},
             {l:"Total Sold",v:fC(acc.trades.totalSellVal),c:"#f59e0b",sub:`${acc.trades.totalSellQty.toLocaleString("en-IN")} qty`},
@@ -13517,7 +13517,7 @@ function BrokerLedgerTab() {
         </div>
         <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"12px 16px",borderBottom:"1px solid #1a2035",fontSize:11,color:"#3a4a6a",fontWeight:600}}>Top Holdings · Net Position</div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Stock","Qty","Avg Rate","Value"].map(h=>(
@@ -13535,13 +13535,13 @@ function BrokerLedgerTab() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </>)}
 
             {/* - SEGMENTS - */}
       {subView==="segments"&&(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
           {[
             {key:"bse", icon:"📊", title:"BSE Capital Market", color:"#3b82f6",
              rows:[
@@ -13659,7 +13659,7 @@ function PortfolioDetailTab() {
       </div>
 
       {/* Grand total bar */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
         {PERSONS.map(p=>(
           <div key={p.id} onClick={()=>setSelPerson(p.id)} style={{
             background:selPerson===p.id?"#0f1a2e":"#0a0d14",
@@ -13710,7 +13710,7 @@ function PortfolioDetailTab() {
           <div style={{padding:"12px 16px",borderBottom:"1px solid #1a2035",fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
             {person.label} · Equity Holdings · {(person.holdings||[]).length} stocks
           </div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:500}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:500}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Stock",person.demat?"Value":"Qty","Price","Value","% of Equity"].map(h=>(
@@ -13753,7 +13753,7 @@ function PortfolioDetailTab() {
                 <td style={{padding:"9px 12px",textAlign:"right",color:"#3a4a6a",fontSize:11}}>100%</td>
               </tr>
             </tfoot>
-          </table>
+          </table></div>
         </div>
 
         {/* Index Fund if applicable */}
@@ -13774,7 +13774,7 @@ function PortfolioDetailTab() {
       {/* - MUTUAL FUNDS VIEW - */}
       {subView==="mf"&&(<>
         {(person.mf||{}).length>0 ? (<>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:9,marginBottom:12}}>
             {[
               {l:"Total Invested",v:fC(person.mf.reduce((s,m)=>s+m.invested,0)),c:"#7eb8ff"},
               {l:"Current Value", v:fC(person.mf.reduce((s,m)=>s+m.value,0)),  c:"#34d399"},
@@ -13787,7 +13787,7 @@ function PortfolioDetailTab() {
             ))}
           </div>
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
               <thead>
                 <tr style={{background:"#0a0d1c"}}>
                   {["Scheme","Holder","Type","Units","NAV","Invested","Value","P&L","P&L %"].map(h=>(
@@ -13848,7 +13848,7 @@ function PortfolioDetailTab() {
                   </td>
                 </tr>
               </tfoot>
-            </table>
+            </table></div>
           </div>
         </>) : (
           <div style={{textAlign:"center",padding:"40px 20px",color:"#3a4a6a",fontSize:13}}>
@@ -13867,7 +13867,7 @@ function PortfolioDetailTab() {
             {BONDS.map((b,i)=>(
               <div key={i} style={{background:"#0a1520",borderRadius:10,padding:"18px 20px",border:"1px solid #1e2a40"}}>
                 <div style={{fontSize:15,fontWeight:700,color:"#e8d5a0",marginBottom:12}}>{b.name}</div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12}}>
                   {[
                     {l:"Value",       v:fC(b.value),    c:"#c9a84c"},
                     {l:"Units",       v:b.units.toLocaleString("en-IN"), c:"#e8eaf0"},
@@ -13896,7 +13896,7 @@ function PortfolioDetailTab() {
       {/* - DEMAT ACCOUNTS VIEW - */}
       {subView==="demat"&&(<>
         {person.demat ? (<>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:9,marginBottom:12}}>
             {[
               {l:"Total Accounts",v:person.demat.length,        c:"#e8eaf0"},
               {l:"Total Value",   v:fC(person.demat.reduce((s,d)=>s+d.val,0)),c:"#7eb8ff"},
@@ -13909,7 +13909,7 @@ function PortfolioDetailTab() {
             ))}
           </div>
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden",marginBottom:12}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
               <thead>
                 <tr style={{background:"#0a0d1c"}}>
                   {["Depository Participant","BO ID","ISINs","Value","% Share"].map(h=>(
@@ -13939,12 +13939,12 @@ function PortfolioDetailTab() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           </div>
           {/* Chetan equity holdings */}
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,padding:"14px 16px"}}>
             <div style={{fontSize:11,color:"#3a4a6a",fontWeight:600,marginBottom:10}}>Selected Key Holdings</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:8}}>
               {(person.holdings||{}).sort((a,b)=>b.val-a.val).map(h=>(
                 <div key={h.s} style={{display:"flex",justifyContent:"space-between",padding:"7px 10px",background:"#0a0d14",borderRadius:8}}>
                   <span style={{fontSize:11,color:"#c8d0e8"}}>{h.s} <span style={{color:"#3a4a6a"}}>×{h.qty.toLocaleString("en-IN")}</span></span>
@@ -14113,7 +14113,7 @@ function InCredTab() {
       </div>
 
       {/* KPI Cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
         {[
           {l:"Portfolio Value",    v:fC(INCRED_SUMMARY.portfolioValue), c:"#ba7517", sub:"Jun 5 2026"},
           {l:"Net Invested",       v:fC(netInvested),                    c:"#e8eaf0", sub:`₹${(INCRED_SUMMARY.contribution/1e5).toFixed(0)}L contributed`},
@@ -14346,7 +14346,7 @@ function KarishmaTab() {
       </div>
 
       {/* KPI cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:9,marginBottom:14}}>
         {[
           {l:"Portfolio Value",   v:fC(KARI_SUMMARY.totalValue),    c:"#7eb8ff", sub:"13 stocks · Jun 6"},
           {l:"Total Invested",    v:fC(KARI_SUMMARY.totalInvested),  c:"#e8eaf0", sub:"Cost basis"},
@@ -14373,7 +14373,7 @@ function KarishmaTab() {
             <span>Live Holdings · {(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[]).length} stocks</span>
             <span style={{color:"#7eb8ff"}}>{fC(KARI_SUMMARY.totalValue)} · {(KARI_SUMMARY.totalPL>=0?"+":"")+KARI_SUMMARY.plPct}% overall</span>
           </div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Stock","Qty","Avg Cost","LTP","Value","P&L","P&L %"].map(h=>(
@@ -14422,7 +14422,7 @@ function KarishmaTab() {
                 </td>
               </tr>
             </tfoot>
-          </table>
+          </table></div>
         </div>
       )}
 
@@ -14473,7 +14473,7 @@ function KarishmaTab() {
           <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
             Closed Positions (Realised P/L · 2017–2026)
           </div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Stock","Buy Value","Sell Value","Realised P&L"].map(h=>(
@@ -14503,7 +14503,7 @@ function KarishmaTab() {
                 </td>
               </tr>
             </tfoot>
-          </table>
+          </table></div>
         </div>
       </>)}
 
@@ -14638,7 +14638,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
       var cls = pl>=0?"gain":"loss";
       html += '<tr><td>'+(i+1)+'</td><td><b>'+(r.sym||"")+'</b></td><td>'+(r.member||"")+'</td><td>'+(r.custodian||"")+'</td><td style="text-align:right">'+(r.qty||0)+'</td><td style="text-align:right">'+fmtC(r.avg)+'</td><td style="text-align:right">'+fmtC(r.cmp)+'</td><td style="text-align:right">'+fmtC(r.inv)+'</td><td style="text-align:right">'+fmtC(r.val)+'</td><td style="text-align:right" class="'+cls+'">'+fmtC(pl)+'</td><td style="text-align:right" class="'+cls+'">'+ret.toFixed(1)+'%</td></tr>';
     });
-    html += '</tbody></table></body></html>';
+    html += '</tbody></table></div></body></html>';
     var w = window.open("","_blank");
     w.document.write(html);
     w.document.close();
@@ -15067,7 +15067,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                           borderBottom:"3px solid #6366f133",borderTop:"none",
                           boxShadow:"inset 0 2px 8px #00000044"}}>
                           <div style={{padding:"2px 0 4px 0",borderLeft:"3px solid #6366f1"}}>
-                          <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                             <thead>
                               <tr style={{background:"#060809"}}>
                                 {["Member","Custodian","Qty","Avg Cost","CMP","Value","P/L","Return %"].map(h=>(
@@ -15114,7 +15114,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                                 );
                               })}
                             </tbody>
-                          </table>
+                          </table></div>
                           </div>
                         </td>
                       </tr>
@@ -15316,7 +15316,7 @@ function TaxTab() {
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
               Tax by Account
             </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>
                 {["Account","Lots","STCG","LTCG","Est. Tax","Taxable LTCG"].map(h=>(
                   <th key={h} style={{padding:"7px 14px",textAlign:h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
@@ -15348,7 +15348,7 @@ function TaxTab() {
                 <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#ef4444"}}>{cr(totalTax)}</td>
                 <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(taxableLTCG)}</td>
               </tr></tfoot>
-            </table>
+            </table></div>
           </div>
 
           {/* Note */}
@@ -15378,7 +15378,7 @@ function TaxTab() {
                 </div>
                 {detail.length>0&&(
                   <div style={{maxHeight:250,overflowY:"auto"}}>
-                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                    <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                       <thead><tr style={{background:"#0a0e1e",position:"sticky",top:0}}>
                         {["Stock","Qty","Sale Date","Sale Val","Buy Val","STCG","LTCG"].map(h=>(
                           <th key={h} style={{padding:"5px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
@@ -15397,7 +15397,7 @@ function TaxTab() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                    </table></div>
                   </div>
                 )}
               </div>
@@ -16049,7 +16049,7 @@ function LiveStocksTab() {
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>{stockMap.length} stocks · {cr(totalVal)}</div>
           <div style={{maxHeight:600,overflowY:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>{["Stock","Sector","Members","Value","P&L","Return"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Sector"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {[...stockMap].sort((a,b)=>b.val-a.val).map((h,i)=>(
@@ -16063,7 +16063,7 @@ function LiveStocksTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -16272,7 +16272,7 @@ function InsightsTab() {
           {/* Top 10 holdings — family level */}
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top 10 Holdings by Value</div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Members","Value","% of Equity","P&L"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Members"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {top10Conc.map((h,i)=>(
@@ -16285,7 +16285,7 @@ function InsightsTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -16319,7 +16319,7 @@ function InsightsTab() {
               </div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:"#34d399"}}>{cr(ltcgHarvestable)}</div>
             </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Members","Gain","% Return","Action"].map(h=><th key={h} style={{padding:"6px 12px",textAlign:h==="Stock"||h==="Members"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {ltcgCandidates.slice(0,20).map((h,i)=>(
@@ -16332,7 +16332,7 @@ function InsightsTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           {/* Loss harvesting */}
@@ -16344,7 +16344,7 @@ function InsightsTab() {
               </div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:"#f87171"}}>{cr(totalLossAvail)}</div>
             </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Members","Loss","% Down","Action"].map(h=><th key={h} style={{padding:"6px 12px",textAlign:h==="Stock"||h==="Members"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {lossCandidates.slice(0,15).map((h,i)=>(
@@ -16357,7 +16357,7 @@ function InsightsTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -16394,7 +16394,7 @@ function InsightsTab() {
           {/* Member wealth ranking */}
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Family Wealth Ranking</div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["#","Member","Equity","MF","Total","% of Family"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {[...realMembers].sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0))).map((m,i)=>{
@@ -16419,7 +16419,7 @@ function InsightsTab() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -16452,7 +16452,7 @@ function InsightsTab() {
                 </div>
                 {expanded&&holders.length>0&&(
                   <div style={{borderTop:`1px solid ${col}22`,background:"#080b18"}}>
-                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+                    <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
                       <thead><tr style={{background:"#0a0c14"}}>{["Member","Custodian","Account","Qty","Avg Cost","Current Value","P&L","Return"].map(h=><th key={h} style={{padding:"5px 12px",textAlign:h==="Member"||h==="Custodian"||h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                       <tbody>
                         {holders.map((h,hi)=>{
@@ -16479,7 +16479,7 @@ function InsightsTab() {
                           );
                         })}
                       </tbody>
-                    </table>
+                    </table></div>
                   </div>
                 )}
               </div>
@@ -16534,7 +16534,7 @@ function InsightsTab() {
           {/* Per-member unrealised performance */}
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Unrealised P&L per Member</div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Member","Invested","Current Value","Unrealised P&L","Return %"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {realMembers.filter(m=>m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY").map((m,i)=>{
@@ -16559,7 +16559,7 @@ function InsightsTab() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -16651,7 +16651,7 @@ function DividendTab() {
       {dvView==="annual"&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Year-by-Year Dividend Income</div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead><tr style={{background:"#0a0e1e"}}>{["Year","Dividend Income","vs Prev Year","Bar"].map(h=><th key={h} style={{padding:"8px 14px",textAlign:h==="Year"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
             <tbody>
               {[...annual].reverse().map((a,i,arr)=>{
@@ -16672,7 +16672,7 @@ function DividendTab() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 
@@ -16682,7 +16682,7 @@ function DividendTab() {
             <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Dividend by Stock — Top 20</div>
             <div style={{fontSize:11,fontFamily:"'JetBrains Mono',monospace",color:"#34d399",fontWeight:700}}>R75 Portfolio</div>
           </div>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
             <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Total Received","% of Total"].map(h=><th key={h} style={{padding:"7px 14px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
             <tbody>
               {topStocks.map(([s,a],i)=>(
@@ -16693,7 +16693,7 @@ function DividendTab() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 
@@ -16701,7 +16701,7 @@ function DividendTab() {
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
           <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>All Dividend Records (2020 onwards) — {records.length} entries</div>
           <div style={{maxHeight:500,overflowY:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
               <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>{["Stock","Date","Qty","Rate","Amount"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Date"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {[...records].sort((a,b)=>b.date.split('-').reverse().join('').localeCompare(a.date.split('-').reverse().join(''))).map((d,i)=>(
@@ -16714,7 +16714,7 @@ function DividendTab() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       )}
@@ -16945,7 +16945,7 @@ function SIPTracker() {
 
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>MF Portfolio by Member</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["Member","Invested","Value","Gain","Return"].map(h=><th key={h} style={{padding:"7px 14px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
           <tbody>
             {sipData.map((d,i)=>(
@@ -16963,7 +16963,7 @@ function SIPTracker() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );
@@ -17072,9 +17072,9 @@ function ProfilesTab() {
   const memberWealth = (m) => (m.stocks||0)+(m.mf||0)+(BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0));
 
   return (
-    <div style={{display:"flex",gap:14,height:"auto"}}>
+    <div style={{display:"flex",gap:14,height:"auto",flexWrap:"wrap"}}>
       {/* Left: member list */}
-      <div style={{width:220,flexShrink:0,display:"flex",flexDirection:"column",gap:8}}>
+      <div style={{width:"min(220px,100%)",flexShrink:0,display:"flex",flexDirection:"column",gap:8}}>
         <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4,fontWeight:700}}>Family Members</div>
         {realMembers.map(m=>{
           const p = profiles[m.n]||{dematAccounts:[]};
@@ -17355,7 +17355,7 @@ function NetWorthReportTab() {
       {/* Per-member wealth table */}
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden",marginBottom:14}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Current Wealth by Member</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["#","Member","Equity","MF","Bank","Total","% Share"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
           <tbody>
             {memberData.map((m,i)=>{
@@ -17380,7 +17380,7 @@ function NetWorthReportTab() {
               );
             })}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {/* Lorenz curve / Wealth concentration */}
@@ -17468,7 +17468,7 @@ function ChargesTab() {
 
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Charges by Broker / Account</div>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead><tr style={{background:"#0a0e1e"}}>{["Broker","Member","Est. Charges","Sell Turnover","Realised PL","Charges / PL"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Broker"||h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
           <tbody>
             {chargeData.map((c,i)=>(
@@ -17482,7 +17482,7 @@ function ChargesTab() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div style={{padding:"12px 16px",background:"#0a1a10",border:"1px solid #34d39933",borderRadius:10,fontSize:11,color:"#34d399",lineHeight:1.6}}>
@@ -17546,7 +17546,7 @@ function DivYieldTab() {
           <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Dividend income ÷ original purchase cost · Long-held stocks often have massive YOC</div></div>
         </div>
         <div style={{maxHeight:500,overflowY:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
             <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>{["Stock","Div Received","Cost Basis","Curr Value","Yield on Cost","Yield on Mkt"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
             <tbody>
               {stillHeld.map((d,i)=>(
@@ -17560,7 +17560,7 @@ function DivYieldTab() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>
@@ -17768,7 +17768,7 @@ function HoldingPeriodTab() {
       <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
         <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Holdings by Return % — {selMem}</div>
         <div style={{maxHeight:500,overflowY:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
             <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>{["Stock","Member","Invested","Value","P&L","Return","Classification"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
             <tbody>
               {[...rows].sort((a,b)=>((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv)).slice(0,50).map((h,i)=>{
@@ -17788,7 +17788,7 @@ function HoldingPeriodTab() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>
@@ -18103,7 +18103,7 @@ function MTFTab() {
       {view==="interest"&&(
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           {/* Interest breakdown */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
             {[{l:"Daily",v:dailyInterest,c:"#f87171"},{l:"Monthly",v:monthlyInterest,c:"#f0b429"},{l:"Annual",v:annualInterest,c:"#fb923c"}].map(({l,v,c})=>(
               <div key={l} style={{background:"linear-gradient(155deg,#1a0c0c,#110a0a)",border:"1px solid #3a1a1a",borderRadius:14,padding:"18px",textAlign:"center"}}>
                 <div style={{fontSize:10,color:"#6a4a4a",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{l} Interest</div>
@@ -18167,7 +18167,7 @@ function MTFTab() {
 
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>ROI Scenarios — Own Capital: {cr(ownCapital)} · Borrowed: {cr(funding)}</div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["Portfolio Return","Portfolio Gain","Less Interest","Net Gain","ROI on Own Capital","vs No Leverage"].map(h=><th key={h} style={{padding:"8px 14px",textAlign:h==="Portfolio Return"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {scenarios.map((s,i)=>{
@@ -18186,7 +18186,7 @@ function MTFTab() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
@@ -18243,7 +18243,7 @@ function MTFTab() {
                     <div style={{fontSize:9,color:"#6a4a4a"}}>borrowed</div>
                   </div>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:10}}>
                   {[{l:"Portfolio",v:cr(acc.portfolio),c:"#e8eaf0"},{l:"MTF Used",v:cr(acc.funding),c:"#f87171"},{l:"Daily Interest",v:"−"+cr(accDaily),c:"#fb923c"},{l:"Annual Interest",v:"−"+cr(accInterest),c:"#f87171"}].map(({l,v,c})=>(
                     <div key={l} style={{background:"#080b18",borderRadius:7,padding:"8px 10px"}}>
                       <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>{l}</div>
@@ -18273,7 +18273,7 @@ function MTFTab() {
           <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>ICICI Direct Holdings (MTF Account Proxy)</div>
             <div style={{maxHeight:500,overflowY:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>{["Stock","Member","Qty","Avg Cost","Value","P&L","Return"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                 <tbody>
                   {[...icicIHoldings].sort((a,b)=>b.val-a.val).slice(0,30).map((h,i)=>{
@@ -18297,7 +18297,7 @@ function MTFTab() {
                   <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:icicPL>=0?"#34d399":"#f87171"}}>{cr(icicPL)}</td>
                   <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:icicRet>=0?"#34d399":"#f87171"}}>{(icicRet>=0?"+":"")+icicRet.toFixed(1)}%</td>
                 </tr></tfoot>
-              </table>
+              </table></div>
             </div>
           </div>
         </div>
