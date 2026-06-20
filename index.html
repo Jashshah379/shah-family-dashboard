@@ -19069,11 +19069,6 @@ function MTFTab() {
         </div>
       )}
 
-      {iView==="dividends"&&<DividendTab/>}
-      {iView==="calendar"&&<DividendCalendarTab/>}
-      {iView==="overlap"&&<OverlapHeatmap/>}
-      {iView==="period"&&<HoldingPeriodTab/>}
-
 
       {/* ── Manual CMP Floating Action Button ── */}
       <button onClick={function(){setShowManualCmp(function(v){return !v;});}}
