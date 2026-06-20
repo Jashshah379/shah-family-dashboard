@@ -6824,7 +6824,7 @@ const MEMBERS = [
    cas:"Vasumati Shah",broker:null,icici:null,holdingsRef:"V129",
    custodian:["Sushil Financial","ICICI Direct","Zerodha"],casApr26:232585964,
    casTrend:[{m:"May'25",v:220000000},{m:"Jun'25",v:225000000},{m:"Oct'25",v:228000000},{m:"Apr'26",v:232585964}]},
-  {n:"Rasiklal HUF",   i:"RH",c:"#1d9e75",stocks:78042000, mf:1455643,  bank:375950,
+  {n:"Rasiklal HUF",   i:"RH",c:"#1d9e75",stocks:145279839, mf:1455643,  bank:375950,
    cas:"Rasiklal HUF", broker:null,icici:null,holdingsRef:"RASIKLAL_HUF",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:116548032,
    casTrend:[{m:"May'25",v:168000000},{m:"Oct'25",v:172000000},{m:"Apr'26",v:174525606},{m:"Jun'26",v:116548032}]},
@@ -9590,6 +9590,24 @@ const STOCK_MASTER_DB = {
   "Jupiter Bioscience": "Jupiter Bioscience",
   "JUPITER BIOSCIENCE LTD.": "Jupiter Bioscience",
   "Gujarat Fluorochemicals": "Gujarat Fluorochem",
+  "BELRISE INDUSTRIES LIMITED": "Belrise Industries",
+  "CONTAINER CORPORATION OF INDIA": "Container Corporation of India",
+  "OLECTRA GREENTECH LIMITED": "Olectra Greentech",
+  "GUJARAT PIPAVAV PORT LIMITED": "Gujarat Pipavav Port",
+  "HEXA TRADEX LIMITED": "Hexa Tradex",
+  "SAMMAAN CAPITAL LIMITED": "Sammaan Capital",
+  "INOX WIND LIMITED": "Inox Wind",
+  "JSW STEEL LIMITED": "JSW Steel",
+  "KAYNES TECHNOLOGY IND LIMITED": "Kaynes Technology India",
+  "KEWAL KIRAN CLOTHING LIMITED": "Kewal Kiran Clothing",
+  "MMTC LIMITED": "MMTC",
+  "MISHRA DHATU NIGAM LIMITED": "Mishra Dhatu Nigam",
+  "MTAR TECHNOLOGIES LIMITED": "MTAR Technologies",
+  "NTPC GREEN ENERGY LIMITED": "NTPC Green Energy",
+  "SBC EXPORT LTD": "SBC Exports",
+  "TATA TECHNOLOGIES LIMITED": "Tata Technologies",
+  "TRENT LTD": "Trent",
+  "TRIGYN TECHNOLOGIES LIMITED": "Trigyn Technologies",
 
 };
 /* ── Additional MF holdings — Zerodha Coin (uploaded Jun 2026) ── */
@@ -9778,6 +9796,55 @@ const RASIKLAL_HUF_SUSHIL_HOLDINGS = [
   {s:"Yes Bank",qty:1000,avg:15.06,cmp:23.89,val:23890,inv:15060,unreal:8830,sector:"BFSI"},
 ];
 
+const RASIKLAL_HUF_ICICI_HOLDINGS = [
+  {s:"Adani Total Gas",qty:1200,avg:726.51,cmp:727.3,val:870924,inv:871812,unreal:-888,mtf:true,mtfQty:1200,mtfVal:870924},
+  {s:"AWL Agribusiness",qty:2450,avg:195.16,cmp:184.31,val:497982,inv:478142,unreal:19840,mtf:true,mtfQty:1800,mtfVal:378180,dematQty:650,dematVal:119802},
+  {s:"Bajaj Housing Finance",qty:8100,avg:91.69,cmp:88.36,val:715716,inv:742689,unreal:-26973},
+  {s:"Belrise Industries",qty:166,avg:90.0,cmp:241.09,val:40021,inv:14940,unreal:25081},
+  {s:"CESC",qty:1800,avg:180.25,cmp:168.9,val:332802,inv:324450,unreal:8352,mtf:true,mtfQty:1800,mtfVal:332802},
+  {s:"Container Corporation of India",qty:501,avg:0.0,cmp:471.75,val:236347,inv:0,unreal:236347},
+  {s:"Control Print",qty:900,avg:828.87,cmp:623.45,val:561105,inv:745983,unreal:-184878},
+  {s:"Dredging Corporation of India",qty:5600,avg:965.26,cmp:1136.0,val:6249496,inv:5405456,unreal:844040,mtf:true,mtfQty:3600,mtfVal:3977496,dematQty:2000,dematVal:2272000},
+  {s:"Force Motors",qty:90,avg:18815.52,cmp:18637.0,val:1765546,inv:1693397,unreal:72149,mtf:true,mtfQty:90,mtfVal:1765546},
+  {s:"Genesys International",qty:7400,avg:262.77,cmp:350.75,val:2595550,inv:1944498,unreal:651052},
+  {s:"Olectra Greentech",qty:1200,avg:1231.37,cmp:1520.3,val:1462584,inv:1477644,unreal:-15060,mtf:true,mtfQty:1200,mtfVal:1462584},
+  {s:"Gujarat Fluorochem",qty:99,avg:3307.9,cmp:3839.9,val:380150,inv:327482,unreal:52668},
+  {s:"Gujarat Pipavav Port",qty:11206,avg:155.3,cmp:153.08,val:1749705,inv:1740292,unreal:9413,mtf:true,mtfQty:11206,mtfVal:1749705},
+  {s:"Hexa Tradex",qty:2070,avg:353.41,cmp:162.5,val:336375,inv:731559,unreal:-395184},
+  {s:"Hindustan Construction",qty:54000,avg:25.42,cmp:27.02,val:1459080,inv:1372680,unreal:86400},
+  {s:"Sammaan Capital",qty:27300,avg:168.15,cmp:174.6,val:4811436,inv:4590495,unreal:220941,mtf:true,mtfQty:16800,mtfVal:2978136,dematQty:10500,dematVal:1833300},
+  {s:"Inox Wind",qty:36000,avg:90.97,cmp:90.72,val:3252120,inv:3274920,unreal:-22800,mtf:true,mtfQty:30000,mtfVal:2707800,dematQty:6000,dematVal:544320},
+  {s:"Jai Balaji Industries",qty:1000,avg:69.11,cmp:67.97,val:67970,inv:69110,unreal:-1140},
+  {s:"Jaiprakash Power Ventures",qty:118000,avg:19.32,cmp:18.06,val:2165880,inv:2279760,unreal:-113880,mtf:true,mtfQty:30000,mtfVal:576600,dematQty:88000,dematVal:1589280},
+  {s:"JSW Steel",qty:3980,avg:1262.79,cmp:1287.7,val:5083934,inv:5025904,unreal:58030,mtf:true,mtfQty:1800,mtfVal:2276748,dematQty:2180,dematVal:2807186},
+  {s:"Kaynes Technology India",qty:180,avg:3241.68,cmp:3253.1,val:585558,inv:583502,unreal:2056},
+  {s:"Kewal Kiran Clothing",qty:3300,avg:483.37,cmp:493.5,val:1628550,inv:1595121,unreal:33429},
+  {s:"La Opala RG",qty:7200,avg:179.48,cmp:183.46,val:1290888,inv:1292256,unreal:-1368,mtf:true,mtfQty:7200,mtfVal:1290888},
+  {s:"Lloyds Engineering Works",qty:4500,avg:76.46,cmp:86.84,val:390780,inv:344070,unreal:46710},
+  {s:"MMTC",qty:12000,avg:69.66,cmp:74.55,val:894600,inv:835920,unreal:58680},
+  {s:"Mishra Dhatu Nigam",qty:1800,avg:437.49,cmp:437.0,val:786690,inv:787482,unreal:-792,mtf:true,mtfQty:1800,mtfVal:786690},
+  {s:"MTAR Technologies",qty:480,avg:6604.81,cmp:8374.5,val:3803133,inv:3170309,unreal:632824,mtf:true,mtfQty:290,mtfVal:2211978,dematQty:190,dematVal:1591155},
+  {s:"Natco Pharma",qty:1600,avg:1113.85,cmp:889.0,val:1646283,inv:1782160,unreal:-135877,mtf:true,mtfQty:1060,mtfVal:1166223,dematQty:540,dematVal:480060},
+  {s:"Nelco",qty:3763,avg:738.27,cmp:940.35,val:3630417,inv:2778110,unreal:852307,mtf:true,mtfQty:1000,mtfVal:1032230,dematQty:2763,dematVal:2598187},
+  {s:"Newgen Software Technologies",qty:2290,avg:493.22,cmp:481.95,val:1128329,inv:1129474,unreal:-1145,mtf:true,mtfQty:2290,mtfVal:1128329},
+  {s:"NOCIL",qty:1500,avg:144.12,cmp:159.02,val:238530,inv:216180,unreal:22350},
+  {s:"Northern Arc Capital",qty:2500,avg:175.89,cmp:295.05,val:737625,inv:439725,unreal:297900},
+  {s:"NTPC Green Energy",qty:1000,avg:96.58,cmp:96.04,val:96040,inv:96580,unreal:-540},
+  {s:"Oracle Financial Services Software",qty:180,avg:9859.08,cmp:9638.5,val:1772836,inv:1774634,unreal:-1798,mtf:true,mtfQty:180,mtfVal:1772836},
+  {s:"Paradeep Phosphates",qty:4421,avg:131.29,cmp:136.22,val:579858,inv:580433,unreal:-575,mtf:true,mtfQty:4421,mtfVal:579858},
+  {s:"Pine Labs",qty:7000,avg:148.24,cmp:152.31,val:1048320,inv:1037680,unreal:10640,mtf:true,mtfQty:7000,mtfVal:1048320},
+  {s:"Rain Industries",qty:8300,avg:163.52,cmp:191.0,val:1540340,inv:1357216,unreal:183124,mtf:true,mtfQty:2000,mtfVal:337040,dematQty:6300,dematVal:1203300},
+  {s:"Religare Enterprises",qty:13000,avg:215.06,cmp:253.4,val:3377790,inv:2795780,unreal:582010,mtf:true,mtfQty:13000,mtfVal:3377790},
+  {s:"SBC Exports",qty:1000,avg:28.83,cmp:43.59,val:43590,inv:28830,unreal:14760},
+  {s:"Sigachi Industries",qty:10800,avg:42.52,cmp:22.95,val:247860,inv:459216,unreal:-211356},
+  {s:"Satluj Jal Vidyut Nigam",qty:15600,avg:74.11,cmp:72.88,val:1155024,inv:1156116,unreal:-1092,mtf:true,mtfQty:15600,mtfVal:1155024},
+  {s:"Tata Technologies",qty:1800,avg:1066.08,cmp:742.25,val:1336050,inv:1918944,unreal:-582894},
+  {s:"Tinna Rubber & Infrastructure",qty:600,avg:899.68,cmp:891.25,val:539262,inv:539808,unreal:-546,mtf:true,mtfQty:600,mtfVal:539262},
+  {s:"Trent",qty:400,avg:3093.02,cmp:3205.8,val:1236292,inv:1237208,unreal:-916,mtf:true,mtfQty:400,mtfVal:1236292},
+  {s:"Trigyn Technologies",qty:12000,avg:61.8,cmp:57.0,val:684000,inv:741600,unreal:-57600},
+  {s:"Walchandnagar Industries",qty:7000,avg:234.12,cmp:312.05,val:2184350,inv:1638840,unreal:545510},
+];
+
 
 const JASH_PORTFOLIO_HOLDINGS = [
   {s:"Borosil Renewables",qty:4260.0,avg:664.84,cmp:516.7,val:2201142,inv:2832218,unreal:-631065,sector:"ENGINEERING & CAPITAL GOODS"},
@@ -9842,6 +9909,7 @@ const DATA_FRESHNESS = {
   "JASH_ICICI_HOLDINGS": { member:"Jash Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
   "PRAFUL_NRE_ICICI_HOLDINGS": { member:"Praful Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
   "RASIKLAL_ICICI_NEW_HOLDINGS": { member:"Rasiklal Shah", custodian:"ICICI Direct (2)", lastUpdated:"2026-06-19" },
+  "RASIKLAL_HUF_ICICI_HOLDINGS": { member:"Rasiklal HUF", custodian:"ICICI Direct", lastUpdated:"2026-06-20" },
 };
 var FAMILY_TOP = (function() {
   var all = [];
@@ -9863,6 +9931,7 @@ var FAMILY_TOP = (function() {
     {arr: typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[],  m:"Rasiklal Shah",    c:"Sushil Financial"},
     /* ── Rasiklal HUF ── */
     {arr: typeof RASIKLAL_HUF_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_HUF_SUSHIL_HOLDINGS:[],m:"Rasiklal HUF",c:"Sushil Financial"},
+    {arr: typeof RASIKLAL_HUF_ICICI_HOLDINGS!=="undefined"?RASIKLAL_HUF_ICICI_HOLDINGS:[],m:"Rasiklal HUF",c:"ICICI Direct"},
     {arr: typeof R75_SUSHIL_HOLDINGS!=="undefined"?R75_SUSHIL_HOLDINGS:[],    m:"Rasiklal HUF",     c:"Sushil Financial"},
     {arr: typeof R75_BOND_HOLDINGS!=="undefined"?R75_BOND_HOLDINGS:[],        m:"Rasiklal HUF",     c:"Sushil Financial"},
     /* ── Rasiklal Shah ── */
@@ -9948,7 +10017,10 @@ const MEMBER_HOLDINGS = {
     ..._tag(VASUMATI_ICICI_HOLDINGS,     "Vasumati Shah", "ICICI Direct"),
     ..._tag(VASUMATI_ZERODHA_HOLDINGS,   "Vasumati Shah", "Zerodha"),
   ],
-  "RASIKLAL_HUF": _tag(RASIKLAL_HUF_SUSHIL_HOLDINGS, "Rasiklal HUF", "Sushil Financial"),
+  "RASIKLAL_HUF": [
+    ..._tag(RASIKLAL_HUF_SUSHIL_HOLDINGS, "Rasiklal HUF", "Sushil Financial"),
+    ..._tag(typeof RASIKLAL_HUF_ICICI_HOLDINGS!=="undefined"?RASIKLAL_HUF_ICICI_HOLDINGS:[], "Rasiklal HUF", "ICICI Direct"),
+  ],
   "RM": [
     ..._tag(R124_RASIKLAL_SUSHIL_HOLDINGS, "Rasiklal Shah", "Sushil Financial"),
     ..._tag(RM_ICICI_HOLDINGS,        "Rasiklal Shah", "ICICI Direct"),
