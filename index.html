@@ -5620,45 +5620,6 @@ function FamilyApp() {
             * Family-wide consolidated · top stocks by total value across all members · sorted by portfolio impact
           </div>
         </div>
-
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1.7fr",gap:14,marginBottom:14}}>
-          <Panel title="Asset Allocation — May 2026">
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart><Pie data={allocData} dataKey="value" innerRadius={45} outerRadius={72} paddingAngle={3}>
-                {allocData.map(e=><Cell key={e.name} fill={e.color}/>)}
-              </Pie><Tooltip formatter={v=>"₹"+v+" Cr"} contentStyle={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:12,fontSize:12}}/></PieChart>
-            </ResponsiveContainer>
-            {allocData.map(a=>(
-              <div key={a.name} style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:5}}>
-                <span style={{display:"flex",alignItems:"center",gap:6}}><span style={{width:8,height:8,borderRadius:2,background:a.color}}/><span style={{color:"#6a7a9a"}}>{a.name}</span></span>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",color:"#c5cce0"}}>₹{a.value} Cr</span>
-              </div>
-            ))}
-          </Panel>
-          <Panel title="Top holders — total wealth">
-            {MEMBERS.slice(0,10).map(m=>(
-              <div key={m.n} style={{marginBottom:9}}>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}>
-                  <span style={{color:"#c5cce0"}}>{m.n}</span>
-                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#e8eaf0"}}>{cr(m.total)}</span>
-                </div>
-                <div style={{height:5,background:"#1a2035",borderRadius:3,overflow:"hidden"}}>
-                  <div style={{width:(m.total/MEMBERS[0].total*100).toFixed(1)+"%",height:"100%",background:m.c,borderRadius:3}}/>
-                </div>
-              </div>
-            ))}
-          </Panel>
-        </div>
-        <Panel title="Portfolio trend — 7 snapshots (Mar 2025 – May 2026)">
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={trendData}>
-              <XAxis dataKey="d" tick={{fill:"#3a4a6a",fontSize:11}} axisLine={false} tickLine={false}/>
-              <YAxis tickFormatter={v=>"₹"+v+"Cr"} tick={{fill:"#3a4a6a",fontSize:11}} axisLine={false} tickLine={false} domain={[40,75]}/>
-              <Tooltip formatter={v=>["₹"+v+" Cr","Portfolio"]} contentStyle={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:12,fontSize:12}}/>
-              <Line type="monotone" dataKey="v" stroke="#378add" strokeWidth={2.5} dot={{fill:"#378add",r:4,strokeWidth:0}} activeDot={{r:7}}/>
-            </LineChart>
-          </ResponsiveContainer>
-        </Panel>
       </div>}
 
       {/* - TREND - */}
