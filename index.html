@@ -4124,19 +4124,64 @@ function MutualFundsTab() {
                       {d.schemes.map(function(sc,i){
                         var spl=sc.gain!==undefined?sc.gain:(sc.value||0)-(sc.invested||0);
                         var isGain=spl>=0;
+                        var schemeKey=name+"|"+(sc.folio||sc.scheme||i);
+                        var isExp=expandedScheme===schemeKey;
                         return (
-                          <div key={i} style={{padding:"9px 14px 9px 28px",borderBottom:"1px solid #080a12",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:10,color:"#c8d0e8"}}>{sc.scheme}</div>
-                              <div style={{display:"flex",gap:4,marginTop:2,flexWrap:"wrap"}}>
-                                {sc.cat&&<span style={{fontSize:7,color:"#3a4a6a",background:"#0a0e1e",padding:"1px 5px",borderRadius:3}}>{sc.cat}</span>}
-                                {sc.platform&&<span style={{fontSize:7,color:"#7eb8ff",background:"#1e3a5f",padding:"1px 5px",borderRadius:3}}>{sc.platform}</span>}
+                          <div key={i}>
+                            <div onClick={function(){setExpandedScheme(isExp?null:schemeKey);}}
+                              style={{padding:"9px 14px 9px 28px",borderBottom:isExp?"none":"1px solid #080a12",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
+                                background:isExp?"#0a1020":"transparent"}}
+                              onMouseEnter={function(e){if(!isExp)e.currentTarget.style.background="#0d1320";}}
+                              onMouseLeave={function(e){if(!isExp)e.currentTarget.style.background="transparent";}}>
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{fontSize:10,color:"#c8d0e8"}}>{sc.scheme}</div>
+                                <div style={{display:"flex",gap:4,marginTop:2,flexWrap:"wrap"}}>
+                                  {sc.cat&&<span style={{fontSize:7,color:"#3a4a6a",background:"#0a0e1e",padding:"1px 5px",borderRadius:3}}>{sc.cat}</span>}
+                                  {sc.platform&&<span style={{fontSize:7,color:"#7eb8ff",background:"#1e3a5f",padding:"1px 5px",borderRadius:3}}>{sc.platform}</span>}
+                                </div>
                               </div>
+                              <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
+                                <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(sc.value||0)}</div>
+                                <div style={{fontSize:9,color:isGain?"#10b981":"#ef4444",fontFamily:"monospace"}}>{isGain?"+":""}{cr(spl)}</div>
+                              </div>
+                              <span style={{fontSize:9,color:"#3a4a6a",marginLeft:8}}>{isExp?"▲":"▼"}</span>
                             </div>
-                            <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
-                              <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(sc.value||0)}</div>
-                              <div style={{fontSize:9,color:isGain?"#10b981":"#ef4444",fontFamily:"monospace"}}>{isGain?"+":""}{cr(spl)}</div>
-                            </div>
+                            {isExp&&(
+                              <div style={{background:"#060912",borderBottom:"2px solid #1d2545",borderLeft:"3px solid #10b981",padding:"12px 16px 12px 32px",display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:10}}>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>INVESTED</div>
+                                  <div style={{fontSize:11,fontFamily:"monospace",color:"#8899bb",fontWeight:600}}>{cr(sc.invested||0)}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>CURRENT VALUE</div>
+                                  <div style={{fontSize:11,fontFamily:"monospace",color:"#10b981",fontWeight:700}}>{cr(sc.value||0)}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>P&L</div>
+                                  <div style={{fontSize:11,fontFamily:"monospace",color:isGain?"#10b981":"#ef4444",fontWeight:700}}>{isGain?"+":""}{cr(spl)}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>NAV</div>
+                                  <div style={{fontSize:11,fontFamily:"monospace",color:"#7eb8ff",fontWeight:700}}>₹{sc.nav!=null?sc.nav.toFixed(2):"—"}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>UNITS</div>
+                                  <div style={{fontSize:11,fontFamily:"monospace",color:"#a0aabb"}}>{sc.units!=null?sc.units.toLocaleString("en-IN"):"—"}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>XIRR</div>
+                                  <div style={{fontSize:11,fontFamily:"monospace",color:sc.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>{sc.xirr!=null?sc.xirr.toFixed(2)+"%":"—"}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>START DATE</div>
+                                  <div style={{fontSize:11,color:"#8899bb"}}>{sc.start||"—"}</div>
+                                </div>
+                                <div>
+                                  <div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>FOLIO</div>
+                                  <div style={{fontSize:10,fontFamily:"monospace",color:"#7eb8ff"}}>{sc.folio||"—"}</div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -4267,6 +4312,7 @@ function MutualFundsTab() {
 function MembersTab() {
   const [selMem, setSelMem] = React.useState(null);
   const [subTab, setSubTab] = React.useState("equity");
+  const [expandedScheme, setExpandedScheme] = React.useState(null);
 
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
@@ -4510,15 +4556,42 @@ function MembersTab() {
                             </tr></thead>
                             <tbody>
                               {mfData.schemes.map(function(s,i){
-                                var pl2 = s.gain!==undefined ? s.gain : (s.value||s.currentValue||0)-(s.invested||s.inv||0);
-                                return (
-                                  <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
-                                    <td style={{padding:"7px 12px",color:"#c8d0e8",fontWeight:500}}>{s.scheme}</td>
-                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#8899bb"}}>{cr(s.invested||0)}</td>
-                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:pl2>=0?"#34d399":"#f87171",fontWeight:600}}>{cr(s.currentValue||0)}</td>
+                                var schemeKey = m.n+"|"+(s.folio||s.scheme||i);
+                                var isExpanded = expandedScheme===schemeKey;
+                                var invested = s.invested||s.inv||0;
+                                var curVal = s.value||s.currentValue||0;
+                                var pl2 = s.gain!==undefined ? s.gain : curVal-invested;
+                                var retPct2 = invested>0 ? (pl2/invested*100) : null;
+                                return [
+                                  <tr key={i} onClick={function(){setExpandedScheme(isExpanded?null:schemeKey);}}
+                                    style={{borderBottom:isExpanded?"none":"1px solid #0d1020",background:isExpanded?"#0f1a2e":(i%2===0?"transparent":"#080a12"),cursor:"pointer"}}
+                                    onMouseEnter={function(e){if(!isExpanded)e.currentTarget.style.background="#11152c";}}
+                                    onMouseLeave={function(e){if(!isExpanded)e.currentTarget.style.background=i%2===0?"transparent":"#080a12";}}>
+                                    <td style={{padding:"7px 12px",color:"#c8d0e8",fontWeight:500}}>
+                                      <span style={{display:"inline-block",width:12,fontSize:9,color:"#3a4a6a",transform:isExpanded?"rotate(90deg)":"none",transition:"transform 0.15s"}}>▶</span>
+                                      {s.scheme}
+                                    </td>
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#8899bb"}}>{cr(invested)}</td>
+                                    <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:pl2>=0?"#34d399":"#f87171",fontWeight:600}}>{cr(curVal)}</td>
                                     <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:s.xirr>=0?"#10b981":"#ef4444",fontWeight:700}}>{s.xirr!=null?s.xirr.toFixed(1)+"%":"—"}</td>
-                                  </tr>
-                                );
+                                  </tr>,
+                                  isExpanded&&(
+                                    <tr key={i+"-exp"} style={{borderBottom:"1px solid #1d2545",background:"#080a16"}}>
+                                      <td colSpan={4} style={{padding:"12px 16px"}}>
+                                        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10}}>
+                                          {s.folio&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>FOLIO NO.</div><div style={{fontSize:11,color:"#7eb8ff",fontFamily:"monospace"}}>{s.folio}</div></div>}
+                                          {s.units!=null&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>UNITS</div><div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>{s.units}</div></div>}
+                                          {s.nav!=null&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>NAV</div><div style={{fontSize:11,color:"#c8d0e8",fontFamily:"monospace"}}>₹{s.nav}</div></div>}
+                                          {s.cat&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>CATEGORY</div><div style={{fontSize:11,color:"#c8d0e8"}}>{s.cat}</div></div>}
+                                          {s.platform&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>PLATFORM</div><div style={{fontSize:11,color:"#f0b429"}}>{s.platform}</div></div>}
+                                          {s.start&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>START DATE</div><div style={{fontSize:11,color:"#c8d0e8"}}>{s.start}</div></div>}
+                                          {retPct2!=null&&<div><div style={{fontSize:8,color:"#3a4a6a"}}>RETURN</div><div style={{fontSize:11,color:retPct2>=0?"#34d399":"#f87171",fontFamily:"monospace",fontWeight:700}}>{retPct2>=0?"+":""}{retPct2.toFixed(1)}%</div></div>}
+                                          <div><div style={{fontSize:8,color:"#3a4a6a"}}>GAIN/LOSS</div><div style={{fontSize:11,color:pl2>=0?"#34d399":"#f87171",fontFamily:"monospace",fontWeight:700}}>{pl2>=0?"+":""}{cr(pl2)}</div></div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )
+                                ];
                               })}
                             </tbody>
                           </table>
@@ -4754,23 +4827,31 @@ function FamilyApp() {
 
   /* ── Live Price Coverage ── */
   const [showCoverage, setShowCoverage] = React.useState(false);
+  const [coverageView, setCoverageView] = React.useState("stale"); /* "live" | "stale" */
   const priceCoverage = React.useMemo(function() {
     var all = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
     var unique = {};
     all.forEach(function(h) {
       if (!h || !h.s) return;
-      if (!unique[h.s]) unique[h.s] = {sym: h.s, isLive: false, val: 0};
-      if (h.isLive) unique[h.s].isLive = true;
+      if (!unique[h.s]) unique[h.s] = {sym: h.s, isLive: false, val: 0, cmp: 0, chgPct: null};
+      if (h.isLive) {
+        unique[h.s].isLive = true;
+        unique[h.s].cmp = h.cmp || 0;
+        unique[h.s].chgPct = h.chgPct;
+      } else if (!unique[h.s].cmp && h.cmp > 0) {
+        unique[h.s].cmp = h.cmp; /* last-known stale price */
+      }
       unique[h.s].val += (h.val || 0);
     });
     var list = Object.values(unique);
-    var live = list.filter(function(s){return s.isLive;});
+    var live = list.filter(function(s){return s.isLive;}).sort(function(a,b){return b.val-a.val;});
     var stale = list.filter(function(s){return !s.isLive;}).sort(function(a,b){return b.val-a.val;});
     return {
       total: list.length,
       liveCount: live.length,
       staleCount: list.length - live.length,
       pct: list.length>0 ? Math.round(live.length/list.length*100) : 0,
+      liveList: live,
       staleList: stale,
     };
   }, [priceVersion]);
@@ -5499,7 +5580,7 @@ function FamilyApp() {
 {showCoverage&&(
   <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw))"}}
     onClick={function(e){if(e.target===e.currentTarget)setShowCoverage(false);}}>
-    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:520,marginTop:"min(60px,8vh)",boxShadow:"0 24px 80px #00000099"}}>
+    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,marginTop:"min(60px,8vh)",boxShadow:"0 24px 80px #00000099"}}>
       <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
           <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📡 Live Price Coverage</div>
@@ -5509,39 +5590,67 @@ function FamilyApp() {
       </div>
       <div style={{padding:"18px 22px"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
-          <div style={{background:"#0a1a0f",border:"1px solid #1a3a20",borderRadius:10,padding:"12px",textAlign:"center"}}>
+          <div onClick={function(){setCoverageView("live");}}
+            style={{background:"#0a1a0f",border:"1px solid "+(coverageView==="live"?"#34d399":"#1a3a20"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
+              boxShadow:coverageView==="live"?"0 0 0 2px #34d39933":"none",transition:"all 0.15s"}}>
             <div style={{fontSize:20,fontWeight:900,color:"#34d399",fontFamily:"monospace"}}>{priceCoverage.liveCount}</div>
-            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Live</div>
+            <div style={{fontSize:9,color:coverageView==="live"?"#34d399":"#3a4a6a",marginTop:2,fontWeight:coverageView==="live"?700:400}}>Live</div>
           </div>
-          <div style={{background:"#1a1500",border:"1px solid #3a2a00",borderRadius:10,padding:"12px",textAlign:"center"}}>
+          <div onClick={function(){setCoverageView("stale");}}
+            style={{background:"#1a1500",border:"1px solid "+(coverageView==="stale"?"#f0b429":"#3a2a00"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
+              boxShadow:coverageView==="stale"?"0 0 0 2px #f0b42933":"none",transition:"all 0.15s"}}>
             <div style={{fontSize:20,fontWeight:900,color:"#f0b429",fontFamily:"monospace"}}>{priceCoverage.staleCount}</div>
-            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Stale / No Feed</div>
+            <div style={{fontSize:9,color:coverageView==="stale"?"#f0b429":"#3a4a6a",marginTop:2,fontWeight:coverageView==="stale"?700:400}}>Stale / No Feed</div>
           </div>
           <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px",textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace"}}>{priceCoverage.pct}%</div>
             <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Coverage</div>
           </div>
         </div>
-        <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,fontWeight:700}}>
-          Stale stocks by value ({priceCoverage.staleList.length})
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>
+            {coverageView==="live"?"Live stocks by value":"Stale stocks by value"} ({coverageView==="live"?priceCoverage.liveList.length:priceCoverage.staleList.length})
+          </div>
+          {coverageView==="live"&&(
+            <div style={{fontSize:9,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>
+              Total: {cr(priceCoverage.liveList.reduce(function(s,x){return s+x.val;},0))}
+            </div>
+          )}
         </div>
-        <div style={{maxHeight:320,overflowY:"auto"}}>
-          {priceCoverage.staleList.map(function(s,i){return(
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:4,fontSize:8,color:"#2a3a50",padding:"0 10px 4px",textTransform:"uppercase",fontWeight:700}}>
+          <span>Stock</span><span style={{textAlign:"right",minWidth:90}}>{coverageView==="live"?"CMP":"Last CMP"}</span><span style={{textAlign:"right",minWidth:90}}>Value</span>
+        </div>
+
+        <div style={{maxHeight:340,overflowY:"auto"}}>
+          {(coverageView==="live"?priceCoverage.liveList:priceCoverage.staleList).map(function(s,i){return(
             <div key={i} onClick={function(){setShowCoverage(false);setStockDetail(s.sym);}}
-              style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",
+              style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:4,alignItems:"center",padding:"8px 10px",
                 marginBottom:4,background:"#0d1020",borderRadius:8,cursor:"pointer"}}
               onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
               onMouseLeave={function(e){e.currentTarget.style.background="#0d1020";}}>
-              <span style={{fontSize:11,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:280}}>{s.sym}</span>
-              <span style={{fontSize:11,fontFamily:"monospace",color:"#3a4a6a"}}>{cr(s.val)}</span>
+              <span style={{fontSize:11,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sym}</span>
+              <span style={{fontSize:10,fontFamily:"monospace",textAlign:"right",minWidth:90,color:s.cmp>0?(coverageView==="live"?"#34d399":"#8899bb"):"#3a4a6a"}}>
+                {s.cmp>0?"₹"+s.cmp.toLocaleString("en-IN",{maximumFractionDigits:2}):"—"}
+                {coverageView==="live"&&s.chgPct!=null&&(
+                  <span style={{marginLeft:4,fontSize:8,color:s.chgPct>=0?"#34d399":"#ef4444"}}>{s.chgPct>=0?"▲":"▼"}{Math.abs(s.chgPct).toFixed(1)}%</span>
+                )}
+              </span>
+              <span style={{fontSize:11,fontFamily:"monospace",textAlign:"right",minWidth:90,color:"#3a4a6a"}}>{cr(s.val)}</span>
             </div>
           );})}
-          {priceCoverage.staleList.length===0&&(
+          {coverageView==="stale"&&priceCoverage.staleList.length===0&&(
             <div style={{textAlign:"center",padding:20,fontSize:11,color:"#34d399"}}>✓ All stocks have live prices</div>
+          )}
+          {coverageView==="live"&&priceCoverage.liveList.length===0&&(
+            <div style={{textAlign:"center",padding:20,fontSize:11,color:"#f0b429"}}>No live prices yet — check connection</div>
           )}
         </div>
         <div style={{fontSize:9,color:"#3a4a6a",marginTop:12,lineHeight:1.5}}>
-          Stale stocks either aren't actively traded on NSE, are delisted/suspended, or aren't yet mapped in our symbol database. Use the ✏ CMP override button to manually set a price for any stock.
+          {coverageView==="stale"
+            ? "Stale stocks either aren't actively traded on NSE, are delisted/suspended, or aren't yet mapped in our symbol database. Use the ✏ CMP override button to manually set a price for any stock."
+            : "These stocks are receiving real-time price updates from the NSE feed, refreshed every few minutes during market hours."}
         </div>
       </div>
     </div>
@@ -9655,7 +9764,7 @@ const DATA_FRESHNESS = {
   "AARYA_HOLDINGS": { member:"Aarya Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
   "AARYA_SUSHIL_HOLDINGS": { member:"Aarya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
   "RIYA_SUSHIL_HOLDINGS": { member:"Riya Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
-  "RIYA_NSDL_HOLDINGS": { member:"Riya Shah", custodian:"NSDL", lastUpdated:"2026-06-17" },
+  "RIYA_NSDL_HOLDINGS": { member:"Riya Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-17" },
   "RIYA_ZERODHA_HOLDINGS": { member:"Riya Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
   "HONEY_ZERODHA_HOLDINGS": { member:"Honey Chetan Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
   "VASUMATI_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
@@ -9700,7 +9809,7 @@ var FAMILY_TOP = (function() {
     {arr: typeof AARYA_SUSHIL_HOLDINGS!=="undefined"?AARYA_SUSHIL_HOLDINGS:[],m:"Aarya Shah",       c:"Sushil Financial"},
     /* ── Riya Shah ── */
     {arr: typeof RIYA_SUSHIL_HOLDINGS!=="undefined"?RIYA_SUSHIL_HOLDINGS:[], m:"Riya Shah",         c:"Sushil Financial"},
-    {arr: typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],     m:"Riya Shah",         c:"NSDL"},
+    {arr: typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],     m:"Riya Shah",         c:"ICICI Direct"},
     {arr: typeof RIYA_ZERODHA_HOLDINGS!=="undefined"?RIYA_ZERODHA_HOLDINGS:[],m:"Riya Shah",        c:"Zerodha"},
     /* ── Honey Chetan Shah ── */
     {arr: typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[],m:"Honey Chetan Shah",c:"Zerodha"},
@@ -9784,7 +9893,7 @@ const MEMBER_HOLDINGS = {
   "JASH":  _tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah",      "Zerodha"),
   "RIYA": [
     ..._tag(typeof RIYA_SUSHIL_HOLDINGS!=="undefined"?RIYA_SUSHIL_HOLDINGS:[],   "Riya Shah", "Sushil Financial"),
-    ..._tag(typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],       "Riya Shah", "NSDL"),
+    ..._tag(typeof RIYA_NSDL_HOLDINGS!=="undefined"?RIYA_NSDL_HOLDINGS:[],       "Riya Shah", "ICICI Direct"),
     ..._tag(typeof RIYA_ZERODHA_HOLDINGS!=="undefined"?RIYA_ZERODHA_HOLDINGS:[], "Riya Shah", "Zerodha"),
   ],
   "HONEY": _tag(typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[], "Honey Chetan Shah", "Zerodha"),
