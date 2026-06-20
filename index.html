@@ -4896,8 +4896,8 @@ function FamilyApp() {
         const totalUnrl = holdings.reduce((s,h)=>s+(h.unreal||0),0);
         const totalRet  = totalInv>0?(totalUnrl/totalInv*100):null;
         const isGain    = totalUnrl>=0;
-        const avgCmp    = holdings.filter(h=>h.cmp>0).reduce((s,h)=>s+h.cmp,0)/(holdings.filter(h=>h.cmp>0).length||1);
-                    const liveHolding = holdings.find(h=>h.chgPct!=null);
+        const liveHolding = holdings.find(h=>h.chgPct!=null&&h.cmp>0);
+                    const avgCmp    = liveHolding ? liveHolding.cmp : (holdings.filter(h=>h.cmp>0).reduce((s,h)=>s+h.cmp,0)/(holdings.filter(h=>h.cmp>0).length||1));
                     const chgPct = liveHolding ? liveHolding.chgPct : null;
         const avgAvg    = totalQty>0?totalInv/totalQty:0;
         /* DB lookup */
@@ -9811,35 +9811,17 @@ const MEMBER_HOLDINGS = {
   "KARI":  _tag(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], "Karishma Shah", "Zerodha"),
   "AMIT_HUF":    _tag(typeof AMIT_HUF_ICICI_HOLDINGS!=="undefined"?AMIT_HUF_ICICI_HOLDINGS:[], "Amit Gandhi HUF", "ICICI Direct"),
   "RAKESH_HUF": _tag(typeof RAKESH_HUF_HOLDINGS!=="undefined"?RAKESH_HUF_HOLDINGS:[], "Rakesh Bhansali HUF", "ICICI Direct"),
-  "AARYA": _tag(AARYA_HOLDINGS,          "Aarya Shah",     "ICICI Direct"),
-  "ALL_FAMILY": [
-    ..._tag(VASUMATI_SUSHIL_HOLDINGS,    "Vasumati Shah",  "Sushil Financial"),
-    ..._tag(VASUMATI_ICICI_HOLDINGS,     "Vasumati Shah",  "ICICI Direct"),
-    ..._tag(VASUMATI_ZERODHA_HOLDINGS,   "Vasumati Shah",  "Zerodha"),
-    ..._tag(RASIKLAL_HUF_SUSHIL_HOLDINGS,"Rasiklal HUF",   "Sushil Financial"),
-    ..._tag(R124_RASIKLAL_SUSHIL_HOLDINGS,    "Rasiklal Shah",  "Sushil Financial"),
-    ..._tag(RM_ICICI_HOLDINGS,           "Rasiklal Shah",  "ICICI Direct"),
-    ..._tag(CHETAN_HUF_SUSHIL_HOLDINGS,  "Chetan Shah HUF","Sushil Financial"),
-    ..._tag(PRAFUL_HUF_SUSHIL,           "Praful Shah HUF","Sushil Financial"),
-    ..._tag(typeof PRAFUL_HUF_SUSHIL_P71!=="undefined"?PRAFUL_HUF_SUSHIL_P71:[], "Praful Shah HUF","Sushil Financial"),
-    ..._tag(ASHA_SUSHIL_HOLDINGS,        "Asha Shah",      "Sushil Financial"),
-    ..._tag(MAYA_SUSHIL_HOLDINGS,        "Maya Shah",      "Sushil Financial"),
-    ..._tag(CHETAN_HOLDINGS,             "Chetan Shah",    "Zerodha"),
-    ..._tag(CHETAN_V60_SUSHIL_HOLDINGS,  "Chetan Shah",    "Sushil Financial"),
-    ..._tag(JASH_PORTFOLIO_HOLDINGS,     "Jash Shah",      "Zerodha"),
-    ..._tag(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], "Karishma Shah", "Zerodha"),
-    ..._tag(AARYA_HOLDINGS,              "Aarya Shah",     "ICICI Direct"),
-    ..._tag(INCRED_HOLDINGS,             "Praful Shah HUF","InCred PMS"),
-  ],
+  "AARYA": _tag(AARYA_HOLDINGS,          "Aarya Shah",     "ICICI Direct")
 };
 
-const CUSTODIAN_MAP = {
-  "SUSHIL":    "Sushil Financial",
-  "ICICI":     "ICICI Direct",
-  "ZERODHA":   "Zerodha",
-  "INCRED":    "InCred PMS",
-  "IIFL":      "IIFL Capital",
-};
+/* ALL_FAMILY — flattened view sharing the SAME object references as MEMBER_HOLDINGS,
+   so live price patching (which mutates objects in place) stays in sync everywhere */
+MEMBER_HOLDINGS["ALL_FAMILY"] = Object.keys(MEMBER_HOLDINGS).reduce(function(acc, key) {
+  var v = MEMBER_HOLDINGS[key];
+  if (Array.isArray(v)) return acc.concat(v);
+  return acc;
+}, []);
+
 
 
 const STOCK_DB = {
