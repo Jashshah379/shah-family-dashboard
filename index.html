@@ -1798,7 +1798,7 @@ function GlobalSearchTab() {
 }
 
 function DividendCalendarTab() {
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
   // Approximate dividend yield by sector
@@ -2135,7 +2135,7 @@ function StockNotesTab() {
   const [editText, setEditText] = React.useState("");
   const [editTarget, setEditTarget] = React.useState("");
   const [editSL, setEditSL] = React.useState("");
-  const cr = v => { if(!v&&v!==0)return"--";const a=Math.abs(v);return a>=1e5?"₹"+(a/1e5).toFixed(0)+"L":"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v);return a>=1e5?"₹"+(a/1e5).toFixed(0)+"L":"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const stockMap = {};
@@ -3115,7 +3115,7 @@ function BankStatementTab() {
    all dividends received, realised P&L history, tax lots
 ═══════════════════════════════════════════════════════ */
 function StockDetailPanel({ sym, onClose }) {
-  const cr = v => { if(!v&&v!==0)return"—";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+"Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+"L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"—";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+"Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+"L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [view, setView] = React.useState("overview");
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
@@ -4901,6 +4901,7 @@ function FamilyApp() {
                     )}
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {holdings.some(h=>h.delisted)&&<span style={{fontSize:10,background:"#2a0a0a",color:"#ef4444",border:"1px solid #5a1a1a",padding:"3px 10px",borderRadius:12,fontWeight:700}}>⚠ DELISTED / SUSPENDED</span>}
                     {db.sector&&<span style={{fontSize:10,background:"#0f1a2e",color:"#7eb8ff",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{db.sector}</span>}
                     {db.mcap&&<span style={{fontSize:10,background:"#1a1a0a",color:"#f0b429",padding:"3px 10px",borderRadius:12,fontWeight:600}}>{db.mcap} Cap</span>}
                     {holdings.length>0&&<span style={{fontSize:10,background:"#0a1a0a",color:"#34d399",padding:"3px 10px",borderRadius:12,fontWeight:600}}>Held in {holdings.length} account{holdings.length!==1?"s":""}</span>}
@@ -5681,6 +5682,7 @@ function FamilyApp() {
         })).filter(d=>d.val>0).sort((a,b)=>b.val-a.val);
 
         const fC = n => {
+          if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
           if(!n) return "—";
           if(Math.abs(n)>=1e7) return "₹"+(n/1e7).toFixed(2)+"Cr";
           if(Math.abs(n)>=1e5) return "₹"+(n/1e5).toFixed(1)+"L";
@@ -6515,6 +6517,7 @@ function StockDetailPage({ sym, onBack }) {
 const _tag = (arr, member, custodian) =>
   (arr||[]).map(h => ({...h, _member: member, _custodian: custodian}));
 const cr = n => {
+  if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
   if(!n && n!==0) return "—";
   const abs=Math.abs(n), sign=n<0?"−":"";
   if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -6894,13 +6897,13 @@ const R124_RASIKLAL_SUSHIL_HOLDINGS = [
   {s:"Innova Captab",qty:800,avg:715.48,cmp:949.55,val:760000,inv:572384,unreal:187616,sector:"PHRM"},
   {s:"Inox Wind",qty:24743,avg:120.0,cmp:90.72,val:2254335,inv:2969160,unreal:-714825,sector:"POWR"},
   {s:"IndiGo",qty:16,avg:4312.42,cmp:5021.5,val:80320,inv:68999,unreal:11321,sector:"LOGI"},
-  {s:"Interlink Petroleum",qty:300,avg:75.45,cmp:0.0,val:969,inv:22635,unreal:-21666,sector:"OTHERS"},
+  {s:"Interlink Petroleum",qty:300,avg:75.45,cmp:0.0,delisted:true,val:969,inv:22635,unreal:-21666,sector:"OTHERS"},
   {s:"Jammu & Kashmir Bank",qty:1008,avg:90.83,cmp:163.56,val:165362,inv:91557,unreal:73806,sector:"BFSI"},
   {s:"Jio Financial Services",qty:1750,avg:247.33,cmp:244.45,val:428575,inv:432828,unreal:-4252,sector:"BFSI"},
   {s:"Jubilant Agri",qty:234,avg:2472.67,cmp:1867.2,val:437346,inv:578605,unreal:-141259,sector:"CHEM"},
-  {s:"Karuturi Global",qty:5000,avg:12.35,cmp:0.0,val:1200,inv:61750,unreal:-60550,sector:"OTHERS"},
+  {s:"Karuturi Global",qty:5000,avg:12.35,cmp:0.0,delisted:true,val:1200,inv:61750,unreal:-60550,sector:"OTHERS"},
   {s:"KDDL",qty:1,avg:3133.16,cmp:2959.7,val:2980,inv:3133,unreal:-153,sector:"FMCG"},
-  {s:"Kwality",qty:3500,avg:73.35,cmp:0.0,val:7490,inv:256725,unreal:-249235,sector:"OTHERS"},
+  {s:"Kwality",qty:3500,avg:73.35,cmp:0.0,delisted:true,val:7490,inv:256725,unreal:-249235,sector:"OTHERS"},
   {s:"L&T Technology Services",qty:110,avg:4579.97,cmp:3331.2,val:366630,inv:503797,unreal:-137167,sector:"IT"},
   {s:"Linde India",qty:50,avg:3401.96,cmp:7460.5,val:374975,inv:170098,unreal:204877,sector:"PTRO"},
   {s:"MRPL",qty:3500,avg:153.81,cmp:154.19,val:539035,inv:538335,unreal:700,sector:"PTRO"},
@@ -6916,7 +6919,7 @@ const R124_RASIKLAL_SUSHIL_HOLDINGS = [
   {s:"Premier Energies",qty:350,avg:1077.8,cmp:1079.6,val:377510,inv:377230,unreal:280,sector:"ENGG"},
   {s:"Protean eGov Technologies",qty:720,avg:1505.09,cmp:606.45,val:436896,inv:1083665,unreal:-646769,sector:"IT"},
   {s:"R K Swamy",qty:8008,avg:221.18,cmp:98.06,val:784784,inv:1771209,unreal:-986425,sector:"OTHERS"},
-  {s:"Ratnakar Securities",qty:350,avg:1.93,cmp:0.0,val:203,inv:676,unreal:-472,sector:"OTHERS"},
+  {s:"Ratnakar Securities",qty:350,avg:1.93,cmp:0.0,delisted:true,val:203,inv:676,unreal:-472,sector:"OTHERS"},
   {s:"Ratnaveer Precision",qty:1200,avg:171.25,cmp:188.99,val:227400,inv:205500,unreal:21900,sector:"METL"},
   {s:"Reliance Power",qty:282,avg:28.32,cmp:26.1,val:7386,inv:7986,unreal:-601,sector:"POWR"},
   {s:"Religare Enterprises",qty:430,avg:228.92,cmp:253.4,val:109005,inv:98436,unreal:10569,sector:"BFSI"},
@@ -6925,7 +6928,7 @@ const R124_RASIKLAL_SUSHIL_HOLDINGS = [
   {s:"Samvardhana Motherson",qty:4200,avg:80.78,cmp:145.54,val:608790,inv:339276,unreal:269514,sector:"AUTO"},
   {s:"Schaeffler India",qty:108,avg:3237.04,cmp:4329.9,val:469260,inv:349600,unreal:119660,sector:"AUTO"},
   {s:"Sigachi Industries",qty:5400,avg:38.25,cmp:22.95,val:124362,inv:206550,unreal:-82188,sector:"PHRM"},
-  {s:"Sigrun Holdings",qty:1200,avg:38.0,cmp:0.0,val:228,inv:45600,unreal:-45372,sector:"OTHERS"},
+  {s:"Sigrun Holdings",qty:1200,avg:38.0,cmp:0.0,delisted:true,val:228,inv:45600,unreal:-45372,sector:"OTHERS"},
   {s:"SpiceJet",qty:15000,avg:44.53,cmp:12.63,val:189450,inv:667950,unreal:-478500,sector:"OTHERS"},
   {s:"STL Networks",qty:6000,avg:30.43,cmp:28.21,val:170640,inv:182580,unreal:-11940,sector:"OTHERS"},
   {s:"Suzlon Energy",qty:15008,avg:35.74,cmp:59.2,val:889224,inv:536386,unreal:352838,sector:"POWR"},
@@ -7872,7 +7875,7 @@ const ASHA_SUSHIL_HOLDINGS = [
   {s:"Aegis Logistics",qty:900,avg:789.21,cmp:985.7,inv:710289,val:887130,sector:"0"},
   {s:"Ajmera Realty",qty:9000,avg:211.55,cmp:139.61,inv:1903950,val:1256490,sector:"0"},
   {s:"Angel One",qty:2000,avg:290.86,cmp:348.25,inv:581720,val:696500,sector:"0"},
-  {s:"Aqua Logistics",qty:938,avg:58.33,cmp:0.0,inv:54714,val:1276,sector:"0"},
+  {s:"Aqua Logistics",qty:938,avg:58.33,cmp:0.0,delisted:true,inv:54714,val:1276,sector:"0"},
   {s:"Astra Microwave",qty:1750,avg:364.97,cmp:1480.1,inv:638698,val:2590175,sector:"0"},
   {s:"AstraZeneca Pharma",qty:54,avg:6785.96,cmp:8503.0,inv:366442,val:459162,sector:"0"},
   {s:"Automotive Axles",qty:100,avg:2161.77,cmp:1774.9,inv:216177,val:177490,sector:"0"},
@@ -7886,11 +7889,11 @@ const ASHA_SUSHIL_HOLDINGS = [
   {s:"DCX Systems",qty:1800,avg:236.49,cmp:188.23,inv:425682,val:338814,sector:"0"},
   {s:"Delta Corp",qty:5004,avg:88.12,cmp:65.76,inv:440952,val:329063,sector:"0"},
   {s:"Dredging Corporation",qty:500,avg:703.08,cmp:1088.4,inv:351540,val:544200,sector:"0"},
-  {s:"DUNCANS INDUSTRIES LTD.",qty:200,avg:12.24,cmp:0.0,inv:2448,val:1820,sector:"0"},
+  {s:"DUNCANS INDUSTRIES LTD.",qty:200,avg:12.24,cmp:0.0,delisted:true,inv:2448,val:1820,sector:"0"},
   {s:"Dynamatic Technologies",qty:108,avg:6323.83,cmp:10443.0,inv:682974,val:1127844,sector:"0"},
   {s:"E2E Networks",qty:1700,avg:345.09,cmp:382.5,inv:586653,val:650250,sector:"0"},
   {s:"Embassy Developments",qty:6000,avg:69.62,cmp:66.38,inv:417720,val:398280,sector:"0"},
-  {s:"EPIC ENZYMES PHARMACEUTIC",qty:1300,avg:3.09,cmp:0.0,inv:4017,val:0,sector:"0"},
+  {s:"EPIC ENZYMES PHARMACEUTIC",qty:1300,avg:3.09,cmp:0.0,delisted:true,inv:4017,val:0,sector:"0"},
   {s:"Eternal",qty:600,avg:270.02,cmp:253.6,inv:162012,val:152160,sector:"0"},
   {s:"Genesys International",qty:1400,avg:402.56,cmp:320.45,inv:563584,val:448630,sector:"0"},
   {s:"GFL",qty:10196,avg:135.59,cmp:47.11,inv:1382476,val:480334,sector:"0"},
@@ -7901,22 +7904,22 @@ const ASHA_SUSHIL_HOLDINGS = [
   {s:"Heritage Foods",qty:1569,avg:5.0,cmp:329.35,inv:7845,val:516750,sector:"0"},
   {s:"Hero Motocorp",qty:1,avg:5796.83,cmp:5031.0,inv:5797,val:5031,sector:"0"},
   {s:"Hexa Tradex",qty:3000,avg:199.27,cmp:162.53,inv:597810,val:487590,sector:"0"},
-  {s:"HINDUSTAN DORR-OLIVER LTD",qty:3000,avg:21.54,cmp:0.0,inv:64620,val:3660,sector:"0"},
+  {s:"HINDUSTAN DORR-OLIVER LTD",qty:3000,avg:21.54,cmp:0.0,delisted:true,inv:64620,val:3660,sector:"0"},
   {s:"IFCI",qty:7200,avg:43.31,cmp:88.8,inv:311832,val:639360,sector:"0"},
   {s:"Indian Renewable Energy D",qty:460,avg:32.0,cmp:126.15,inv:14720,val:58029,sector:"0"},
   {s:"Inox Wind",qty:21208,avg:120.0,cmp:90.79,inv:2544960,val:1925474,sector:"0"},
   {s:"Integra Essentia Limited",qty:5400,avg:3.21,cmp:1.45,inv:17334,val:7830,sector:"0"},
   {s:"IndiGo",qty:165,avg:5683.86,cmp:4840.0,inv:937837,val:798600,sector:"0"},
-  {s:"INTERWORLD DIGITAL LTD.",qty:1000,avg:3.37,cmp:0.0,inv:3370,val:200,sector:"0"},
+  {s:"INTERWORLD DIGITAL LTD.",qty:1000,avg:3.37,cmp:0.0,delisted:true,inv:3370,val:200,sector:"0"},
   {s:"Jamna Auto",qty:5400,avg:77.47,cmp:128.5,inv:418338,val:693900,sector:"0"},
-  {s:"JIK INDUSTRIES LTD.",qty:15,avg:15.2,cmp:0.0,inv:228,val:9,sector:"0"},
+  {s:"JIK INDUSTRIES LTD.",qty:15,avg:15.2,cmp:0.0,delisted:true,inv:228,val:9,sector:"0"},
   {s:"JSW Steel",qty:450,avg:1144.57,cmp:1274.3,inv:515056,val:573435,sector:"0"},
   {s:"Jubilant Agri",qty:45,avg:2746.75,cmp:1878.8,inv:123604,val:84546,sector:"0"},
-  {s:"JUPITER BIOSCIENCE LTD.-",qty:1350,avg:83.4,cmp:0.0,inv:112590,val:0,sector:"0"},
+  {s:"JUPITER BIOSCIENCE LTD.-",qty:1350,avg:83.4,cmp:0.0,delisted:true,inv:112590,val:0,sector:"0"},
   {s:"Just Dial",qty:2808,avg:863.14,cmp:543.8,inv:2423697,val:1526990,sector:"0"},
   {s:"Kabra Extrusion Technik",qty:300,avg:496.56,cmp:239.74,inv:148968,val:71922,sector:"0"},
   {s:"KRN Heat Exchanger",qty:360,avg:772.74,cmp:1218.3,inv:278186,val:438588,sector:"0"},
-  {s:"KSS LIMITED",qty:5000,avg:1.1,cmp:0.0,inv:5500,val:950,sector:"0"},
+  {s:"KSS LIMITED",qty:5000,avg:1.1,cmp:0.0,delisted:true,inv:5500,val:950,sector:"0"},
   {s:"Linde India",qty:534,avg:5158.05,cmp:6991.5,inv:2754399,val:3733461,sector:"534"},
   {s:"MOSCHIP TECHNOLOGIES LIMI",qty:1570,avg:150.51,cmp:216.59,inv:236301,val:340046,sector:"0"},
   {s:"National Peroxide",qty:504,avg:599.6,cmp:556.05,inv:302198,val:280249,sector:"0"},
@@ -7931,7 +7934,7 @@ const ASHA_SUSHIL_HOLDINGS = [
   {s:"Ratnamani Metals",qty:100,avg:2469.83,cmp:2598.7,inv:246983,val:259870,sector:"0"},
   {s:"Ratnaveer Precision",qty:1000,avg:173.95,cmp:165.14,inv:173950,val:165140,sector:"0"},
   {s:"Reliance Industries",qty:500,avg:1485.8,cmp:1328.8,inv:742900,val:664400,sector:"0"},
-  {s:"Reliance Infrastructure",qty:1300,avg:378.24,cmp:0.0,inv:491712,val:106431,sector:"0"},
+  {s:"Reliance Infrastructure",qty:1300,avg:378.24,cmp:0.0,delisted:true,inv:491712,val:106431,sector:"0"},
   {s:"Sagility",qty:9000,avg:41.97,cmp:39.96,inv:377730,val:359640,sector:"0"},
   {s:"Sammaan Capital",qty:4500,avg:144.86,cmp:180.0,inv:651870,val:810000,sector:"0"},
   {s:"SG Mart",qty:2000,avg:390.1,cmp:587.45,inv:780200,val:1174900,sector:"0"},
@@ -8133,13 +8136,13 @@ const C31_SUSHIL_HOLDINGS = [
   {s:"Bank of Baroda",qty:3000,avg:104.86,cmp:275.35,inv:314580,val:826050,sector:"0"},
   {s:"Bhansali Engineering Polymers",qty:2315,avg:100.67,cmp:98.91,inv:233051,val:228977,sector:"0"},
   {s:"Bharat Dynamics",qty:1800,avg:1112.19,cmp:1236.7,inv:2001942,val:2226060,sector:"0"},
-  {s:"Bharati Defence and Infra",qty:300,avg:87.23,cmp:0.0,inv:26169,val:600,sector:"0"},
+  {s:"Bharati Defence and Infra",qty:300,avg:87.23,cmp:0.0,delisted:true,inv:26169,val:600,sector:"0"},
   {s:"Bosch",qty:54,avg:30693.35,cmp:39045.0,inv:1657441,val:2108430,sector:"0"},
   {s:"Brigade Enterprises",qty:600,avg:776.07,cmp:720.25,inv:465642,val:432150,sector:"0"},
   {s:"Career Point Edutech",qty:1739,avg:0.0,cmp:182.99,inv:0,val:318220,sector:"0"},
   {s:"CDSL",qty:1192,avg:692.15,cmp:1264.0,inv:825043,val:1506688,sector:"0"},
-  {s:"CLC Industries",qty:20,avg:11.31,cmp:0.0,inv:226,val:371,sector:"0"},
-  {s:"CMM BROADCASTING NETWORK",qty:1000,avg:2.26,cmp:0.0,inv:2260,val:0,sector:"0"},
+  {s:"CLC Industries",qty:20,avg:11.31,cmp:0.0,delisted:true,inv:226,val:371,sector:"0"},
+  {s:"CMM BROADCASTING NETWORK",qty:1000,avg:2.26,cmp:0.0,delisted:true,inv:2260,val:0,sector:"0"},
   {s:"CP Capital",qty:1739,avg:426.71,cmp:101.08,inv:742049,val:175778,sector:"0"},
   {s:"Dev Accelerator Limited",qty:3290,avg:61.0,cmp:36.54,inv:200690,val:120217,sector:"0"},
   {s:"Dredging Corporation",qty:3940,avg:652.32,cmp:1088.4,inv:2570141,val:4288296,sector:"0"},
@@ -8161,22 +8164,22 @@ const C31_SUSHIL_HOLDINGS = [
   {s:"IDFC First Bank",qty:3000,avg:72.08,cmp:77.5,inv:216240,val:232500,sector:"0"},
   {s:"IRCTC",qty:500,avg:622.05,cmp:522.9,inv:311025,val:261450,sector:"0"},
   {s:"IndiGo",qty:41,avg:4312.43,cmp:4840.0,inv:176810,val:198440,sector:"0"},
-  {s:"Interlink Petroleum",qty:500,avg:85.49,cmp:0.0,inv:42745,val:1615,sector:"0"},
+  {s:"Interlink Petroleum",qty:500,avg:85.49,cmp:0.0,delisted:true,inv:42745,val:1615,sector:"0"},
   {s:"ISGEC HEAVY ENGINEERING L",qty:108,avg:1103.98,cmp:922.15,inv:119230,val:99592,sector:"0"},
   {s:"ITI",qty:343,avg:285.29,cmp:303.15,inv:97854,val:103980,sector:"0"},
-  {s:"IVRCL LTD",qty:47,avg:115.5,cmp:0.0,inv:5428,val:18,sector:"0"},
+  {s:"IVRCL LTD",qty:47,avg:115.5,cmp:0.0,delisted:true,inv:5428,val:18,sector:"0"},
   {s:"Jio Financial Services",qty:350,avg:215.52,cmp:241.95,inv:75432,val:84682,sector:"0"},
-  {s:"JUPITER BIOSCIENCE LTD.-",qty:2900,avg:50.58,cmp:0.0,inv:146682,val:0,sector:"0"},
+  {s:"JUPITER BIOSCIENCE LTD.-",qty:2900,avg:50.58,cmp:0.0,delisted:true,inv:146682,val:0,sector:"0"},
   {s:"KRN Heat Exchanger",qty:300,avg:612.7,cmp:1218.3,inv:183810,val:365490,sector:"0"},
-  {s:"Kwality",qty:2000,avg:61.01,cmp:0.0,inv:122020,val:4280,sector:"0"},
+  {s:"Kwality",qty:2000,avg:61.01,cmp:0.0,delisted:true,inv:122020,val:4280,sector:"0"},
   {s:"Linde India",qty:207,avg:5560.24,cmp:6991.5,inv:1150970,val:1447240,sector:"0"},
   {s:"LKP Securities Limited",qty:19800,avg:18.82,cmp:17.2,inv:372636,val:340560,sector:"0"},
   {s:"LTM",qty:114,avg:4334.0,cmp:4006.7,inv:494076,val:456764,sector:"0"},
   {s:"MAN Infraconstruction",qty:3000,avg:147.99,cmp:113.26,inv:443970,val:339780,sector:"0"},
   {s:"MOIL",qty:1500,avg:299.86,cmp:297.6,inv:449790,val:446400,sector:"0"},
   {s:"MTAR Technologies",qty:558,avg:7036.09,cmp:7698.5,inv:3926138,val:4295763,sector:"0"},
-  {s:"Nakoda",qty:2000,avg:10.86,cmp:0.0,inv:21720,val:380,sector:"0"},
-  {s:"Nextgen Animation",qty:80,avg:13.46,cmp:0.0,inv:1077,val:0,sector:"0"},
+  {s:"Nakoda",qty:2000,avg:10.86,cmp:0.0,delisted:true,inv:21720,val:380,sector:"0"},
+  {s:"Nextgen Animation",qty:80,avg:13.46,cmp:0.0,delisted:true,inv:1077,val:0,sector:"0"},
   {s:"Northern Arc Capital",qty:57,avg:263.0,cmp:298.75,inv:14991,val:17029,sector:"0"},
   {s:"Nuvoco Vistas",qty:900,avg:337.27,cmp:310.45,inv:303543,val:279405,sector:"0"},
   {s:"Ola Electric Mobility Lim",qty:4620,avg:53.63,cmp:43.07,inv:247771,val:198983,sector:"0"},
@@ -8187,7 +8190,7 @@ const C31_SUSHIL_HOLDINGS = [
   {s:"Sammaan Capital",qty:4800,avg:239.3,cmp:180.0,inv:1148640,val:864000,sector:"0"},
   {s:"Siemens Energy India",qty:108,avg:3763.7,cmp:3608.9,inv:406480,val:389761,sector:"0"},
   {s:"Sigma Advanced Systems",qty:500,avg:427.08,cmp:475.1,inv:213540,val:237550,sector:"0"},
-  {s:"Silverline Technologies",qty:200,avg:5.35,cmp:0.0,inv:1070,val:1388,sector:"0"},
+  {s:"Silverline Technologies",qty:200,avg:5.35,cmp:0.0,delisted:true,inv:1070,val:1388,sector:"0"},
   {s:"State Bank of India",qty:1038,avg:762.44,cmp:1015.3,inv:791413,val:1053881,sector:"0"},
   {s:"Swan Corp",qty:1683,avg:382.13,cmp:315.95,inv:643125,val:531744,sector:"0"},
   {s:"Tata Power",qty:4000,avg:59.71,cmp:402.25,inv:238840,val:1609000,sector:"0"},
@@ -8204,12 +8207,12 @@ const C31_SUSHIL_HOLDINGS = [
 ];
 
 const M34_SUSHIL_HOLDINGS = [
-  {s:"Accentia Technologies",qty:200,avg:140.81,cmp:0.0,inv:28162,val:0,sector:"0"},
-  {s:"Alka Diamond Industries",qty:600,avg:9.24,cmp:0.0,inv:5544,val:5550,sector:"0"},
-  {s:"Bharati Defence and Infra",qty:2000,avg:231.7,cmp:0.0,inv:463400,val:4000,sector:"0"},
+  {s:"Accentia Technologies",qty:200,avg:140.81,cmp:0.0,delisted:true,inv:28162,val:0,sector:"0"},
+  {s:"Alka Diamond Industries",qty:600,avg:9.24,cmp:0.0,delisted:true,inv:5544,val:5550,sector:"0"},
+  {s:"Bharati Defence and Infra",qty:2000,avg:231.7,cmp:0.0,delisted:true,inv:463400,val:4000,sector:"0"},
   {s:"CDSL",qty:810,avg:508.49,cmp:1264.0,inv:411877,val:1023840,sector:"810"},
-  {s:"EPIC ENZYMES PHARMACEUTIC",qty:1000,avg:3.09,cmp:0.0,inv:3090,val:0,sector:"0"},
-  {s:"EXCEL GLASSES LTD.",qty:1000,avg:5.1,cmp:0.0,inv:5100,val:920,sector:"0"},
+  {s:"EPIC ENZYMES PHARMACEUTIC",qty:1000,avg:3.09,cmp:0.0,delisted:true,inv:3090,val:0,sector:"0"},
+  {s:"EXCEL GLASSES LTD.",qty:1000,avg:5.1,cmp:0.0,delisted:true,inv:5100,val:920,sector:"0"},
   {s:"GUJARAT LEASE FINANCING L",qty:2000,avg:3.96,cmp:6.51,inv:7920,val:13020,sector:"0"},
   {s:"Hariom Pipe",qty:15,avg:351.78,cmp:419.1,inv:5277,val:6286,sector:"0"},
   {s:"HDFC Bank",qty:2,avg:821.28,cmp:784.9,inv:1643,val:1570,sector:"0"},
@@ -8221,16 +8224,16 @@ const M34_SUSHIL_HOLDINGS = [
   {s:"Indian Energy Exchange",qty:2100,avg:58.77,cmp:123.57,inv:123417,val:259497,sector:"0"},
   {s:"Innova Captab",qty:265,avg:681.56,cmp:964.2,inv:180613,val:255513,sector:"0"},
   {s:"ITI",qty:1000,avg:236.23,cmp:303.15,inv:236230,val:303150,sector:"0"},
-  {s:"JIK INDUSTRIES LTD.",qty:20,avg:15.2,cmp:0.0,inv:304,val:13,sector:"0"},
-  {s:"JUPITER BIOSCIENCE LTD.-",qty:1000,avg:88.6,cmp:0.0,inv:88600,val:0,sector:"0"},
+  {s:"JIK INDUSTRIES LTD.",qty:20,avg:15.2,cmp:0.0,delisted:true,inv:304,val:13,sector:"0"},
+  {s:"JUPITER BIOSCIENCE LTD.-",qty:1000,avg:88.6,cmp:0.0,delisted:true,inv:88600,val:0,sector:"0"},
   {s:"KDDL",qty:1,avg:3136.85,cmp:2825.5,inv:3137,val:2826,sector:"0"},
-  {s:"KSS LIMITED",qty:15000,avg:1.1,cmp:0.0,inv:16500,val:2850,sector:"0"},
-  {s:"Nakoda",qty:3201,avg:11.22,cmp:0.0,inv:35915,val:608,sector:"0"},
+  {s:"KSS LIMITED",qty:15000,avg:1.1,cmp:0.0,delisted:true,inv:16500,val:2850,sector:"0"},
+  {s:"Nakoda",qty:3201,avg:11.22,cmp:0.0,delisted:true,inv:35915,val:608,sector:"0"},
   {s:"ONGC",qty:1,avg:287.31,cmp:248.2,inv:287,val:248,sector:"0"},
   {s:"Praj Industries",qty:500,avg:559.25,cmp:341.4,inv:279625,val:170700,sector:"0"},
   {s:"Premier Energies",qty:100,avg:764.83,cmp:1055.3,inv:76483,val:105530,sector:"0"},
   {s:"SG Mart",qty:1008,avg:391.36,cmp:587.45,inv:394491,val:592150,sector:"0"},
-  {s:"Sigrun Holdings",qty:500,avg:38.0,cmp:0.0,inv:19000,val:95,sector:"0"},
+  {s:"Sigrun Holdings",qty:500,avg:38.0,cmp:0.0,delisted:true,inv:19000,val:95,sector:"0"},
   {s:"Tata Motors",qty:1,avg:304.05,cmp:406.7,inv:304,val:407,sector:"0"},
   {s:"Tata Motors",qty:1,avg:672.03,cmp:393.6,inv:672,val:394,sector:"0"},
   {s:"TECHNOCRAFT INDUSTRIES (I",qty:1,avg:3757.7,cmp:2555.0,inv:3758,val:2555,sector:"0"},
@@ -8238,11 +8241,11 @@ const M34_SUSHIL_HOLDINGS = [
 ];
 
 const P71_SUSHIL_HOLDINGS = [
-  {s:"Accentia Technologies",qty:500,avg:281.96,cmp:0.0,inv:140980,val:0,sector:"0"},
+  {s:"Accentia Technologies",qty:500,avg:281.96,cmp:0.0,delisted:true,inv:140980,val:0,sector:"0"},
   {s:"AstraZeneca Pharma",qty:100,avg:2735.95,cmp:8503.0,inv:273595,val:850300,sector:"0"},
   {s:"Atul",qty:200,avg:3062.23,cmp:6584.0,inv:612446,val:1316800,sector:"0"},
   {s:"Bajaj Housing Finance",qty:214,avg:70.0,cmp:85.9,inv:14980,val:18383,sector:"0"},
-  {s:"Bharati Defence and Infra",qty:1500,avg:240.45,cmp:0.0,inv:360675,val:3000,sector:"0"},
+  {s:"Bharati Defence and Infra",qty:1500,avg:240.45,cmp:0.0,delisted:true,inv:360675,val:3000,sector:"0"},
   {s:"Ceigall India",qty:37,avg:401.0,cmp:370.35,inv:14837,val:13703,sector:"0"},
   {s:"CDSL",qty:1707,avg:765.32,cmp:1264.0,inv:1306401,val:2157648,sector:"0"},
   {s:"Danlaw Technologies",qty:352,avg:929.28,cmp:1038.3,inv:327107,val:365482,sector:"0"},
@@ -8256,20 +8259,20 @@ const P71_SUSHIL_HOLDINGS = [
   {s:"HDFC Bank",qty:2,avg:821.33,cmp:784.9,inv:1643,val:1570,sector:"0"},
   {s:"Heritage Foods",qty:2621,avg:143.1,cmp:329.35,inv:375065,val:863226,sector:"0"},
   {s:"Hero Motocorp",qty:1,avg:5805.46,cmp:5031.0,inv:5805,val:5031,sector:"0"},
-  {s:"HINDUSTAN DORR-OLIVER LTD",qty:5000,avg:24.07,cmp:0.0,inv:120350,val:6100,sector:"0"},
+  {s:"HINDUSTAN DORR-OLIVER LTD",qty:5000,avg:24.07,cmp:0.0,delisted:true,inv:120350,val:6100,sector:"0"},
   {s:"Indian Energy Exchange",qty:3000,avg:65.86,cmp:123.57,inv:197580,val:370710,sector:"0"},
   {s:"Inox Wind",qty:28769,avg:53.28,cmp:90.79,inv:1532812,val:2611938,sector:"0"},
   {s:"IndiGo",qty:50,avg:5829.24,cmp:4840.0,inv:291462,val:242000,sector:"0"},
-  {s:"Interlink Petroleum",qty:200,avg:61.66,cmp:0.0,inv:12332,val:646,sector:"0"},
+  {s:"Interlink Petroleum",qty:200,avg:61.66,cmp:0.0,delisted:true,inv:12332,val:646,sector:"0"},
   {s:"Jaiprakash Power Ventures",qty:9000,avg:19.61,cmp:17.97,inv:176490,val:161730,sector:"0"},
   {s:"Jubilant Agri",qty:306,avg:1673.99,cmp:1878.8,inv:512241,val:574913,sector:"0"},
-  {s:"JUPITER BIOSCIENCE LTD.-",qty:200,avg:83.4,cmp:0.0,inv:16680,val:0,sector:"0"},
+  {s:"JUPITER BIOSCIENCE LTD.-",qty:200,avg:83.4,cmp:0.0,delisted:true,inv:16680,val:0,sector:"0"},
   {s:"KDDL",qty:1,avg:3136.85,cmp:2825.5,inv:3137,val:2826,sector:"0"},
-  {s:"KEMROCK INDUSTRIES AND",qty:100,avg:442.6,cmp:0.0,inv:44260,val:0,sector:"0"},
+  {s:"KEMROCK INDUSTRIES AND",qty:100,avg:442.6,cmp:0.0,delisted:true,inv:44260,val:0,sector:"0"},
   {s:"KIOCL",qty:1500,avg:247.54,cmp:410.45,inv:371310,val:615675,sector:"0"},
   {s:"Linde India",qty:1465,avg:4366.13,cmp:6991.5,inv:6396380,val:10242548,sector:"500"},
   {s:"LTM",qty:15,avg:4608.8,cmp:4006.7,inv:69132,val:60100,sector:"0"},
-  {s:"Nakoda",qty:4000,avg:10.86,cmp:0.0,inv:43440,val:760,sector:"0"},
+  {s:"Nakoda",qty:4000,avg:10.86,cmp:0.0,delisted:true,inv:43440,val:760,sector:"0"},
   {s:"Nelco",qty:1300,avg:760.55,cmp:725.6,inv:988715,val:943280,sector:"0"},
   {s:"ONGC",qty:1,avg:287.36,cmp:248.2,inv:287,val:248,sector:"0"},
   {s:"PTC Industries",qty:81,avg:4140.12,cmp:17809.0,inv:335350,val:1442529,sector:"0"},
@@ -8288,29 +8291,29 @@ const P71_SUSHIL_HOLDINGS = [
 ];
 
 const P151_SUSHIL_HOLDINGS = [
-  {s:"Aqua Logistics",qty:2500,avg:1.36,cmp:0.0,inv:3400,val:3400,sector:"0"},
-  {s:"Austral Coke & Projects",qty:1000,avg:0.49,cmp:0.0,inv:490,val:240,sector:"0"},
-  {s:"BALLARPUR LST PEN",qty:4,avg:0.0,cmp:0.0,inv:0,val:0,sector:"0"},
-  {s:"GEI Industrial Systems",qty:100,avg:4.99,cmp:0.0,inv:499,val:0,sector:"0"},
+  {s:"Aqua Logistics",qty:2500,avg:1.36,cmp:0.0,delisted:true,inv:3400,val:3400,sector:"0"},
+  {s:"Austral Coke & Projects",qty:1000,avg:0.49,cmp:0.0,delisted:true,inv:490,val:240,sector:"0"},
+  {s:"BALLARPUR LST PEN",qty:4,avg:0.0,cmp:0.0,delisted:true,inv:0,val:0,sector:"0"},
+  {s:"GEI Industrial Systems",qty:100,avg:4.99,cmp:0.0,delisted:true,inv:499,val:0,sector:"0"},
   {s:"INDOSOLAR LTD.",qty:5,avg:746.0,cmp:397.6,inv:3730,val:1988,sector:"0"},
   {s:"Linde India",qty:100,avg:2665.5,cmp:6991.5,inv:266550,val:699150,sector:"100"},
   {s:"PTC Industries",qty:10,avg:8378.01,cmp:17809.0,inv:83780,val:178090,sector:"0"},
   {s:"Reliance Communications",qty:9000,avg:18.5,cmp:0.96,inv:166500,val:8640,sector:"0"},
-  {s:"RISHABHDEV TECHNOCABLE LT",qty:1000,avg:0.42,cmp:0.0,inv:420,val:0,sector:"0"},
-  {s:"SHREE ASHTAVINAYAK CINE V",qty:800,avg:0.81,cmp:0.0,inv:648,val:648,sector:"0"},
+  {s:"RISHABHDEV TECHNOCABLE LT",qty:1000,avg:0.42,cmp:0.0,delisted:true,inv:420,val:0,sector:"0"},
+  {s:"SHREE ASHTAVINAYAK CINE V",qty:800,avg:0.81,cmp:0.0,delisted:true,inv:648,val:648,sector:"0"},
   {s:"State Bank of India",qty:30,avg:864.86,cmp:1015.3,inv:25946,val:30459,sector:"0"},
-  {s:"TRIBHUVAN HOUSING LTD.",qty:5000,avg:0.22,cmp:0.0,inv:1100,val:1050,sector:"0"},
-  {s:"VIDEOCON INDUSTRIES LTD.",qty:10,avg:25.1,cmp:0.0,inv:251,val:72,sector:"0"}
+  {s:"TRIBHUVAN HOUSING LTD.",qty:5000,avg:0.22,cmp:0.0,delisted:true,inv:1100,val:1050,sector:"0"},
+  {s:"VIDEOCON INDUSTRIES LTD.",qty:10,avg:25.1,cmp:0.0,delisted:true,inv:251,val:72,sector:"0"}
 ];
 
 const R75_SUSHIL_HOLDINGS = [
   {s:"360 One",qty:109,avg:886.73,cmp:1133.6,inv:96654,val:123562,sector:"0"},
   {s:"Aadhar Housing Finance",qty:2008,avg:352.39,cmp:485.0,inv:707599,val:973880,sector:"0"},
-  {s:"Accentia Technologies",qty:200,avg:281.61,cmp:0.0,inv:56322,val:0,sector:"0"},
+  {s:"Accentia Technologies",qty:200,avg:281.61,cmp:0.0,delisted:true,inv:56322,val:0,sector:"0"},
   {s:"Adani Total Gas",qty:3000,avg:645.45,cmp:713.7,inv:1936350,val:2141100,sector:"0"},
   {s:"Ambuja Cements",qty:100,avg:627.7,cmp:426.05,inv:62770,val:42605,sector:"0"},
   {s:"Angel One",qty:1600,avg:291.85,cmp:348.25,inv:466960,val:557200,sector:"0"},
-  {s:"Aqua Logistics",qty:1902,avg:46.77,cmp:0.0,inv:88957,val:2587,sector:"0"},
+  {s:"Aqua Logistics",qty:1902,avg:46.77,cmp:0.0,delisted:true,inv:88957,val:2587,sector:"0"},
   {s:"Archean Chemical",qty:500,avg:575.28,cmp:527.45,inv:287640,val:263725,sector:"0"},
   {s:"Arman Financial",qty:243,avg:1244.97,cmp:1686.5,inv:302528,val:409820,sector:"0"},
   {s:"AU Small Finance Bank",qty:2150,avg:668.98,cmp:1023.1,inv:1438307,val:2199665,sector:"0"},
@@ -8318,10 +8321,10 @@ const R75_SUSHIL_HOLDINGS = [
   {s:"Bharti Airtel",qty:365,avg:1561.09,cmp:1853.0,inv:569798,val:676345,sector:"0"},
   {s:"Brand Concepts",qty:6,avg:594.81,cmp:175.1,inv:3569,val:1051,sector:"0"},
   {s:"Brigade Enterprises",qty:300,avg:744.59,cmp:720.25,inv:223377,val:216075,sector:"0"},
-  {s:"Cals Refineries",qty:23000,avg:0.44,cmp:0.0,inv:10120,val:2300,sector:"0"},
+  {s:"Cals Refineries",qty:23000,avg:0.44,cmp:0.0,delisted:true,inv:10120,val:2300,sector:"0"},
   {s:"Cantabil Retail",qty:800,avg:223.12,cmp:220.35,inv:178496,val:176280,sector:"0"},
   {s:"Career Point Edutech",qty:8993,avg:0.0,cmp:182.99,inv:0,val:1645629,sector:"0"},
-  {s:"CLC Industries",qty:28,avg:11.31,cmp:0.0,inv:317,val:519,sector:"0"},
+  {s:"CLC Industries",qty:28,avg:11.31,cmp:0.0,delisted:true,inv:317,val:519,sector:"0"},
   {s:"CP Capital",qty:8993,avg:426.17,cmp:101.08,inv:3832547,val:909012,sector:"0"},
   {s:"CSB Bank",qty:1500,avg:356.95,cmp:369.35,inv:535425,val:554025,sector:"0"},
   {s:"Cupid",qty:4500,avg:85.97,cmp:164.89,inv:386865,val:742005,sector:"0"},
@@ -8345,26 +8348,26 @@ const R75_SUSHIL_HOLDINGS = [
   {s:"Innova Captab",qty:219,avg:697.32,cmp:964.2,inv:152713,val:211160,sector:"0"},
   {s:"Inox Wind",qty:21538,avg:60.08,cmp:90.79,inv:1294003,val:1955435,sector:"0"},
   {s:"IndiGo",qty:34,avg:4098.0,cmp:4840.0,inv:139332,val:164560,sector:"0"},
-  {s:"Interlink Petroleum",qty:1500,avg:57.56,cmp:0.0,inv:86340,val:4845,sector:"0"},
+  {s:"Interlink Petroleum",qty:1500,avg:57.56,cmp:0.0,delisted:true,inv:86340,val:4845,sector:"0"},
   {s:"J B Chemicals & Pharma",qty:150,avg:416.29,cmp:2192.8,inv:62444,val:328920,sector:"0"},
   {s:"JAI BALAJI INDUSTRIES LTD",qty:3100,avg:66.0,cmp:67.81,inv:204600,val:210211,sector:"0"},
   {s:"Jaiprakash Power Ventures",qty:42000,avg:19.38,cmp:17.97,inv:813960,val:754740,sector:"0"},
   {s:"JSW Infrastructure",qty:1025,avg:243.33,cmp:293.8,inv:249413,val:301145,sector:"0"},
   {s:"Jubilant Agri",qty:306,avg:1884.97,cmp:1878.8,inv:576801,val:574913,sector:"0"},
-  {s:"Karuturi Global",qty:1000,avg:17.8,cmp:0.0,inv:17800,val:240,sector:"0"},
+  {s:"Karuturi Global",qty:1000,avg:17.8,cmp:0.0,delisted:true,inv:17800,val:240,sector:"0"},
   {s:"KDDL",qty:478,avg:2110.39,cmp:2825.5,inv:1008766,val:1350589,sector:"0"},
-  {s:"KINGFISHER AIRLINES LTD.",qty:100,avg:46.75,cmp:0.0,inv:4675,val:0,sector:"0"},
+  {s:"KINGFISHER AIRLINES LTD.",qty:100,avg:46.75,cmp:0.0,delisted:true,inv:4675,val:0,sector:"0"},
   {s:"KRN Heat Exchanger",qty:120,avg:816.54,cmp:1218.3,inv:97985,val:146196,sector:"0"},
   {s:"Linde India",qty:850,avg:2727.58,cmp:6991.5,inv:2318443,val:5942775,sector:"850"},
   {s:"Lloyds Engineering",qty:6000,avg:60.74,cmp:79.94,inv:364440,val:479640,sector:"0"},
   {s:"MTAR Technologies",qty:390,avg:6714.88,cmp:7698.5,inv:2618803,val:3002415,sector:"0"},
-  {s:"Nakoda",qty:800,avg:10.86,cmp:0.0,inv:8688,val:152,sector:"0"},
+  {s:"Nakoda",qty:800,avg:10.86,cmp:0.0,delisted:true,inv:8688,val:152,sector:"0"},
   {s:"National Fertilizers",qty:11000,avg:76.51,cmp:77.68,inv:841610,val:854480,sector:"0"},
   {s:"National Peroxide",qty:1008,avg:629.99,cmp:556.05,inv:635030,val:560498,sector:"0"},
   {s:"Nelco",qty:3488,avg:904.66,cmp:725.6,inv:3155454,val:2530893,sector:"0"},
   {s:"NESCO",qty:455,avg:1310.01,cmp:1119.4,inv:596055,val:509327,sector:"0"},
   {s:"Nestle India",qty:1080,avg:813.59,cmp:1391.7,inv:878677,val:1503036,sector:"0"},
-  {s:"Nextgen Animation",qty:280,avg:13.46,cmp:0.0,inv:3769,val:0,sector:"0"},
+  {s:"Nextgen Animation",qty:280,avg:13.46,cmp:0.0,delisted:true,inv:3769,val:0,sector:"0"},
   {s:"Nitin Spinners",qty:2300,avg:357.71,cmp:549.75,inv:822733,val:1264425,sector:"0"},
   {s:"Nuvama Wealth",qty:1035,avg:820.05,cmp:1660.7,inv:848752,val:1718824,sector:"0"},
   {s:"Oval Projects",qty:1600,avg:61.12,cmp:62.7,inv:97792,val:100320,sector:"0"},
@@ -8380,8 +8383,8 @@ const R75_SUSHIL_HOLDINGS = [
   {s:"Religare Enterprises",qty:4544,avg:240.74,cmp:245.77,inv:1093923,val:1116779,sector:"0"},
   {s:"Sammaan Capital",qty:5400,avg:170.94,cmp:180.0,inv:923076,val:972000,sector:"0"},
   {s:"Samvardhana Motherson",qty:373,avg:79.87,cmp:147.6,inv:29792,val:55055,sector:"0"},
-  {s:"Sigrun Holdings",qty:200,avg:38.0,cmp:0.0,inv:7600,val:38,sector:"0"},
-  {s:"Silverline Technologies",qty:700,avg:5.35,cmp:0.0,inv:3745,val:4858,sector:"0"},
+  {s:"Sigrun Holdings",qty:200,avg:38.0,cmp:0.0,delisted:true,inv:7600,val:38,sector:"0"},
+  {s:"Silverline Technologies",qty:700,avg:5.35,cmp:0.0,delisted:true,inv:3745,val:4858,sector:"0"},
   {s:"State Bank of India",qty:3217,avg:754.07,cmp:1015.3,inv:2425843,val:3266220,sector:"3217"},
   {s:"Tata Technologies",qty:430,avg:685.63,cmp:769.95,inv:294821,val:331078,sector:"0"},
   {s:"TeamLease Services",qty:38,avg:2889.37,cmp:1410.6,inv:109796,val:53603,sector:"0"},
@@ -8437,13 +8440,13 @@ const R124_SUSHIL_HOLDINGS = [
   {s:"Innova Captab",qty:800,avg:715.48,cmp:964.2,inv:572384,val:771360,sector:"0"},
   {s:"Inox Wind",qty:24743,avg:120.0,cmp:90.79,inv:2969160,val:2246417,sector:"0"},
   {s:"IndiGo",qty:16,avg:4312.42,cmp:4840.0,inv:68999,val:77440,sector:"0"},
-  {s:"Interlink Petroleum",qty:300,avg:75.45,cmp:0.0,inv:22635,val:969,sector:"0"},
+  {s:"Interlink Petroleum",qty:300,avg:75.45,cmp:0.0,delisted:true,inv:22635,val:969,sector:"0"},
   {s:"JAMMU & KASHMIR BANK LTD.",qty:1008,avg:90.83,cmp:161.99,inv:91557,val:163286,sector:"0"},
   {s:"Jio Financial Services",qty:1750,avg:247.33,cmp:241.95,inv:432828,val:423412,sector:"0"},
   {s:"Jubilant Agri",qty:234,avg:2472.67,cmp:1878.8,inv:578605,val:439639,sector:"0"},
-  {s:"Karuturi Global",qty:5000,avg:12.35,cmp:0.0,inv:61750,val:1200,sector:"0"},
+  {s:"Karuturi Global",qty:5000,avg:12.35,cmp:0.0,delisted:true,inv:61750,val:1200,sector:"0"},
   {s:"KDDL",qty:1,avg:3133.16,cmp:2825.5,inv:3133,val:2826,sector:"0"},
-  {s:"Kwality",qty:3500,avg:73.35,cmp:0.0,inv:256725,val:7490,sector:"0"},
+  {s:"Kwality",qty:3500,avg:73.35,cmp:0.0,delisted:true,inv:256725,val:7490,sector:"0"},
   {s:"L&T Technology Services",qty:110,avg:4579.97,cmp:3462.9,inv:503797,val:380919,sector:"0"},
   {s:"Linde India",qty:50,avg:3401.96,cmp:6991.5,inv:170098,val:349575,sector:"50"},
   {s:"MRPL",qty:3500,avg:153.81,cmp:165.52,inv:538335,val:579320,sector:"0"},
@@ -8459,7 +8462,7 @@ const R124_SUSHIL_HOLDINGS = [
   {s:"Premier Energies",qty:350,avg:1077.8,cmp:1055.3,inv:377230,val:369355,sector:"0"},
   {s:"Protean eGov Technologies",qty:720,avg:1505.09,cmp:634.65,inv:1083665,val:456948,sector:"0"},
   {s:"R K Swamy",qty:8008,avg:221.18,cmp:99.75,inv:1771209,val:798798,sector:"0"},
-  {s:"RATNAKAR SECURITIES LIMIT",qty:350,avg:1.93,cmp:0.0,inv:676,val:203,sector:"0"},
+  {s:"RATNAKAR SECURITIES LIMIT",qty:350,avg:1.93,cmp:0.0,delisted:true,inv:676,val:203,sector:"0"},
   {s:"Ratnaveer Precision",qty:1200,avg:171.25,cmp:165.14,inv:205500,val:198168,sector:"0"},
   {s:"Reliance Power",qty:282,avg:28.32,cmp:27.0,inv:7986,val:7614,sector:"0"},
   {s:"Religare Enterprises",qty:430,avg:228.92,cmp:245.77,inv:98436,val:105681,sector:"0"},
@@ -8468,7 +8471,7 @@ const R124_SUSHIL_HOLDINGS = [
   {s:"Samvardhana Motherson",qty:4200,avg:80.78,cmp:147.6,inv:339276,val:619920,sector:"0"},
   {s:"Schaeffler India",qty:108,avg:3237.04,cmp:4163.0,inv:349600,val:449604,sector:"0"},
   {s:"Sigachi Industries Limite",qty:5400,avg:38.25,cmp:21.17,inv:206550,val:114318,sector:"0"},
-  {s:"Sigrun Holdings",qty:1200,avg:38.0,cmp:0.0,inv:45600,val:228,sector:"0"},
+  {s:"Sigrun Holdings",qty:1200,avg:38.0,cmp:0.0,delisted:true,inv:45600,val:228,sector:"0"},
   {s:"SpiceJet",qty:15000,avg:44.53,cmp:12.96,inv:667950,val:194400,sector:"0"},
   {s:"STL Networks Limited",qty:6000,avg:30.43,cmp:28.34,inv:182580,val:170040,sector:"0"},
   {s:"Suzlon Energy",qty:15008,avg:35.74,cmp:57.92,inv:536386,val:869263,sector:"0"},
@@ -8488,33 +8491,33 @@ const R124_SUSHIL_HOLDINGS = [
 ];
 
 const V60_SUSHIL_HOLDINGS = [
-  {s:"Accentia Technologies",qty:50,avg:307.25,cmp:0.0,val:0,inv:15362,unreal:-15362,sector:"OTHERS"},
-  {s:"Alka Diamond Industries",qty:70,avg:9.24,cmp:0.0,val:648,inv:647,unreal:1,sector:"OTHERS"},
-  {s:"Aqua Logistics",qty:500,avg:56.51,cmp:0.0,val:680,inv:28255,unreal:-27575,sector:"OTHERS"},
-  {s:"Austral Coke & Projects",qty:1500,avg:7.81,cmp:0.0,val:360,inv:11715,unreal:-11355,sector:"OTHERS"},
-  {s:"CHD Developers",qty:1599,avg:11.12,cmp:0.0,val:1087,inv:17781,unreal:-16694,sector:"OTHERS"},
-  {s:"CLC Industries",qty:45,avg:11.31,cmp:0.0,val:834,inv:509,unreal:325,sector:"OTHERS"},
-  {s:"Divine Multimedia",qty:3000,avg:5.37,cmp:0.0,val:1200,inv:16110,unreal:-14910,sector:"OTHERS"},
+  {s:"Accentia Technologies",qty:50,avg:307.25,cmp:0.0,delisted:true,val:0,inv:15362,unreal:-15362,sector:"OTHERS"},
+  {s:"Alka Diamond Industries",qty:70,avg:9.24,cmp:0.0,delisted:true,val:648,inv:647,unreal:1,sector:"OTHERS"},
+  {s:"Aqua Logistics",qty:500,avg:56.51,cmp:0.0,delisted:true,val:680,inv:28255,unreal:-27575,sector:"OTHERS"},
+  {s:"Austral Coke & Projects",qty:1500,avg:7.81,cmp:0.0,delisted:true,val:360,inv:11715,unreal:-11355,sector:"OTHERS"},
+  {s:"CHD Developers",qty:1599,avg:11.12,cmp:0.0,delisted:true,val:1087,inv:17781,unreal:-16694,sector:"OTHERS"},
+  {s:"CLC Industries",qty:45,avg:11.31,cmp:0.0,delisted:true,val:834,inv:509,unreal:325,sector:"OTHERS"},
+  {s:"Divine Multimedia",qty:3000,avg:5.37,cmp:0.0,delisted:true,val:1200,inv:16110,unreal:-14910,sector:"OTHERS"},
   {s:"Galaxy Medicare",qty:8000,avg:54.0,cmp:19.3,val:154400,inv:432000,unreal:-277600,sector:"OTHERS"},
   {s:"GTL Infrastructure",qty:200,avg:41.85,cmp:1.52,val:306,inv:8370,unreal:-8064,sector:"OTHERS"},
   {s:"Hindustan Construction",qty:2012,avg:35.75,cmp:27.02,val:54465,inv:71929,unreal:-17464,sector:"CONS"},
-  {s:"Jupiter Bioscience",qty:550,avg:83.4,cmp:0.0,val:0,inv:45870,unreal:-45870,sector:"OTHERS"},
-  {s:"Nextgen Animation",qty:340,avg:13.46,cmp:0.0,val:0,inv:4576,unreal:-4576,sector:"OTHERS"},
+  {s:"Jupiter Bioscience",qty:550,avg:83.4,cmp:0.0,delisted:true,val:0,inv:45870,unreal:-45870,sector:"OTHERS"},
+  {s:"Nextgen Animation",qty:340,avg:13.46,cmp:0.0,delisted:true,val:0,inv:4576,unreal:-4576,sector:"OTHERS"},
   {s:"Premium Plast",qty:3000,avg:49.0,cmp:37.0,val:111000,inv:147000,unreal:-36000,sector:"OTHERS"},
-  {s:"Silverline Technologies",qty:800,avg:5.35,cmp:0.0,val:5552,inv:4280,unreal:1272,sector:"OTHERS"},
+  {s:"Silverline Technologies",qty:800,avg:5.35,cmp:0.0,delisted:true,val:5552,inv:4280,unreal:1272,sector:"OTHERS"},
   {s:"Solve Plastic Products",qty:1200,avg:91.0,cmp:19.45,val:23340,inv:109200,unreal:-85860,sector:"OTHERS"},
 ];
 
 const V129_SUSHIL_HOLDINGS = [
   {s:"360 One",qty:70,avg:635.99,cmp:1145.1,val:80500,inv:44519,unreal:35981,sector:"BFSI"},
   {s:"Aadhar Housing Finance",qty:47,avg:315.0,cmp:515.1,val:24487,inv:14805,unreal:9682,sector:"BFSI"},
-  {s:"Accentia Technologies",qty:500,avg:3.11,cmp:0.0,val:0,inv:1555,unreal:-1555,sector:"OTHERS"},
+  {s:"Accentia Technologies",qty:500,avg:3.11,cmp:0.0,delisted:true,val:0,inv:1555,unreal:-1555,sector:"OTHERS"},
   {s:"Aditya Birla RE",qty:300,avg:801.28,cmp:1279.5,val:387000,inv:240384,unreal:146616,sector:"CONS"},
   {s:"All Time Plastics",qty:200,avg:243.96,cmp:240.33,val:48780,inv:48792,unreal:-12,sector:"PLST"},
-  {s:"Austral Coke & Projects",qty:2000,avg:0.49,cmp:0.0,val:480,inv:980,unreal:-500,sector:"OTHERS"},
+  {s:"Austral Coke & Projects",qty:2000,avg:0.49,cmp:0.0,delisted:true,val:480,inv:980,unreal:-500,sector:"OTHERS"},
   {s:"Bajaj Housing Finance",qty:214,avg:70.0,cmp:88.36,val:18960,inv:14980,unreal:3980,sector:"BFSI"},
   {s:"Bayer CropScience",qty:504,avg:4998.31,cmp:4269.5,val:2161152,inv:2519148,unreal:-357996,sector:"AGCH"},
-  {s:"Bharati Defence and Infrastructure",qty:500,avg:9.35,cmp:0.0,val:1000,inv:4675,unreal:-3675,sector:"OTHERS"},
+  {s:"Bharati Defence and Infrastructure",qty:500,avg:9.35,cmp:0.0,delisted:true,val:1000,inv:4675,unreal:-3675,sector:"OTHERS"},
   {s:"Bombay Dyeing",qty:1000,avg:150.61,cmp:135.0,val:135800,inv:150610,unreal:-14810,sector:"TEXT"},
   {s:"Capacit'e Infraprojects",qty:280,avg:303.06,cmp:233.76,val:65537,inv:84857,unreal:-19320,sector:"CONS"},
   {s:"CDSL",qty:2070,avg:796.02,cmp:1370.3,val:2835486,inv:1647761,unreal:1187725,sector:"BFSI"},
@@ -8525,7 +8528,7 @@ const V129_SUSHIL_HOLDINGS = [
   {s:"Disa India",qty:18,avg:16365.42,cmp:12200.0,val:219600,inv:294578,unreal:-74978,sector:"ENGG"},
   {s:"Dreamfolks Services",qty:1080,avg:243.98,cmp:70.73,val:76637,inv:263498,unreal:-186862,sector:"OTHERS"},
   {s:"Dredging Corporation",qty:1490,avg:556.27,cmp:1136.0,val:1691150,inv:828842,unreal:862308,sector:"MISC"},
-  {s:"Edserv Softsystems",qty:250,avg:2.07,cmp:0.0,val:518,inv:518,unreal:0,sector:"OTHERS"},
+  {s:"Edserv Softsystems",qty:250,avg:2.07,cmp:0.0,delisted:true,val:518,inv:518,unreal:0,sector:"OTHERS"},
   {s:"Eveready Industries",qty:705,avg:333.53,cmp:368.85,val:260638,inv:235139,unreal:25500,sector:"FMCG"},
   {s:"Fineotex Chemical",qty:27000,avg:23.81,cmp:43.52,val:1169370,inv:642870,unreal:526500,sector:"CHEM"},
   {s:"Firstsource Solutions",qty:1080,avg:322.91,cmp:244.7,val:264438,inv:348743,unreal:-84305,sector:"IT"},
@@ -8540,17 +8543,17 @@ const V129_SUSHIL_HOLDINGS = [
   {s:"Hitachi Energy India",qty:30,avg:13666.7,cmp:36880.0,val:1103850,inv:410001,unreal:693849,sector:"POWR"},
   {s:"IRFC",qty:12000,avg:32.75,cmp:99.51,val:1196400,inv:393000,unreal:803400,sector:"BFSI"},
   {s:"Inox Wind",qty:53302,avg:9.44,cmp:90.72,val:4856345,inv:503171,unreal:4353174,sector:"POWR"},
-  {s:"Interworld Digital",qty:3000,avg:0.15,cmp:0.0,val:600,inv:450,unreal:150,sector:"OTHERS"},
+  {s:"Interworld Digital",qty:3000,avg:0.15,cmp:0.0,delisted:true,val:600,inv:450,unreal:150,sector:"OTHERS"},
   {s:"Jaiprakash Power Ventures",qty:1000,avg:13.52,cmp:18.06,val:18130,inv:13520,unreal:4610,sector:"POWR"},
-  {s:"Jindal Cotex",qty:100,avg:13.59,cmp:0.0,val:260,inv:1359,unreal:-1099,sector:"OTHERS"},
+  {s:"Jindal Cotex",qty:100,avg:13.59,cmp:0.0,delisted:true,val:260,inv:1359,unreal:-1099,sector:"OTHERS"},
   {s:"KDDL",qty:1,avg:3133.16,cmp:2959.7,val:2980,inv:3133,unreal:-153,sector:"FMCG"},
-  {s:"Kwality",qty:1000,avg:106.83,cmp:0.0,val:2140,inv:106830,unreal:-104690,sector:"OTHERS"},
+  {s:"Kwality",qty:1000,avg:106.83,cmp:0.0,delisted:true,val:2140,inv:106830,unreal:-104690,sector:"OTHERS"},
   {s:"Linde India",qty:910,avg:2983.7,cmp:7460.5,val:6824545,inv:2715167,unreal:4109378,sector:"PTRO"},
   {s:"Lloyds Engineering",qty:8500,avg:75.96,cmp:86.84,val:739075,inv:645660,unreal:93415,sector:"METL"},
   {s:"MTAR Technologies",qty:150,avg:7765.19,cmp:8374.5,val:1257750,inv:1164778,unreal:92972,sector:"ENGG"},
-  {s:"Nakoda",qty:4500,avg:0.38,cmp:0.0,val:855,inv:1710,unreal:-855,sector:"OTHERS"},
+  {s:"Nakoda",qty:4500,avg:0.38,cmp:0.0,delisted:true,val:855,inv:1710,unreal:-855,sector:"OTHERS"},
   {s:"Nalwa Sons Investments",qty:54,avg:3441.74,cmp:5732.5,val:310500,inv:185854,unreal:124646,sector:"BFSI"},
-  {s:"National Stock Exchange of India",qty:24500,avg:0.0,cmp:0.0,val:0,inv:0,unreal:0,sector:"OTHERS"},
+  {s:"National Stock Exchange of India",qty:24500,avg:0.0,cmp:0.0,delisted:true,val:0,inv:0,unreal:0,sector:"OTHERS"},
   {s:"Nelco",qty:9990,avg:853.61,cmp:940.35,val:9370620,inv:8527564,unreal:843056,sector:"TELE"},
   {s:"Oval Projects",qty:1600,avg:60.12,cmp:61.0,val:97600,inv:96192,unreal:1408,sector:"OTHERS"},
   {s:"Poly Medicure",qty:100,avg:1981.06,cmp:1563.3,val:156500,inv:198106,unreal:-41606,sector:"HLTH"},
@@ -8558,9 +8561,9 @@ const V129_SUSHIL_HOLDINGS = [
   {s:"Praj Industries",qty:340,avg:548.57,cmp:340.5,val:115872,inv:186514,unreal:-70642,sector:"ENGG"},
   {s:"Premier Explosives",qty:2500,avg:91.11,cmp:775.3,val:1935000,inv:227775,unreal:1707225,sector:"CHEM"},
   {s:"PTC Industries",qty:339,avg:11176.75,cmp:18333.0,val:6283704,inv:3788918,unreal:2494786,sector:"CAFG"},
-  {s:"Rishabhdev Technocable",qty:2000,avg:0.42,cmp:0.0,val:0,inv:840,unreal:-840,sector:"OTHERS"},
+  {s:"Rishabhdev Technocable",qty:2000,avg:0.42,cmp:0.0,delisted:true,val:0,inv:840,unreal:-840,sector:"OTHERS"},
   {s:"Sandhar Technologies",qty:1000,avg:402.19,cmp:707.95,val:711150,inv:402190,unreal:308960,sector:"AUTO"},
-  {s:"Sigrun Holdings",qty:2900,avg:0.19,cmp:0.0,val:551,inv:551,unreal:0,sector:"OTHERS"},
+  {s:"Sigrun Holdings",qty:2900,avg:0.19,cmp:0.0,delisted:true,val:551,inv:551,unreal:0,sector:"OTHERS"},
   {s:"Spencer'S Retail Limited",qty:1080,avg:95.85,cmp:37.07,val:39949,inv:103518,unreal:-63569,sector:"OTHERS"},
   {s:"Taneja Aerospace & Aviation",qty:454,avg:249.27,cmp:303.35,val:137562,inv:113169,unreal:24393,sector:"ENGG"},
   {s:"Tata Power",qty:1000,avg:35.31,cmp:402.35,val:402700,inv:35310,unreal:367390,sector:"POWR"},
@@ -8568,7 +8571,7 @@ const V129_SUSHIL_HOLDINGS = [
   {s:"Trent",qty:589,avg:884.17,cmp:3205.8,val:1886862,inv:520776,unreal:1366085,sector:"TRAD"},
   {s:"Unitech",qty:500,avg:6.52,cmp:5.01,val:2515,inv:3260,unreal:-745,sector:"OTHERS"},
   {s:"Wendt India",qty:108,avg:9958.33,cmp:7909.0,val:855900,inv:1075500,unreal:-219600,sector:"ENGG"},
-  {s:"Yantra Natural Resources",qty:14000,avg:0.31,cmp:0.0,val:4340,inv:4340,unreal:0,sector:"OTHERS"},
+  {s:"Yantra Natural Resources",qty:14000,avg:0.31,cmp:0.0,delisted:true,val:4340,inv:4340,unreal:0,sector:"OTHERS"},
   {s:"Yes Bank",qty:1000,avg:12.0,cmp:25.41,val:25410,inv:12000,unreal:13410,sector:"BFSI"},
   {s:"Zee Learn",qty:22500,avg:11.9,cmp:8.82,val:198450,inv:267750,unreal:-69300,sector:"OTHERS"},
 ];
@@ -9449,11 +9452,11 @@ const AMIT_HUF_ICICI_HOLDINGS = [
 const RASIKLAL_HUF_SUSHIL_HOLDINGS = [
   {s:"360 One",qty:109,avg:886.73,cmp:1133.6,val:123562,inv:96654,unreal:26909,sector:"BFSI"},
   {s:"Aadhar Housing Finance",qty:2008,avg:352.39,cmp:485.0,val:973880,inv:707599,unreal:266281,sector:"BFSI"},
-  {s:"Accentia Technologies",qty:200,avg:281.61,cmp:0.0,val:0,inv:56322,unreal:-56322,sector:"OTHERS"},
+  {s:"Accentia Technologies",qty:200,avg:281.61,cmp:0.0,delisted:true,val:0,inv:56322,unreal:-56322,sector:"OTHERS"},
   {s:"Adani Total Gas",qty:3000,avg:645.45,cmp:713.7,val:2141100,inv:1936350,unreal:204750,sector:"PTRO"},
   {s:"Ambuja Cements",qty:100,avg:627.7,cmp:426.05,val:42605,inv:62770,unreal:-20165,sector:"CEM"},
   {s:"Angel One",qty:1600,avg:291.85,cmp:348.25,val:557200,inv:466960,unreal:90240,sector:"BFSI"},
-  {s:"Aqua Logistics",qty:1902,avg:46.77,cmp:0.0,val:2587,inv:88957,unreal:-86370,sector:"OTHERS"},
+  {s:"Aqua Logistics",qty:1902,avg:46.77,cmp:0.0,delisted:true,val:2587,inv:88957,unreal:-86370,sector:"OTHERS"},
   {s:"Archean Chemical Industries",qty:500,avg:575.28,cmp:527.45,val:263725,inv:287640,unreal:-23915,sector:"CHEM"},
   {s:"Arman Financial",qty:243,avg:1244.97,cmp:1686.5,val:409820,inv:302528,unreal:107292,sector:"BFSI"},
   {s:"AU Small Finance Bank",qty:2150,avg:668.98,cmp:1023.1,val:2199665,inv:1438307,unreal:761358,sector:"BFSI"},
@@ -9461,10 +9464,10 @@ const RASIKLAL_HUF_SUSHIL_HOLDINGS = [
   {s:"Bharti Airtel",qty:365,avg:1561.09,cmp:1853.0,val:676345,inv:569798,unreal:106547,sector:"TELE"},
   {s:"Brand Concepts",qty:6,avg:594.81,cmp:175.1,val:1051,inv:3569,unreal:-2518,sector:"OTHERS"},
   {s:"Brigade Enterprises",qty:300,avg:744.59,cmp:720.25,val:216075,inv:223377,unreal:-7302,sector:"CONS"},
-  {s:"Cals Refineries",qty:23000,avg:0.44,cmp:0.0,val:2300,inv:10120,unreal:-7820,sector:"OTHERS"},
+  {s:"Cals Refineries",qty:23000,avg:0.44,cmp:0.0,delisted:true,val:2300,inv:10120,unreal:-7820,sector:"OTHERS"},
   {s:"Cantabil Retail",qty:800,avg:223.12,cmp:220.35,val:176280,inv:178496,unreal:-2216,sector:"TEXT"},
   {s:"Career Point Edutech",qty:8993,avg:0.0,cmp:182.99,val:1645629,inv:0,unreal:1645629,sector:"OTHERS"},
-  {s:"CLC Industries",qty:28,avg:11.31,cmp:0.0,val:519,inv:317,unreal:202,sector:"OTHERS"},
+  {s:"CLC Industries",qty:28,avg:11.31,cmp:0.0,delisted:true,val:519,inv:317,unreal:202,sector:"OTHERS"},
   {s:"CP Capital",qty:8993,avg:426.17,cmp:101.08,val:909012,inv:3832547,unreal:-2923534,sector:"OTHERS"},
   {s:"CSB Bank",qty:1500,avg:356.95,cmp:369.35,val:554025,inv:535425,unreal:18600,sector:"BFSI"},
   {s:"Cupid",qty:4500,avg:85.97,cmp:164.89,val:742005,inv:386865,unreal:355140,sector:"MISC"},
@@ -9488,26 +9491,26 @@ const RASIKLAL_HUF_SUSHIL_HOLDINGS = [
   {s:"Innova Captab",qty:219,avg:697.32,cmp:964.2,val:211160,inv:152713,unreal:58447,sector:"PHRM"},
   {s:"Inox Wind",qty:21538,avg:60.08,cmp:90.79,val:1955435,inv:1294003,unreal:661432,sector:"POWR"},
   {s:"IndiGo",qty:34,avg:4098.0,cmp:4840.0,val:164560,inv:139332,unreal:25228,sector:"LOGI"},
-  {s:"Interlink Petroleum",qty:1500,avg:57.56,cmp:0.0,val:4845,inv:86340,unreal:-81495,sector:"OTHERS"},
+  {s:"Interlink Petroleum",qty:1500,avg:57.56,cmp:0.0,delisted:true,val:4845,inv:86340,unreal:-81495,sector:"OTHERS"},
   {s:"J B Chemicals & Pharma",qty:150,avg:416.29,cmp:2192.8,val:328920,inv:62444,unreal:266476,sector:"PHRM"},
   {s:"Jai Balaji Industries",qty:3100,avg:66.0,cmp:67.81,val:210211,inv:204600,unreal:5611,sector:"METL"},
   {s:"Jaiprakash Power Ventures",qty:42000,avg:19.38,cmp:17.97,val:754740,inv:813960,unreal:-59220,sector:"POWR"},
   {s:"JSW Infrastructure",qty:1025,avg:243.33,cmp:293.8,val:301145,inv:249413,unreal:51732,sector:"MISC"},
   {s:"Jubilant Agri",qty:306,avg:1884.97,cmp:1878.8,val:574913,inv:576801,unreal:-1888,sector:"CHEM"},
-  {s:"Karuturi Global",qty:1000,avg:17.8,cmp:0.0,val:240,inv:17800,unreal:-17560,sector:"OTHERS"},
+  {s:"Karuturi Global",qty:1000,avg:17.8,cmp:0.0,delisted:true,val:240,inv:17800,unreal:-17560,sector:"OTHERS"},
   {s:"KDDL",qty:478,avg:2110.39,cmp:2825.5,val:1350589,inv:1008766,unreal:341823,sector:"FMCG"},
-  {s:"Kingfisher Airlines",qty:100,avg:46.75,cmp:0.0,val:0,inv:4675,unreal:-4675,sector:"OTHERS"},
+  {s:"Kingfisher Airlines",qty:100,avg:46.75,cmp:0.0,delisted:true,val:0,inv:4675,unreal:-4675,sector:"OTHERS"},
   {s:"KRN Heat Exchanger",qty:120,avg:816.54,cmp:1218.3,val:146196,inv:97985,unreal:48211,sector:"ENGG"},
   {s:"Linde India",qty:850,avg:2727.58,cmp:6991.5,val:5942775,inv:2318443,unreal:3624332,sector:"PTRO"},
   {s:"Lloyds Engineering",qty:6000,avg:60.74,cmp:79.94,val:479640,inv:364440,unreal:115200,sector:"METL"},
   {s:"MTAR Technologies",qty:390,avg:6714.88,cmp:7698.5,val:3002415,inv:2618803,unreal:383612,sector:"ENGG"},
-  {s:"Nakoda",qty:800,avg:10.86,cmp:0.0,val:152,inv:8688,unreal:-8536,sector:"OTHERS"},
+  {s:"Nakoda",qty:800,avg:10.86,cmp:0.0,delisted:true,val:152,inv:8688,unreal:-8536,sector:"OTHERS"},
   {s:"National Fertilizers",qty:11000,avg:76.51,cmp:77.68,val:854480,inv:841610,unreal:12870,sector:"AGRO"},
   {s:"National Peroxide",qty:1008,avg:629.99,cmp:556.05,val:560498,inv:635030,unreal:-74532,sector:"OTHERS"},
   {s:"Nelco",qty:3488,avg:904.66,cmp:725.6,val:2530893,inv:3155454,unreal:-624561,sector:"TELE"},
   {s:"NESCO",qty:455,avg:1310.01,cmp:1119.4,val:509327,inv:596055,unreal:-86728,sector:"MISC"},
   {s:"Nestle India",qty:1080,avg:813.59,cmp:1391.7,val:1503036,inv:878677,unreal:624359,sector:"FMCG"},
-  {s:"Nextgen Animation",qty:280,avg:13.46,cmp:0.0,val:0,inv:3769,unreal:-3769,sector:"OTHERS"},
+  {s:"Nextgen Animation",qty:280,avg:13.46,cmp:0.0,delisted:true,val:0,inv:3769,unreal:-3769,sector:"OTHERS"},
   {s:"Nitin Spinners",qty:2300,avg:357.71,cmp:549.75,val:1264425,inv:822733,unreal:441692,sector:"TEXT"},
   {s:"Nuvama Wealth",qty:1035,avg:820.05,cmp:1660.7,val:1718824,inv:848752,unreal:870073,sector:"BFSI"},
   {s:"Oval Projects",qty:1600,avg:61.12,cmp:62.7,val:100320,inv:97792,unreal:2528,sector:"OTHERS"},
@@ -9523,8 +9526,8 @@ const RASIKLAL_HUF_SUSHIL_HOLDINGS = [
   {s:"Religare Enterprises",qty:4544,avg:240.74,cmp:245.77,val:1116779,inv:1093923,unreal:22856,sector:"BFSI"},
   {s:"Sammaan Capital",qty:5400,avg:170.94,cmp:180.0,val:972000,inv:923076,unreal:48924,sector:"BFSI"},
   {s:"Samvardhana Motherson",qty:373,avg:79.87,cmp:147.6,val:55055,inv:29792,unreal:25263,sector:"AUTO"},
-  {s:"Sigrun Holdings",qty:200,avg:38.0,cmp:0.0,val:38,inv:7600,unreal:-7562,sector:"OTHERS"},
-  {s:"Silverline Technologies",qty:700,avg:5.35,cmp:0.0,val:4858,inv:3745,unreal:1113,sector:"OTHERS"},
+  {s:"Sigrun Holdings",qty:200,avg:38.0,cmp:0.0,delisted:true,val:38,inv:7600,unreal:-7562,sector:"OTHERS"},
+  {s:"Silverline Technologies",qty:700,avg:5.35,cmp:0.0,delisted:true,val:4858,inv:3745,unreal:1113,sector:"OTHERS"},
   {s:"State Bank of India",qty:3217,avg:754.07,cmp:1015.3,val:3266220,inv:2425843,unreal:840377,sector:"BFSI"},
   {s:"Tata Technologies",qty:430,avg:685.63,cmp:769.95,val:331078,inv:294821,unreal:36258,sector:"IT"},
   {s:"TeamLease Services",qty:38,avg:2889.37,cmp:1410.6,val:53603,inv:109796,unreal:-56193,sector:"MISC"},
@@ -13505,6 +13508,7 @@ function CASHistoryTab() {
 
   const members = Object.keys(CAS_DATA);
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if (!n && n!==0) return "—";
     if (Math.abs(n)>=1e7) return "₹"+(n/1e7).toFixed(2)+" Cr";
     if (Math.abs(n)>=1e5) return "₹"+(n/1e5).toFixed(1)+" L";
@@ -13882,6 +13886,7 @@ function BrokerLedgerTab() {
   const acc = BROKER_ACCOUNTS[selAcc] || BROKER_ACCOUNTS[0];
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if (!n && n!==0) return "—";
     const abs = Math.abs(n);
     const sign = n < 0 ? "−" : "";
@@ -14158,6 +14163,7 @@ function PortfolioDetailTab() {
   const [subView, setSubView] = React.useState("holdings");
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -14608,6 +14614,7 @@ function InCredTab() {
   const [sortDir, setSortDir] = React.useState(1);
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -14875,6 +14882,7 @@ function KarishmaTab() {
   const [view, setView] = React.useState("holdings");
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -15148,6 +15156,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
   }, [colWidths]); /* holdings | live | sector */
 
   const fC = (n) => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(!n && n!==0) return "—";
     const abs=Math.abs(n); const sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -15265,13 +15274,14 @@ function AllHoldingsTab({livePrices, priceStatus}) {
     const map = {};
     filtered.forEach(r => {
       const key = r.sym;
-      if(!map[key]) map[key] = {sym:key, rows:[], totalVal:0, totalInv:0, totalPL:0, totalQty:0, members:new Set(), custodians:new Set(), avgCmp:0, cmpCount:0};
+      if(!map[key]) map[key] = {sym:key, rows:[], totalVal:0, totalInv:0, totalPL:0, totalQty:0, members:new Set(), custodians:new Set(), avgCmp:0, cmpCount:0, isDelisted:false};
       map[key].rows.push(r);
       map[key].totalVal += (r.val||0);
       map[key].totalInv += (r.inv||0);
       map[key].totalPL  += (r.pl||0);
       map[key].totalQty += (r.qty||0);
       if(r.cmp > 0){ map[key].avgCmp += r.cmp; map[key].cmpCount++; }
+      if(r.delisted) map[key].isDelisted = true;
       map[key].members.add(r.member);
       map[key].custodians.add(r.custodian);
     });
@@ -15555,7 +15565,10 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       )}
                     </td>
                       <td style={{padding:"7px 10px"}}>
-                        <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
+                          {g.isDelisted&&<span style={{fontSize:8,fontWeight:700,color:"#ef4444",background:"#2a0a0a",border:"1px solid #5a1a1a",borderRadius:5,padding:"1px 6px",flexShrink:0}}>DELISTED</span>}
+                        </div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
                           {sector&&<span style={{fontSize:8,background:"#0f1a2e",color:"#7eb8ff",padding:"1px 6px",borderRadius:8}}>{sector}</span>}
                           <span style={{fontSize:8,color:"#2a3a50"}}>{g.rows.length} account{g.rows.length!==1?"s":""}</span>
@@ -15941,6 +15954,7 @@ function TaxTab() {
 
 function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFilter}) {
   const fC = n => {
+    if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(n==null) return "—";
     const abs=Math.abs(n),sign=n<0?"−":"";
     if(abs>=1e7) return sign+"₹"+(abs/1e7).toFixed(2)+" Cr";
@@ -16290,7 +16304,7 @@ function LiveStocksTab() {
   const [lsView, setLsView] = React.useState("movers");
   const [searchQ, setSearchQ] = React.useState("");
   const [selStock, setSelStock] = React.useState(null);
-  const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const fPct = (v) => v==null?"--":(v>=0?"+":"")+v.toFixed(1)+"%";
 
   const allHoldings = MEMBER_HOLDINGS["ALL_FAMILY"]||[];
@@ -16604,7 +16618,7 @@ function LiveStocksTab() {
 
 function InsightsTab() {
   const [iView, setIView] = React.useState("health");
-  const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; if(a>=1e7) return s+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return s+"₹"+(a/1e5).toFixed(1)+" L"; return s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; if(a>=1e7) return s+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return s+"₹"+(a/1e5).toFixed(1)+" L"; return s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const fPct = (v) => v==null?"--":(v>=0?"+":"")+v.toFixed(1)+"%";
   const realMembers = MEMBERS.filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0));
 
@@ -17103,7 +17117,7 @@ function InsightsTab() {
 ═══════════════════════════════════════════════════════════ */
 function DividendTab() {
   const [dvView, setDvView] = React.useState("overview");
-  const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [dvMember, setDvMember] = React.useState("r75");
   const r75Data  = typeof R75_DIVIDENDS  !== "undefined" ? R75_DIVIDENDS  : {total:0,annual:[],byStock:{},records:[]};
   const v129Data = typeof V129_DIVIDENDS !== "undefined" ? V129_DIVIDENDS : {total:0,annual:[],byStock:{},records:[]};
@@ -17257,7 +17271,7 @@ function DividendTab() {
 ═══════════════════════════════════════════════════════════ */
 function OverlapHeatmap() {
   const [selPair, setSelPair] = React.useState(null);
-  const cr = (v) => v!=null ? "₹"+(Math.abs(v)>=1e7?(Math.abs(v)/1e7).toFixed(1)+"Cr":(Math.abs(v)/1e5).toFixed(0)+"L") : "--";
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; return v!=null ? "₹"+(Math.abs(v)>=1e7?(Math.abs(v)/1e7).toFixed(1)+"Cr":(Math.abs(v)/1e5).toFixed(0)+"L") : "--"; };
   const realMembers = MEMBERS.filter(m=>!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef]);
 
   const memberStocks = React.useMemo(()=>{
@@ -17347,7 +17361,7 @@ function OverlapHeatmap() {
 ═══════════════════════════════════════════════════════════ */
 function RebalancingPlanner() {
   const [targets, setTargets] = React.useState({equity:70,mf:25,cash:5});
-  const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const realMembers = MEMBERS.filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0));
 
   const memberPlans = realMembers.map(m=>{
@@ -17424,7 +17438,7 @@ function RebalancingPlanner() {
    SIP TRACKER
 ═══════════════════════════════════════════════════════════ */
 function SIPTracker() {
-  const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v); if(a>=1e7) return "₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return "₹"+(a/1e5).toFixed(1)+" L"; return "₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v); if(a>=1e7) return "₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return "₹"+(a/1e5).toFixed(1)+" L"; return "₹"+Math.round(a).toLocaleString("en-IN"); };
   /* Estimated SIPs derived from MF_REGISTRY monthly data */
   const sipData = Object.entries(MF_REGISTRY||{}).filter(([,r])=>r.inv>50000&&(r.valJun26||r.valApr26||r.val31mar26||0)>0).slice(0,12).map(([name,r])=>{
     const lat = r.valJun26||r.valApr26||r.val31mar26||0;
@@ -17588,7 +17602,7 @@ function ProfilesTab() {
   const [selMem, setSelMem] = React.useState(null);
   const [editing, setEditing] = React.useState(false);
   const [editData, setEditData] = React.useState({});
-  const cr = (v) => { if(!v&&v!==0) return "--"; const a=Math.abs(v); if(a>=1e7) return "₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return "₹"+(a/1e5).toFixed(1)+" L"; return "₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v); if(a>=1e7) return "₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return "₹"+(a/1e5).toFixed(1)+" L"; return "₹"+Math.round(a).toLocaleString("en-IN"); };
   const profiles = typeof FAMILY_PROFILES !== "undefined" ? FAMILY_PROFILES : {};
   const realMembers = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;});
   const selected = selMem ? realMembers.find(m=>m.n===selMem) : null;
@@ -17810,7 +17824,7 @@ function ProfilesTab() {
 
 /* ═══════════════════════════════════════════════ FY NET WORTH REPORT */
 function NetWorthReportTab() {
-  const cr = v => { if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const familyM = MEMBERS.find(m=>m._isFamily);
   const trend = (familyM||{}).casTrend||[];
 
@@ -17971,7 +17985,7 @@ function NetWorthReportTab() {
 
 /* ═══════════════════════════════════════════════ CHARGES ANALYSIS */
 function ChargesTab() {
-  const cr = v => { if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const ct5294 = typeof JASH_SUMMARY!=="undefined"?JASH_SUMMARY:{totalCharges:464958,totalSellVal:0,realisedPL:5202771};
   const chargeData = [
     {broker:"Zerodha (CT5294)",member:"Jash Shah",charges:ct5294.totalCharges,turnover:ct5294.totalSellVal||0,pl:ct5294.realisedPL,pct_of_pl:ct5294.realisedPL>0?(ct5294.totalCharges/ct5294.realisedPL*100):null},
@@ -18024,7 +18038,7 @@ function ChargesTab() {
 
 /* ═══════════════════════════════════════════════ DIVIDEND YIELD ON COST */
 function DivYieldTab() {
-  const cr = v => { if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const r75Divs = typeof R75_DIVIDENDS!=="undefined"?R75_DIVIDENDS:{byStock:{},total:0};
   const v129Divs = typeof V129_DIVIDENDS!=="undefined"?V129_DIVIDENDS:{byStock:{},total:0};
   const allH = typeof MEMBER_HOLDINGS!=="undefined"?(MEMBER_HOLDINGS["ALL_FAMILY"]||[]):[];
@@ -18328,6 +18342,7 @@ function HoldingPeriodTab() {
 
 /* - CAPITAL TRACKER HELPERS - */
 const ctCr = (n) => {
+  if (typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
   if (n >= 1e7) return `₹${(n/1e7).toFixed(2)} Cr`;
   if (n >= 1e5) return `₹${(n/1e5).toFixed(1)} L`;
   return `₹${n.toLocaleString("en-IN")}`;
