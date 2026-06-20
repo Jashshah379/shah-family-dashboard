@@ -4897,7 +4897,8 @@ function FamilyApp() {
         const totalRet  = totalInv>0?(totalUnrl/totalInv*100):null;
         const isGain    = totalUnrl>=0;
         const avgCmp    = holdings.filter(h=>h.cmp>0).reduce((s,h)=>s+h.cmp,0)/(holdings.filter(h=>h.cmp>0).length||1);
-                    const chgPct = holdings.length>0&&holdings[0].chgPct!=null ? holdings[0].chgPct : null;
+                    const liveHolding = holdings.find(h=>h.chgPct!=null);
+                    const chgPct = liveHolding ? liveHolding.chgPct : null;
         const avgAvg    = totalQty>0?totalInv/totalQty:0;
         /* DB lookup */
         const dbKey = Object.keys(STOCK_DB||{}).find(k=>sym.toLowerCase().includes(k.toLowerCase().slice(0,5))||k.toLowerCase().includes(sym.toLowerCase().slice(0,5)));
