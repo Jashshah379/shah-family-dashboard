@@ -4697,6 +4697,9 @@ function FamilyApp() {
           h.unreal = h.val - (parseInt(h.inv) || 0);
           h.dayPL  = Math.round((lp.c || 0) * qty);  /* Today's P&L for this holding */
           h.prevClose = Math.round((lp.p - (lp.c || 0)) * 100) / 100;
+          h.isLive = manualPrice <= 0;  /* true only if from real live feed, not manual override */
+        } else {
+          h.isLive = false;
         }
       });
     }
@@ -4714,6 +4717,9 @@ function FamilyApp() {
             h.chgPct = lp.pct || 0;
             h.val  = Math.round(lp.p * qty);
             h.unreal = h.val - (parseInt(h.inv) || 0);
+            h.isLive = true;
+          } else {
+            h.isLive = false;
           }
         });
       });
@@ -4761,6 +4767,30 @@ function FamilyApp() {
     return rows;
   }, []);
   const staleCount = freshnessReport.filter(function(r){return r.status==="critical"||r.status==="warning"||r.status==="never";}).length;
+
+  /* ── Live Price Coverage ── */
+  const [showCoverage, setShowCoverage] = React.useState(false);
+  const priceCoverage = React.useMemo(function() {
+    var all = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
+    var unique = {};
+    all.forEach(function(h) {
+      if (!h || !h.s) return;
+      if (!unique[h.s]) unique[h.s] = {sym: h.s, isLive: false, val: 0};
+      if (h.isLive) unique[h.s].isLive = true;
+      unique[h.s].val += (h.val || 0);
+    });
+    var list = Object.values(unique);
+    var live = list.filter(function(s){return s.isLive;});
+    var stale = list.filter(function(s){return !s.isLive;}).sort(function(a,b){return b.val-a.val;});
+    return {
+      total: list.length,
+      liveCount: live.length,
+      staleCount: list.length - live.length,
+      pct: list.length>0 ? Math.round(live.length/list.length*100) : 0,
+      staleList: stale,
+    };
+  }, [priceVersion]);
+
   const [manualCmp, setManualCmp] = React.useState({});
   const [showManualCmp, setShowManualCmp] = React.useState(false);
   const [manualInput, setManualInput] = React.useState({sym:"", price:""});
@@ -5480,6 +5510,59 @@ function FamilyApp() {
   </div>
 )}
 
+      {/* Live Price Coverage Panel */}
+{showCoverage&&(
+  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw))"}}
+    onClick={function(e){if(e.target===e.currentTarget)setShowCoverage(false);}}>
+    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:520,marginTop:"min(60px,8vh)",boxShadow:"0 24px 80px #00000099"}}>
+      <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📡 Live Price Coverage</div>
+          <div style={{fontSize:10,color:"#3a4a6a",marginTop:3}}>How many of your stocks have a live NSE feed</div>
+        </div>
+        <button onClick={function(){setShowCoverage(false);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12}}>✕ Close</button>
+      </div>
+      <div style={{padding:"18px 22px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
+          <div style={{background:"#0a1a0f",border:"1px solid #1a3a20",borderRadius:10,padding:"12px",textAlign:"center"}}>
+            <div style={{fontSize:20,fontWeight:900,color:"#34d399",fontFamily:"monospace"}}>{priceCoverage.liveCount}</div>
+            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Live</div>
+          </div>
+          <div style={{background:"#1a1500",border:"1px solid #3a2a00",borderRadius:10,padding:"12px",textAlign:"center"}}>
+            <div style={{fontSize:20,fontWeight:900,color:"#f0b429",fontFamily:"monospace"}}>{priceCoverage.staleCount}</div>
+            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Stale / No Feed</div>
+          </div>
+          <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px",textAlign:"center"}}>
+            <div style={{fontSize:20,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace"}}>{priceCoverage.pct}%</div>
+            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Coverage</div>
+          </div>
+        </div>
+        <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,fontWeight:700}}>
+          Stale stocks by value ({priceCoverage.staleList.length})
+        </div>
+        <div style={{maxHeight:320,overflowY:"auto"}}>
+          {priceCoverage.staleList.map(function(s,i){return(
+            <div key={i} onClick={function(){setShowCoverage(false);setStockDetail(s.sym);}}
+              style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",
+                marginBottom:4,background:"#0d1020",borderRadius:8,cursor:"pointer"}}
+              onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
+              onMouseLeave={function(e){e.currentTarget.style.background="#0d1020";}}>
+              <span style={{fontSize:11,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:280}}>{s.sym}</span>
+              <span style={{fontSize:11,fontFamily:"monospace",color:"#3a4a6a"}}>{cr(s.val)}</span>
+            </div>
+          );})}
+          {priceCoverage.staleList.length===0&&(
+            <div style={{textAlign:"center",padding:20,fontSize:11,color:"#34d399"}}>✓ All stocks have live prices</div>
+          )}
+        </div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:12,lineHeight:1.5}}>
+          Stale stocks either aren't actively traded on NSE, are delisted/suspended, or aren't yet mapped in our symbol database. Use the ✏ CMP override button to manually set a price for any stock.
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       {/* ── SIDEBAR OVERLAY ── */}
       {sidebarOpen&&(
         <div style={{position:"fixed",top:0,right:0,bottom:0,width:280,background:"#07090f",borderLeft:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0",boxShadow:"-4px 0 24px #00000066"}}>
@@ -5541,6 +5624,14 @@ function FamilyApp() {
             <div>
               <div style={{fontSize:10,color:"#1a5a2a",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700}}>
                 Live Portfolio Pulse <span style={{background:"#34d399",color:"#000",padding:"1px 6px",borderRadius:8,fontSize:8,marginLeft:6,animation:"none"}}>LIVE</span>
+                <span onClick={function(){setShowCoverage(true);}}
+                  title="Click to see live price coverage breakdown"
+                  style={{marginLeft:8,cursor:"pointer",fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:8,
+                    background:priceCoverage.pct>=70?"#0a1a0f":priceCoverage.pct>=40?"#1a1500":"#2a0a0a",
+                    color:priceCoverage.pct>=70?"#34d399":priceCoverage.pct>=40?"#f0b429":"#ef4444",
+                    border:"1px solid "+(priceCoverage.pct>=70?"#1a3a20":priceCoverage.pct>=40?"#3a2a00":"#3a1010")}}>
+                  {priceCoverage.liveCount}/{priceCoverage.total} live ({priceCoverage.pct}%)
+                </span>
               </div>
               <div style={{fontSize:11,color:"#3a4a6a",marginTop:3}}>
                 Top 14 family stocks by value · Highest portfolio impact
