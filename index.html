@@ -9738,7 +9738,6 @@ const DATA_FRESHNESS = {
   "RIYA_NSDL_HOLDINGS": { member:"Riya Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-17" },
   "RIYA_ZERODHA_HOLDINGS": { member:"Riya Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
   "HONEY_ZERODHA_HOLDINGS": { member:"Honey Chetan Shah", custodian:"Zerodha", lastUpdated:"2026-06-19" },
-  "VASUMATI_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
   "V129_SUSHIL_HOLDINGS": { member:"Vasumati Shah", custodian:"Sushil Financial", lastUpdated:"2026-06-19" },
   "VASUMATI_ICICI_HOLDINGS": { member:"Vasumati Shah", custodian:"ICICI Direct", lastUpdated:"2026-06-19" },
   "VASUMATI_ZERODHA_HOLDINGS": { member:"Vasumati Shah", custodian:"Zerodha", lastUpdated:"2026-06-20" },
@@ -9786,7 +9785,6 @@ var FAMILY_TOP = (function() {
     /* ── Honey Chetan Shah ── */
     {arr: typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[],m:"Honey Chetan Shah",c:"Zerodha"},
     /* ── Vasumati Shah ── */
-    {arr: typeof VASUMATI_SUSHIL_HOLDINGS!=="undefined"?VASUMATI_SUSHIL_HOLDINGS:[],m:"Vasumati Shah",c:"Sushil Financial"},
     {arr: typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[],  m:"Vasumati Shah",    c:"Sushil Financial"},
     {arr: typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[],m:"Vasumati Shah", c:"ICICI Direct"},
     {arr: typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[],m:"Vasumati Shah",c:"Zerodha"},
@@ -9873,19 +9871,19 @@ var FAMILY_EQ_TOTAL_MKT  = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.val
 
 const MEMBER_HOLDINGS = {
   "V129": [
-    ..._tag(VASUMATI_SUSHIL_HOLDINGS,    "Vasumati Shah", "Sushil Financial"),
-    ..._tag(VASUMATI_ICICI_HOLDINGS,     "Vasumati Shah", "ICICI Direct"),
-    ..._tag(VASUMATI_ZERODHA_HOLDINGS,   "Vasumati Shah", "Zerodha"),
+    ..._tag(typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[],    "Vasumati Shah", "Sushil Financial"),
+    ..._tag(typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[],     "Vasumati Shah", "ICICI Direct"),
+    ..._tag(typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[],   "Vasumati Shah", "Zerodha"),
   ],
   "RASIKLAL_HUF": [
     ..._tag(RASIKLAL_HUF_SUSHIL_HOLDINGS, "Rasiklal HUF", "Sushil Financial"),
     ..._tag(typeof RASIKLAL_HUF_ICICI_HOLDINGS!=="undefined"?RASIKLAL_HUF_ICICI_HOLDINGS:[], "Rasiklal HUF", "ICICI Direct"),
   ],
   "RM": [
-    ..._tag(R124_RASIKLAL_SUSHIL_HOLDINGS, "Rasiklal Shah", "Sushil Financial"),
+    ..._tag(typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[], "Rasiklal Shah", "Sushil Financial"),
     ..._tag(RM_ICICI_HOLDINGS,        "Rasiklal Shah", "ICICI Direct"),
   ],
-  "HUF":       _tag(CHETAN_HUF_SUSHIL_HOLDINGS, "Chetan Shah HUF", "Sushil Financial"),
+  "HUF":       _tag(typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[], "Chetan Shah HUF", "Sushil Financial"),
   "PRAFUL_HUF":_tag(PRAFUL_HUF_SUSHIL,          "Praful Shah HUF", "Sushil Financial"),
   "A46":       _tag(ASHA_SUSHIL_HOLDINGS,        "Asha Shah",       "Sushil Financial"),
   "MAYA_SUSHIL":_tag(MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
