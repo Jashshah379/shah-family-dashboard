@@ -2680,22 +2680,6 @@ function DailyDigest({priceVersion, livePrices}) {
         </div>
       </div>
 
-      {/* ══ 4 KEY METRICS ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
-        {[
-          {l:"Equity",v:cr(totalEq),sub:(retPct>=0?"+":"")+retPct.toFixed(1)+"%",c:"#6366f1"},
-          {l:"Mutual Funds",v:cr(totalMF),sub:Object.keys(mfReg).length+" members",c:"#10b981"},
-          {l:"Bank + PPF",v:cr(totalBank+totalPPF),sub:bank.length+" accounts",c:"#f0b429"},
-          {l:"Today P&L",v:hasLive?(totalDayPL>=0?"+":"")+cr(totalDayPL):"—",sub:hasLive?"live":"awaiting prices",c:hasLive?(totalDayPL>=0?"#10b981":"#ef4444"):"#3a4a6a"},
-        ].map(({l,v,sub,c})=>(
-          <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1020)",border:`1px solid ${c}22`,borderTop:`2px solid ${c}`,borderRadius:12,padding:"12px 14px"}}>
-            <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{l}</div>
-            <div style={{fontSize:16,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
-            <div style={{fontSize:9,color:"#3a4a6a",marginTop:3}}>{sub}</div>
-          </div>
-        ))}
-      </div>
-
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
 
