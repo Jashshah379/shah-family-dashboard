@@ -5530,10 +5530,10 @@ function FamilyApp() {
           <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
           <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
-          <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa"/>
-          <M label="Net Capital (Jilmill)" value="₹7.68 Cr" sub="Own money deployed" color="#c084fc"/>
-          <M label="MTF Borrowing" value="₹24.53 Cr" sub="4 ICICI Direct accounts" color="#f87171"/>
-          <M label="Portfolio ex-MTF" value="₹44.96 Cr" sub="Net of borrowed funding" color="#34d399"/>
+          <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa" onClick={()=>setTab("MTF")}/>
+          <M label="Net Capital (Jilmill)" value={cr(MTF_SUMMARY.own_capital)} sub="Own money deployed" color="#c084fc" onClick={()=>setTab("MTF")}/>
+          <M label="MTF Borrowing" value={cr(MTF_SUMMARY.total_funding)} sub={MTF_SUMMARY.accounts.length+" ICICI Direct accounts"} color="#f87171" onClick={()=>setTab("MTF")}/>
+          <M label="Portfolio ex-MTF" value={cr(MTF_SUMMARY.total_portfolio-MTF_SUMMARY.total_funding)} sub="Net of borrowed funding" color="#34d399" onClick={()=>setTab("MTF")}/>
         </div>
         {/* - LIVE PORTFOLIO PULSE - */}
         <div style={{background:"linear-gradient(135deg,#0d1a10 0%,#0a1a0d 100%)",border:"1px solid #1a3a20",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
@@ -9558,6 +9558,20 @@ const JASH_PORTFOLIO_SUMMARY = {
   totalReal:5202771,totalCharges:464958,xirr:18.4,
 };
 
+
+
+const MTF_SUMMARY = {
+  total_funding:    24528000,   /* Total MTF borrowed — ₹24.53 Cr */
+  total_portfolio:  76777414,   /* Gross portfolio value including MTF */
+  own_capital:       7684000,   /* Own money deployed (Net Capital Jilmill) */
+  rate_annual:            18,   /* ICICI MTF interest rate % p.a. */
+  accounts: [
+    {name:"Rasiklal Shah",  clientId:"RM",    funding:8500000, portfolio:25000000},
+    {name:"Vasumati Shah",  clientId:"V129",  funding:7200000, portfolio:22000000},
+    {name:"Chetan HUF",     clientId:"C31",   funding:5400000, portfolio:16000000},
+    {name:"Praful HUF",     clientId:"P71",   funding:3428000, portfolio:13777414},
+  ],
+  };
 
 
 /* DATA_FRESHNESS — tracks last update date per account */
@@ -18515,18 +18529,7 @@ function MTFTab() {
   /* ── MTF SUMMARY (fill from ICICI Direct MTF statement) ──────────────────
      These high-level numbers come from the Overview KPIs already embedded:
      MTF Borrowing = ₹24.53 Cr across 4 ICICI Direct accounts              */
-  const MTF_SUMMARY = {
-    total_funding:    24528000,   /* Total MTF borrowed — ₹24.53 Cr */
-    total_portfolio:  76777414,   /* Gross portfolio value including MTF */
-    own_capital:       7684000,   /* Own money deployed (Net Capital Jilmill) */
-    rate_annual:            18,   /* ICICI MTF interest rate % p.a. */
-    accounts: [
-      {name:"Rasiklal Shah",  clientId:"RM",    funding:8500000, portfolio:25000000},
-      {name:"Vasumati Shah",  clientId:"V129",  funding:7200000, portfolio:22000000},
-      {name:"Chetan HUF",     clientId:"C31",   funding:5400000, portfolio:16000000},
-      {name:"Praful HUF",     clientId:"P71",   funding:3428000, portfolio:13777414},
-    ],
-  };
+  /* MTF_SUMMARY moved to module scope — see top of file */
 
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
