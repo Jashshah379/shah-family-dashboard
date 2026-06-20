@@ -5719,11 +5719,12 @@ function FamilyApp() {
           <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
           <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
+          <M label="MTF Value" value={cr(MTF_SUMMARY.total_funding)} sub={MTF_SUMMARY.accounts.length+" account"+(MTF_SUMMARY.accounts.length!==1?"s":"")+" · live"} color="#f0b429" onClick={()=>setTab("MTF")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
-          <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa" onClick={()=>setTab("MTF")}/>
-          <M label="Net Capital (Jilmill)" value={cr(MTF_SUMMARY.own_capital)} sub="Own money deployed" color="#c084fc" onClick={()=>setTab("MTF")}/>
-          <M label="MTF Borrowing" value={cr(MTF_SUMMARY.total_funding)} sub={MTF_SUMMARY.accounts.length+" ICICI Direct accounts"} color="#f87171" onClick={()=>setTab("MTF")}/>
-          <M label="Portfolio ex-MTF" value={cr(MTF_SUMMARY.total_portfolio-MTF_SUMMARY.total_funding)} sub="Net of borrowed funding" color="#34d399" onClick={()=>setTab("MTF")}/>
+          <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa"/>
+          <M label="Net Capital (Own)" value={cr(MTF_SUMMARY.own_capital)} sub="Invested in MTF positions · live" color="#c084fc" onClick={()=>setTab("MTF")}/>
+          <M label="MTF Borrowing" value={cr(MTF_SUMMARY.total_funding)} sub={MTF_SUMMARY.accounts.length+" account"+(MTF_SUMMARY.accounts.length!==1?"s":"")+" · live"} color="#f87171" onClick={()=>setTab("MTF")}/>
+          <M label="Portfolio ex-MTF" value={cr((typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){return h&&!h.mtf;}).reduce(function(s,h){return s+(h.val||0);},0))} sub="Non-MTF equity value · live" color="#34d399" onClick={()=>setTab("MTF")}/>
         </div>
         {/* - LIVE PORTFOLIO PULSE - */}
         <div style={{background:"linear-gradient(135deg,#0d1a10 0%,#0a1a0d 100%)",border:"1px solid #1a3a20",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
@@ -9798,18 +9799,7 @@ const JASH_PORTFOLIO_SUMMARY = {
 
 
 
-const MTF_SUMMARY = {
-  total_funding:    24528000,   /* Total MTF borrowed — ₹24.53 Cr */
-  total_portfolio:  76777414,   /* Gross portfolio value including MTF */
-  own_capital:       7684000,   /* Own money deployed (Net Capital Jilmill) */
-  rate_annual:            18,   /* ICICI MTF interest rate % p.a. */
-  accounts: [
-    {name:"Rasiklal Shah",  clientId:"RM",    funding:8500000, portfolio:25000000},
-    {name:"Vasumati Shah",  clientId:"V129",  funding:7200000, portfolio:22000000},
-    {name:"Chetan HUF",     clientId:"C31",   funding:5400000, portfolio:16000000},
-    {name:"Praful HUF",     clientId:"P71",   funding:3428000, portfolio:13777414},
-  ],
-  };
+
 
 
 /* DATA_FRESHNESS — tracks last update date per account */
@@ -9918,6 +9908,35 @@ var FAMILY_TOP = (function() {
   });
   return all;
 })();
+
+/* MTF_SUMMARY — computed LIVE from holdings flagged mtf:true across FAMILY_TOP.
+   "Funding" = cost basis of MTF-held shares (the ICICI-funded portion).
+   "Portfolio" = current value of those same shares at CMP (gross exposure).
+   "Own capital" = total invested (inv) on those positions — what the family actually put in. */
+var MTF_SUMMARY = (function() {
+  var rows = (typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : []).filter(function(h){ return h && h.mtf; });
+  var byAccount = {};
+  var totalFunding = 0, totalPortfolioAtCmp = 0, totalOwnCapital = 0;
+  rows.forEach(function(h) {
+    var key = (h._member || "Unknown") + "|" + (h._custodian || "");
+    if (!byAccount[key]) byAccount[key] = {name: h._member, clientId: h._custodian, funding: 0, portfolio: 0};
+    var fundedVal = h.mtfVal != null ? h.mtfVal : (h.val || 0);
+    var cmpVal = (h.cmp && h.qty) ? h.cmp * (h.mtfQty || h.qty) : (h.val || 0);
+    byAccount[key].funding += fundedVal;
+    byAccount[key].portfolio += cmpVal;
+    totalFunding += fundedVal;
+    totalPortfolioAtCmp += cmpVal;
+    totalOwnCapital += (h.inv || 0);
+  });
+  return {
+    total_funding: totalFunding,
+    total_portfolio: totalPortfolioAtCmp,
+    own_capital: totalOwnCapital,
+    rate_annual: 18,
+    accounts: Object.values(byAccount),
+  };
+})();
+
 
 var FAMILY_EQ_TOTAL_COST = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.inv||0);}, 0);
 
