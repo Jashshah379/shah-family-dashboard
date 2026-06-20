@@ -324,6 +324,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
           .hero-resp{font-size:26px!important;}
           .hide-sm{display:none!important;}
         }
+        @keyframes pulseMarquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
         @media(max-width:480px){
           .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
           .hero-resp{font-size:20px!important;}
@@ -5737,7 +5738,7 @@ function FamilyApp() {
                 </span>
               </div>
               <div style={{fontSize:11,color:"#3a4a6a",marginTop:3}}>
-                Top 14 family stocks by value · Highest portfolio impact
+                Top 30 family stocks by value + 5 picks of the day · auto-scrolling
               </div>
             </div>
             <div style={{textAlign:"right"}}>
@@ -5750,73 +5751,103 @@ function FamilyApp() {
               </div>
             </div>
           </div>
-          <div style={{overflowX:"auto"}}>
-            <div style={{display:"flex",gap:8,minWidth:"max-content"}}>
-              {(()=>{
-                /* Top family stocks by VALUE — highest portfolio impact */
-                const allH2 = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
-                const stockMap2 = {};
-                allH2.forEach(h=>{
-                  if(!h||!h.s||!(h.val>0)) return;
-                  if(!stockMap2[h.s]) stockMap2[h.s]={sym:h.s,val:0,inv:0,cmp:h.cmp||0,members:new Set()};
-                  stockMap2[h.s].val+=h.val; stockMap2[h.s].inv+=h.inv;
-                  if(h.cmp) stockMap2[h.s].cmp=h.cmp;
-                  if(h._member) stockMap2[h.s].members.add(h._member.split(" ")[0]);
-                });
-                const topStocks2 = Object.values(stockMap2)
-                  .sort((a,b)=>b.val-a.val).slice(0,14);
-                const totalFamilyVal = topStocks2.reduce((s,h)=>s+h.val,0);
-                return topStocks2.map(h=>{
-                  const pl=h.val-h.inv; const nseSym = (typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP[h.sym||h.s]:null)||(h.sym)||(h.s&&h.s.match(/^[A-Z0-9&-]{2,15}$/)?h.s:null);
-                  const liveCmp = nseSym&&livePrices[nseSym] ? livePrices[nseSym].p : null;
-                  const effectiveCmp = liveCmp || h.cmp || 0;
-                  const effectiveVal = effectiveCmp&&h.qty ? effectiveCmp*h.qty : h.val;
-                  const pl2 = effectiveVal - h.inv;
-                  const plPct=h.inv>0?(pl2/h.inv*100):0; const isUp=pl2>=0;
-                  const impact=totalFamilyVal>0?(h.val/totalFamilyVal*100):0;
-                  return (
-                    <div key={h.sym} onClick={function(){
-                        var sym = h.sym||h.s;
-                        var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
-                        var rows = allH.filter(function(x){return (x.sym||x.s)===sym;});
-                        if(rows.length>0){
-                          var members=new Set(rows.map(function(x){return x._member;}));
-                          var holders=rows.map(function(r){return {member:r._member,custodian:r._custodian,qty:r.qty,avg:r.avg||r.avgCost,cmp:r.cmp,val:r.val,inv:r.inv,unreal:r.unreal};});
-                          setStockDetail({s:sym,sym:sym,sector:rows[0].sector||"",cmp:rows[0].cmp||0,chgPct:rows[0].chgPct||0,memberCount:members.size,holders:holders,totalVal:rows.reduce(function(s,r){return s+(r.val||0);},0),totalInv:rows.reduce(function(s,r){return s+(r.inv||0);},0),totalQty:rows.reduce(function(s,r){return s+(r.qty||0);},0)});
-                        }
-                      }}
-                      style={{background:"#090c0a",border:"1px solid "+(isUp?"#1a3a20":"#3a1a1a"),borderRadius:8,padding:"10px 12px",minWidth:130,flexShrink:0,position:"relative",cursor:"pointer",transition:"border-color 0.15s"}}
-                      onMouseEnter={function(e){e.currentTarget.style.borderColor=isUp?"#34d399":"#ef4444";}}
-                      onMouseLeave={function(e){e.currentTarget.style.borderColor=isUp?"#1a3a20":"#3a1a1a";}}>
-                      <div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:100}}>
-                        {h.sym}
-                      </div>
-                      <div style={{fontSize:8,color:"#2a4a3a",marginBottom:4}}>{[...h.members].slice(0,2).join(", ")}</div>
-                      {nseSym&&livePrices[nseSym]&&livePrices[nseSym].p&&(
-                        <div style={{position:"absolute",top:5,right:5,display:"flex",alignItems:"center",gap:3}}>
-                          <div style={{width:5,height:5,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 4px #34d399"}}/>
-                          <span style={{fontSize:7,color:"#34d399"}}>LIVE</span>
-                        </div>
-                      )}
-                      <div style={{fontSize:14,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:isUp?"#34d399":"#f87171"}}>
-                        {nseSym&&livePrices[nseSym]
-                          ? "₹"+(livePrices[nseSym].p||0).toLocaleString("en-IN",{maximumFractionDigits:1})
-                          : cr(effectiveVal)}
-                      </div>
-                      <div style={{fontSize:10,color:isUp?"#10b981":"#ef4444",fontWeight:600,marginTop:2}}>
-                        {isUp?"▲":"▼"} {Math.abs(plPct).toFixed(1)}% · {cr(pl2)}
-                      </div>
-                      <div style={{fontSize:8,color:"#2a4a3a",marginTop:3,fontFamily:"'JetBrains Mono',monospace"}}>
-                        {impact.toFixed(1)}% of top14
-                      </div>
+          <div style={{overflow:"hidden"}} onMouseEnter={function(e){var t=e.currentTarget.querySelector(".pulse-track");if(t)t.style.animationPlayState="paused";}}
+               onMouseLeave={function(e){var t=e.currentTarget.querySelector(".pulse-track");if(t)t.style.animationPlayState="running";}}>
+            {(()=>{
+              /* Top 30 family stocks by VALUE + 5 deterministic "picks of the day" (rotate daily) */
+              const allH2 = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
+              const stockMap2 = {};
+              allH2.forEach(h=>{
+                if(!h||!h.s||!(h.val>0)) return;
+                if(!stockMap2[h.s]) stockMap2[h.s]={sym:h.s,val:0,inv:0,cmp:h.cmp||0,members:new Set()};
+                stockMap2[h.s].val+=h.val; stockMap2[h.s].inv+=h.inv;
+                if(h.cmp) stockMap2[h.s].cmp=h.cmp;
+                if(h._member) stockMap2[h.s].members.add(h._member.split(" ")[0]);
+              });
+              const allStocksArr = Object.values(stockMap2);
+              const top30 = allStocksArr.slice().sort((a,b)=>b.val-a.val).slice(0,30);
+              const top30Syms = new Set(top30.map(s=>s.sym));
+              const remaining = allStocksArr.filter(s=>!top30Syms.has(s.sym));
+
+              /* Deterministic daily seed: changes once per calendar day, same all day */
+              const todayKey = new Date().toISOString().slice(0,10); /* YYYY-MM-DD */
+              let seed = 0;
+              for(let i=0;i<todayKey.length;i++) seed = (seed*31 + todayKey.charCodeAt(i)) >>> 0;
+              function seededRand(){ seed = (seed*1103515245 + 12345) >>> 0; return seed / 4294967296; }
+              const shuffled = remaining.slice();
+              for(let i=shuffled.length-1;i>0;i--){
+                const j = Math.floor(seededRand()*(i+1));
+                const tmp=shuffled[i]; shuffled[i]=shuffled[j]; shuffled[j]=tmp;
+              }
+              const dailyPicks = shuffled.slice(0,5).map(s=>({...s, isDaily:true}));
+
+              const displayStocks = [...top30, ...dailyPicks];
+              const totalFamilyVal = top30.reduce((s,h)=>s+h.val,0);
+
+              const renderCard = (h, keyPrefix) => {
+                const pl=h.val-h.inv; const nseSym = (typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP[h.sym||h.s]:null)||(h.sym)||(h.s&&h.s.match(/^[A-Z0-9&-]{2,15}$/)?h.s:null);
+                const liveCmp = nseSym&&livePrices[nseSym] ? livePrices[nseSym].p : null;
+                const effectiveCmp = liveCmp || h.cmp || 0;
+                const effectiveVal = effectiveCmp&&h.qty ? effectiveCmp*h.qty : h.val;
+                const pl2 = effectiveVal - h.inv;
+                const plPct=h.inv>0?(pl2/h.inv*100):0; const isUp=pl2>=0;
+                const impact=totalFamilyVal>0?(h.val/totalFamilyVal*100):0;
+                return (
+                  <div key={keyPrefix+h.sym} onClick={function(){
+                      var sym = h.sym||h.s;
+                      var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
+                      var rows = allH.filter(function(x){return (x.sym||x.s)===sym;});
+                      if(rows.length>0){
+                        var members=new Set(rows.map(function(x){return x._member;}));
+                        var holders=rows.map(function(r){return {member:r._member,custodian:r._custodian,qty:r.qty,avg:r.avg||r.avgCost,cmp:r.cmp,val:r.val,inv:r.inv,unreal:r.unreal};});
+                        setStockDetail({s:sym,sym:sym,sector:rows[0].sector||"",cmp:rows[0].cmp||0,chgPct:rows[0].chgPct||0,memberCount:members.size,holders:holders,totalVal:rows.reduce(function(s,r){return s+(r.val||0);},0),totalInv:rows.reduce(function(s,r){return s+(r.inv||0);},0),totalQty:rows.reduce(function(s,r){return s+(r.qty||0);},0)});
+                      }
+                    }}
+                    style={{background:"#090c0a",border:"1px solid "+(h.isDaily?"#3a2a6a":(isUp?"#1a3a20":"#3a1a1a")),borderRadius:8,padding:"10px 12px",minWidth:130,flexShrink:0,position:"relative",cursor:"pointer",transition:"border-color 0.15s",marginRight:8}}
+                    onMouseEnter={function(e){e.currentTarget.style.borderColor=h.isDaily?"#7c6cf6":(isUp?"#34d399":"#ef4444");}}
+                    onMouseLeave={function(e){e.currentTarget.style.borderColor=h.isDaily?"#3a2a6a":(isUp?"#1a3a20":"#3a1a1a");}}>
+                    {h.isDaily&&(
+                      <div style={{position:"absolute",top:5,left:5,fontSize:7,color:"#a78bfa",fontWeight:700}}>✦ PICK</div>
+                    )}
+                    <div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",marginBottom:2,marginTop:h.isDaily?10:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:100}}>
+                      {h.sym}
                     </div>
-                  );
-                });
-              })()}
-            </div>
+                    <div style={{fontSize:8,color:"#2a4a3a",marginBottom:4}}>{[...h.members].slice(0,2).join(", ")}</div>
+                    {nseSym&&livePrices[nseSym]&&livePrices[nseSym].p&&(
+                      <div style={{position:"absolute",top:5,right:5,display:"flex",alignItems:"center",gap:3}}>
+                        <div style={{width:5,height:5,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 4px #34d399"}}/>
+                        <span style={{fontSize:7,color:"#34d399"}}>LIVE</span>
+                      </div>
+                    )}
+                    <div style={{fontSize:14,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:isUp?"#34d399":"#f87171"}}>
+                      {nseSym&&livePrices[nseSym]
+                        ? "₹"+(livePrices[nseSym].p||0).toLocaleString("en-IN",{maximumFractionDigits:1})
+                        : cr(effectiveVal)}
+                    </div>
+                    <div style={{fontSize:10,color:isUp?"#10b981":"#ef4444",fontWeight:600,marginTop:2}}>
+                      {isUp?"▲":"▼"} {Math.abs(plPct).toFixed(1)}% · {cr(pl2)}
+                    </div>
+                    <div style={{fontSize:8,color:"#2a4a3a",marginTop:3,fontFamily:"'JetBrains Mono',monospace"}}>
+                      {h.isDaily?"daily pick":impact.toFixed(1)+"% of top30"}
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div style={{display:"flex"}}>
+                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 60s linear infinite"}}>
+                    {displayStocks.map((h,i)=>renderCard(h,"a"))}
+                  </div>
+                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 60s linear infinite"}}>
+                    {displayStocks.map((h,i)=>renderCard(h,"b"))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <div style={{fontSize:8,color:"#1a3a20",marginTop:8}}>
-            * Family-wide consolidated · top stocks by total value across all members · sorted by portfolio impact
+            * Family-wide consolidated · top 30 stocks by value + 5 rotating daily picks · refreshes every calendar day
           </div>
         </div>
       </div>}
