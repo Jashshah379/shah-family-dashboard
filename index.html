@@ -5670,6 +5670,117 @@ function FamilyApp() {
   </div>
 )}
 
+      {/* ── Manual CMP Floating Action Button ── */}
+      <button onClick={function(){setShowManualCmp(function(v){return !v;});}}
+        title="Manual CMP Override"
+        style={{position:"fixed",bottom:20,right:20,zIndex:900,
+          background:Object.keys(manualCmp).length>0?"#1e3a5f":"#0d1122",
+          border:"2px solid "+(Object.keys(manualCmp).length>0?"#3b82f6":"#2a3a5a"),
+          borderRadius:12,padding:"10px 16px",color:"#7eb8ff",cursor:"pointer",
+          fontSize:12,fontWeight:700,boxShadow:"0 4px 20px #000a",
+          display:"flex",alignItems:"center",gap:6}}>
+        <span style={{fontSize:16}}>✏</span>
+        <span>CMP{Object.keys(manualCmp).length>0?" · "+Object.keys(manualCmp).length+" set":""}</span>
+      </button>
+
+      {/* ── Manual CMP Override Panel ── */}
+{showManualCmp&&(
+  <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(380px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
+    {/* Header */}
+    <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+      <div>
+        <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>Manual CMP Override</div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Set prices for stocks without live data</div>
+      </div>
+      <button onClick={function(){setShowManualCmp(false);}} style={{background:"#1d2545",border:"none",color:"#7eb8ff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11}}>✕ Close</button>
+    </div>
+
+    {/* Add / edit entry */}
+    <div style={{padding:"12px 16px",borderBottom:"1px solid #1d2545",flexShrink:0}}>
+      <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Set Price</div>
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        <input
+          value={manualInput.sym}
+          onChange={function(e){setManualInput(function(prev){return {sym:e.target.value.toUpperCase(),price:prev.price};});}}
+          placeholder="Stock name / symbol"
+          style={{flex:2,background:"#0d1020",border:"1px solid #1d2545",borderRadius:6,padding:"6px 10px",color:"#e8eaf0",fontSize:11,outline:"none"}}
+        />
+        <input
+          value={manualInput.price}
+          onChange={function(e){setManualInput(function(prev){return {sym:prev.sym,price:e.target.value};});}}
+          placeholder="₹ Price"
+          type="number"
+          style={{flex:1,background:"#0d1020",border:"1px solid #1d2545",borderRadius:6,padding:"6px 10px",color:"#7eb8ff",fontSize:11,outline:"none",fontFamily:"monospace"}}
+        />
+        <button onClick={function(){
+          var sym = manualInput.sym.trim();
+          var price = parseFloat(manualInput.price);
+          if(!sym || !price || price<=0) return;
+          setManualCmp(function(prev){var n={}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[sym]=price; return n;});
+          setManualInput({sym:"",price:""});
+          setPriceVersion(function(v){return v+1;});
+        }} style={{background:"#1e3a5f",border:"none",color:"#7eb8ff",borderRadius:6,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:700,flexShrink:0}}>
+          Set
+        </button>
+      </div>
+    </div>
+
+    {/* Stocks needing CMP */}
+    {stocksNeedingCmp.length>0&&(
+      <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",flexShrink:0}}>
+        <div style={{fontSize:9,color:"#f0b429",textTransform:"uppercase",marginBottom:6}}>⚠ {stocksNeedingCmp.length} stocks missing CMP — click to set</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:4,maxHeight:100,overflowY:"auto"}}>
+          {stocksNeedingCmp.map(function(sym){
+            return (
+              <button key={sym} onClick={function(){setManualInput({sym:sym,price:""});}}
+                style={{background:"#1a1500",border:"1px solid #3a2a00",color:"#f0b429",borderRadius:4,padding:"2px 8px",fontSize:9,cursor:"pointer"}}>
+                {sym}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    )}
+
+    {/* Current overrides */}
+    <div style={{flex:1,overflowY:"auto",padding:"10px 16px"}}>
+      <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",marginBottom:8}}>
+        Active Overrides ({Object.keys(manualCmp).length})
+      </div>
+      {Object.keys(manualCmp).length===0&&(
+        <div style={{color:"#3a4a6a",fontSize:11,textAlign:"center",marginTop:20}}>No overrides set</div>
+      )}
+      {Object.keys(manualCmp).sort().map(function(sym){
+        return (
+          <div key={sym} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 10px",marginBottom:4,background:"#0a0e1e",borderRadius:8,border:"1px solid #1d2545"}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8"}}>{sym}</div>
+              <div style={{fontSize:9,color:"#3a4a6a"}}>manual override</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:13,fontWeight:800,color:"#7eb8ff",fontFamily:"monospace"}}>₹{manualCmp[sym].toLocaleString("en-IN")}</span>
+              <button onClick={function(){
+                setManualCmp(function(prev){var n={}; Object.keys(prev).forEach(function(k){if(k!==sym)n[k]=prev[k];}); return n;});
+                setPriceVersion(function(v){return v+1;});
+              }} style={{background:"#2a0a0a",border:"1px solid #5a1a1a",color:"#f87171",borderRadius:4,padding:"2px 8px",fontSize:9,cursor:"pointer"}}>✕</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Clear all */}
+    {Object.keys(manualCmp).length>0&&(
+      <div style={{padding:"12px 16px",borderTop:"1px solid #1d2545",flexShrink:0}}>
+        <button onClick={function(){setManualCmp({});setPriceVersion(function(v){return v+1;});}}
+          style={{width:"100%",background:"#1a0808",border:"1px solid #5a1a1a",color:"#f87171",borderRadius:8,padding:"8px",cursor:"pointer",fontSize:11,fontWeight:600}}>
+          Clear All Overrides
+        </button>
+      </div>
+    )}
+  </div>
+)}
+
       {/* ── SIDEBAR OVERLAY ── */}
       {sidebarOpen&&(
         <div style={{position:"fixed",top:0,right:0,bottom:0,width:280,background:"#07090f",borderLeft:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0",boxShadow:"-4px 0 24px #00000066"}}>
@@ -19070,117 +19181,7 @@ function MTFTab() {
       )}
 
 
-      {/* ── Manual CMP Floating Action Button ── */}
-      <button onClick={function(){setShowManualCmp(function(v){return !v;});}}
-        title="Manual CMP Override"
-        style={{position:"fixed",bottom:20,right:20,zIndex:900,
-          background:Object.keys(manualCmp).length>0?"#1e3a5f":"#0d1122",
-          border:"2px solid "+(Object.keys(manualCmp).length>0?"#3b82f6":"#2a3a5a"),
-          borderRadius:12,padding:"10px 16px",color:"#7eb8ff",cursor:"pointer",
-          fontSize:12,fontWeight:700,boxShadow:"0 4px 20px #000a",
-          display:"flex",alignItems:"center",gap:6}}>
-        <span style={{fontSize:16}}>✏</span>
-        <span>CMP{Object.keys(manualCmp).length>0?" · "+Object.keys(manualCmp).length+" set":""}</span>
-      </button>
-
-      {/* ── Manual CMP Override Panel ── */}
-{showManualCmp&&(
-  <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(380px,100vw)",background:"#080b18",borderLeft:"1px solid #1d2545",zIndex:1000,display:"flex",flexDirection:"column",boxShadow:"-8px 0 40px #000a"}}>
-    {/* Header */}
-    <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-      <div>
-        <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>Manual CMP Override</div>
-        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Set prices for stocks without live data</div>
-      </div>
-      <button onClick={function(){setShowManualCmp(false);}} style={{background:"#1d2545",border:"none",color:"#7eb8ff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11}}>✕ Close</button>
-    </div>
-
-    {/* Add / edit entry */}
-    <div style={{padding:"12px 16px",borderBottom:"1px solid #1d2545",flexShrink:0}}>
-      <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Set Price</div>
-      <div style={{display:"flex",gap:8,alignItems:"center"}}>
-        <input
-          value={manualInput.sym}
-          onChange={function(e){setManualInput(function(prev){return {sym:e.target.value.toUpperCase(),price:prev.price};});}}
-          placeholder="Stock name / symbol"
-          style={{flex:2,background:"#0d1020",border:"1px solid #1d2545",borderRadius:6,padding:"6px 10px",color:"#e8eaf0",fontSize:11,outline:"none"}}
-        />
-        <input
-          value={manualInput.price}
-          onChange={function(e){setManualInput(function(prev){return {sym:prev.sym,price:e.target.value};});}}
-          placeholder="₹ Price"
-          type="number"
-          style={{flex:1,background:"#0d1020",border:"1px solid #1d2545",borderRadius:6,padding:"6px 10px",color:"#7eb8ff",fontSize:11,outline:"none",fontFamily:"monospace"}}
-        />
-        <button onClick={function(){
-          var sym = manualInput.sym.trim();
-          var price = parseFloat(manualInput.price);
-          if(!sym || !price || price<=0) return;
-          setManualCmp(function(prev){var n={}; Object.keys(prev).forEach(function(k){n[k]=prev[k];}); n[sym]=price; return n;});
-          setManualInput({sym:"",price:""});
-          setPriceVersion(function(v){return v+1;});
-        }} style={{background:"#1e3a5f",border:"none",color:"#7eb8ff",borderRadius:6,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:700,flexShrink:0}}>
-          Set
-        </button>
-      </div>
-    </div>
-
-    {/* Stocks needing CMP */}
-    {stocksNeedingCmp.length>0&&(
-      <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",flexShrink:0}}>
-        <div style={{fontSize:9,color:"#f0b429",textTransform:"uppercase",marginBottom:6}}>⚠ {stocksNeedingCmp.length} stocks missing CMP — click to set</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:4,maxHeight:100,overflowY:"auto"}}>
-          {stocksNeedingCmp.map(function(sym){
-            return (
-              <button key={sym} onClick={function(){setManualInput({sym:sym,price:""});}}
-                style={{background:"#1a1500",border:"1px solid #3a2a00",color:"#f0b429",borderRadius:4,padding:"2px 8px",fontSize:9,cursor:"pointer"}}>
-                {sym}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    {/* Current overrides */}
-    <div style={{flex:1,overflowY:"auto",padding:"10px 16px"}}>
-      <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",marginBottom:8}}>
-        Active Overrides ({Object.keys(manualCmp).length})
-      </div>
-      {Object.keys(manualCmp).length===0&&(
-        <div style={{color:"#3a4a6a",fontSize:11,textAlign:"center",marginTop:20}}>No overrides set</div>
-      )}
-      {Object.keys(manualCmp).sort().map(function(sym){
-        return (
-          <div key={sym} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 10px",marginBottom:4,background:"#0a0e1e",borderRadius:8,border:"1px solid #1d2545"}}>
-            <div>
-              <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8"}}>{sym}</div>
-              <div style={{fontSize:9,color:"#3a4a6a"}}>manual override</div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:13,fontWeight:800,color:"#7eb8ff",fontFamily:"monospace"}}>₹{manualCmp[sym].toLocaleString("en-IN")}</span>
-              <button onClick={function(){
-                setManualCmp(function(prev){var n={}; Object.keys(prev).forEach(function(k){if(k!==sym)n[k]=prev[k];}); return n;});
-                setPriceVersion(function(v){return v+1;});
-              }} style={{background:"#2a0a0a",border:"1px solid #5a1a1a",color:"#f87171",borderRadius:4,padding:"2px 8px",fontSize:9,cursor:"pointer"}}>✕</button>
-            </div>
           </div>
-        );
-      })}
-    </div>
-
-    {/* Clear all */}
-    {Object.keys(manualCmp).length>0&&(
-      <div style={{padding:"12px 16px",borderTop:"1px solid #1d2545",flexShrink:0}}>
-        <button onClick={function(){setManualCmp({});setPriceVersion(function(v){return v+1;});}}
-          style={{width:"100%",background:"#1a0808",border:"1px solid #5a1a1a",color:"#f87171",borderRadius:8,padding:"8px",cursor:"pointer",fontSize:11,fontWeight:600}}>
-          Clear All Overrides
-        </button>
-      </div>
-    )}
-  </div>
-)}
-    </div>
   );
 }
 
