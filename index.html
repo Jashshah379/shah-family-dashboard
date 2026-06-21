@@ -4120,12 +4120,8 @@ const DEFAULT_ADVISORS = [
   {id:"hiren", name:"Hiren Bhai", firm:"", type:"Family Friend", color:"#34d399"},
   {id:"mitul", name:"Mitul Bhai", firm:"", type:"Family Friend", color:"#a78bfa"},
   {id:"adv1", name:"Advisor 1", firm:"", type:"Research Analyst", color:"#7eb8ff"},
-  {id:"adv2", name:"Advisor 2", firm:"", type:"Portfolio Manager", color:"#34d399"},
-  {id:"adv3", name:"Advisor 3", firm:"", type:"Family Friend",    color:"#f0b429"},
-  {id:"adv4", name:"Advisor 4", firm:"", type:"Research Analyst", color:"#a78bfa"},
-  {id:"adv5", name:"Advisor 5", firm:"", type:"Broker",           color:"#f87171"},
-  {id:"adv6", name:"Advisor 6", firm:"", type:"Research Analyst", color:"#fb923c"},
-  {id:"adv7", name:"Advisor 7", firm:"", type:"Portfolio Manager","color":"#34d399"},
+  {id:"adv2", name:"Advisor 2", firm:"", type:"Portfolio Manager", color:"#f0b429"},
+  {id:"adv3", name:"Advisor 3", firm:"", type:"Broker",           color:"#f87171"},
 ];
 
 const DEFAULT_TAGS_MITUL = [
@@ -4209,7 +4205,20 @@ function AdvisorTrackerTab() {
 
   /* ── Persistent state ── */
   const [advisors, setAdvisors] = React.useState(()=>{
-    try{ const s=localStorage.getItem(ADVISOR_STORAGE); return s?JSON.parse(s):DEFAULT_ADVISORS; }catch{ return DEFAULT_ADVISORS; }
+    try{
+      const s=localStorage.getItem(ADVISOR_STORAGE);
+      if(!s) return DEFAULT_ADVISORS;
+      var stored = JSON.parse(s);
+      /* Merge in any DEFAULT_ADVISORS entries missing from stale localStorage
+         (e.g. Hiren/Mitul added after the browser already cached an older list),
+         and drop generic placeholders if a real-named one with the same id exists. */
+      var storedIds = stored.map(function(a){return a.id;});
+      var merged = stored.slice();
+      DEFAULT_ADVISORS.forEach(function(def){
+        if(storedIds.indexOf(def.id)===-1) merged.push(def);
+      });
+      return merged;
+    }catch{ return DEFAULT_ADVISORS; }
   });
   const [tags, setTags] = React.useState(()=>{
     try{ const s=localStorage.getItem(ADVISOR_TAGS_STORAGE); return s?JSON.parse(s):DEFAULT_TAGS; }catch{ return DEFAULT_TAGS; }
@@ -4296,6 +4305,10 @@ function AdvisorTrackerTab() {
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
         <div style={{fontSize:11,color:"#3a4a6a"}}>{advisors.length} advisors · {tags.length} tagged positions</div>
         <div style={{display:"flex",gap:7}}>
+          <button onClick={function(){if(window.confirm("Reset advisor list to defaults? This removes any custom advisors/edits you've made and reloads Hiren Bhai, Mitul Bhai, and 3 blank slots.")){localStorage.removeItem(ADVISOR_STORAGE);setAdvisors(DEFAULT_ADVISORS);}}}
+            style={{padding:"6px 12px",borderRadius:7,border:"1px solid #3a1a1a",cursor:"pointer",fontSize:10,fontWeight:600,background:"#1a1213",color:"#f87171"}}>
+            ↺ Reset List
+          </button>
           <button onClick={()=>setView("tag")} style={{padding:"6px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:"#34d399",color:"#000"}}>+ Tag Position</button>
           <button onClick={()=>setView("edit_advisor")} style={{padding:"6px 14px",borderRadius:7,border:"1px solid #1d2545",cursor:"pointer",fontSize:11,fontWeight:600,background:"#080b18",color:"#7eb8ff"}}>Manage Advisors</button>
         </div>
