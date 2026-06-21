@@ -5799,6 +5799,7 @@ function FamilyApp() {
                                   <div style={{width:8,height:8,borderRadius:"50%",background:h.color,flexShrink:0}}/>
                                   <span style={{color:"#c8d0e8",fontWeight:600}}>{h.member}</span>
                                   {h.mtf&&<span title={"MTF funded: "+(h.mtfQty||h.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px"}}>MTF</span>}
+                                  {(typeof DEFAULT_TAGS!=="undefined"&&DEFAULT_TAGS.some(function(t){return t.stock===sym&&t.member===h.member&&t.advisorId==="hiren";}))&&<span title="Recommended by Hiren Bhai" style={{fontSize:7,fontWeight:700,color:"#34d399",background:"#0a1f15",border:"1px solid #166534",borderRadius:4,padding:"1px 5px"}}>HA</span>}
                                 </div>
                               </td>
                               <td style={{padding:"7px 10px",color:"#3a5a7a",fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:140}}>{h.custodian}</td>
@@ -16501,7 +16502,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           </div>
 
           <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
+            <table style={{width:Object.values(colWidths).reduce(function(s,w){return s+w;},126),borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
                   <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
@@ -16629,9 +16630,11 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                                 return (
                                   <tr key={ri} style={{borderBottom:"1px solid #080a12"}}>
                                     <td style={{padding:"5px 10px"}}>
-                                      <div style={{display:"flex",alignItems:"center",gap:5}}>
+                                      <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
                                         <div style={{width:7,height:7,borderRadius:"50%",background:r.memberCol,flexShrink:0}}/>
                                         <span style={{color:"#c8d0e8",fontWeight:600}}>{r.member}</span>
+                                        {r.mtf&&<span title={"MTF funded: "+(r.mtfQty||r.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px",flexShrink:0}}>MTF</span>}
+                                        {(typeof DEFAULT_TAGS!=="undefined"&&DEFAULT_TAGS.some(function(t){return t.stock===g.sym&&t.member===r.member&&t.advisorId==="hiren";}))&&<span title="Recommended by Hiren Bhai" style={{fontSize:7,fontWeight:700,color:"#34d399",background:"#0a1f15",border:"1px solid #166534",borderRadius:4,padding:"1px 5px",flexShrink:0}}>HA</span>}
                                       </div>
                                     </td>
                                     <td style={{padding:"5px 10px",color:"#3a5a7a",fontSize:9}}>{r.custodian}</td>
