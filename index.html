@@ -5474,137 +5474,6 @@ function MembersTab() {
 }
 
 /* ── News Widget — fetches latest headlines for top 40 holdings, refreshes every 15 min ── */
-function useStockNews(topStocks) {
-  const [news, setNews] = React.useState([]);
-  const [status, setStatus] = React.useState("idle");
-  const [lastFetch, setLastFetch] = React.useState(null);
-
-  const fetchNews = React.useCallback(async function() {
-    if (!topStocks || topStocks.length === 0) return;
-    setStatus("loading");
-    try {
-      /* Query a handful of top names per cycle (rotate) to avoid hammering the feed */
-      const batch = topStocks.slice(0, 8);
-      const results = await Promise.all(batch.map(async function(stock) {
-        try {
-          const q = encodeURIComponent(stock + " NSE stock");
-          const rssUrl = "https://news.google.com/rss/search?q=" + q + "&hl=en-IN&gl=IN&ceid=IN:en";
-          const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(rssUrl);
-          const res = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
-          if (!res.ok) return [];
-          const text = await res.text();
-          const doc = new DOMParser().parseFromString(text, "text/xml");
-          const items = Array.from(doc.querySelectorAll("item")).slice(0, 2);
-          return items.map(function(item) {
-            var title = (item.querySelector("title") || {}).textContent || "";
-            var link = (item.querySelector("link") || {}).textContent || "";
-            var pubDate = (item.querySelector("pubDate") || {}).textContent || "";
-            var source = title.includes(" - ") ? title.split(" - ").pop() : "";
-            var cleanTitle = title.includes(" - ") ? title.split(" - ").slice(0,-1).join(" - ") : title;
-            return {stock: stock, title: cleanTitle, link: link, pubDate: pubDate, source: source};
-          });
-        } catch(e) { return []; }
-      }));
-      var flat = results.flat().filter(function(n){ return n.title; });
-      /* Sort newest first */
-      flat.sort(function(a,b){ return new Date(b.pubDate) - new Date(a.pubDate); });
-      setNews(flat.slice(0, 20));
-      setLastFetch(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}));
-      setStatus("live");
-    } catch(e) {
-      setStatus("error");
-    }
-  }, [topStocks]);
-
-  React.useEffect(function() {
-    fetchNews();
-    var t = setInterval(fetchNews, 15 * 60 * 1000); /* every 15 minutes */
-    return function() { clearInterval(t); };
-  }, [fetchNews]);
-
-  return {news, status, lastFetch, refresh: fetchNews};
-}
-
-function NewsWidget({topStocks}) {
-  const {news, status, lastFetch, refresh} = useStockNews(topStocks);
-  const [expanded, setExpanded] = React.useState(false);
-
-  function timeAgo(pubDate) {
-    if (!pubDate) return "";
-    var diffMs = Date.now() - new Date(pubDate).getTime();
-    var mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return mins + "m ago";
-    var hrs = Math.floor(mins / 60);
-    if (hrs < 24) return hrs + "h ago";
-    return Math.floor(hrs / 24) + "d ago";
-  }
-
-  var visibleNews = expanded ? news : news.slice(0, 5);
-
-  return (
-    <div style={{background:"linear-gradient(135deg,#0d1420 0%,#0a0e1f 100%)",border:"1px solid #1d2545",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div>
-          <div style={{fontSize:10,color:"#7eb8ff",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700,display:"flex",alignItems:"center",gap:6}}>
-            📰 Portfolio News
-            {status==="live"&&<span style={{width:5,height:5,borderRadius:"50%",background:"#34d399",display:"inline-block",boxShadow:"0 0 5px #34d399"}}/>}
-            {status==="loading"&&<span style={{fontSize:9,color:"#f0b429"}}>⟳</span>}
-          </div>
-          <div style={{fontSize:11,color:"#3a4a6a",marginTop:3}}>
-            Top 8 holdings · refreshes every 15 min{lastFetch?" · updated "+lastFetch:""}
-          </div>
-        </div>
-        <button onClick={refresh} disabled={status==="loading"}
-          className="btn-press"
-          style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:11,fontWeight:600}}>
-          ↻ Refresh
-        </button>
-      </div>
-
-      {news.length===0&&status!=="loading"&&(
-        <div style={{padding:"20px 0",textAlign:"center",color:"#3a4a6a",fontSize:11}}>
-          {status==="error"?"Couldn't load news right now — try refreshing.":"Loading headlines..."}
-        </div>
-      )}
-
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {visibleNews.map(function(n, i) {
-          return (
-            <a key={i} href={n.link} target="_blank" rel="noopener noreferrer"
-              className="clickable-row"
-              style={{display:"flex",gap:10,padding:"8px 10px",borderRadius:8,textDecoration:"none",
-                background:"#0a0e1e",border:"1px solid #1a2035"}}
-              onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
-              onMouseLeave={function(e){e.currentTarget.style.background="#0a0e1e";}}>
-              <span style={{fontSize:9,fontWeight:700,color:"#7eb8ff",background:"#0f1a2e",padding:"2px 7px",borderRadius:6,flexShrink:0,height:"fit-content",marginTop:2}}>
-                {n.stock}
-              </span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:11,color:"#c8d0e8",lineHeight:1.4,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>
-                  {n.title}
-                </div>
-                <div style={{fontSize:9,color:"#3a4a6a",marginTop:3}}>
-                  {n.source}{n.source&&n.pubDate?" · ":""}{timeAgo(n.pubDate)}
-                </div>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-
-      {news.length>5&&(
-        <button onClick={function(){setExpanded(function(v){return !v;});}}
-          className="btn-press"
-          style={{marginTop:10,width:"100%",background:"none",border:"1px solid #1d2545",color:"#7eb8ff",
-            borderRadius:8,padding:"7px",cursor:"pointer",fontSize:10,fontWeight:600}}>
-          {expanded?"Show less":"Show all "+news.length+" headlines"}
-        </button>
-      )}
-    </div>
-  );
-}
-
 function FamilyApp() {
   const [hideValues, setHideValues] = React.useState(false);
   if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
@@ -5718,16 +5587,6 @@ function FamilyApp() {
   }, []);
   const staleCount = freshnessReport.filter(function(r){return r.status==="critical"||r.status==="warning"||r.status==="never";}).length;
 
-  /* ── Top 40 holdings by value (for news widget queries) ── */
-  const top40Stocks = React.useMemo(function() {
-    var all = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
-    var byStock = {};
-    all.forEach(function(h) {
-      if (!h || !h.s || !(h.val>0)) return;
-      byStock[h.s] = (byStock[h.s]||0) + h.val;
-    });
-    return Object.entries(byStock).sort(function(a,b){return b[1]-a[1];}).slice(0,40).map(function(e){return e[0];});
-  }, [priceVersion]);
 
   /* ── Grand Total Tiles (FamilyApp scope) ──
      totalStocks: raw sum of every member's equity (includes MTF-funded value at full CMP)
@@ -6746,7 +6605,7 @@ function FamilyApp() {
         <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
-        <NewsWidget topStocks={top40Stocks}/>
+        
         <DailyDigest priceVersion={priceVersion} livePrices={livePrices}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
