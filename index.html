@@ -16099,7 +16099,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
   const [groupBy, setGroupBy] = React.useState("stock"); // none | stock | member | custodian
   const [expandedStock, setExpandedStock] = React.useState(null);
   const [holView, setHolView] = React.useState("holdings");
-  const [colWidths, setColWidths] = React.useState({stock:220,qty:80,avg:90,cmp:90,val:110,pl:110,pct:80,mem:110,cust:110});
+  const [colWidths, setColWidths] = React.useState({sym:220,totalQty:80,avgCmp:90,totalInv:100,totalVal:110,totalDayPL:90,totalPL:100,ret:80});
   const resizing = React.useRef(null);
   const [selectedStocks, setSelectedStocks] = React.useState({});
   const [selectionMode, setSelectionMode] = React.useState(false);
@@ -16490,7 +16490,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           </div>
 
           <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
                   <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
@@ -16520,7 +16520,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                         onMouseLeave={function(e){e.target.style.opacity=0;}}/>
                     </th>
                   ))}
-                  <th style={{padding:"6px 8px",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1e2540",textTransform:"uppercase",minWidth:80}}>Holders</th>
+                  <th style={{padding:"6px 8px",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1e2540",textTransform:"uppercase",width:90}}>Holders</th>
                 </tr>
               </thead>
               <tbody>
@@ -16549,9 +16549,9 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                         </div>
                       )}
                     </td>
-                      <td style={{padding:"7px 10px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:6}}>
-                          <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12}}>{g.sym}</div>
+                      <td style={{padding:"7px 10px",overflow:"hidden"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6,overflow:"hidden"}}>
+                          <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.sym}</div>
                           {g.isDelisted&&<span style={{fontSize:8,fontWeight:700,color:"#ef4444",background:"#2a0a0a",border:"1px solid #5a1a1a",borderRadius:5,padding:"1px 6px",flexShrink:0}}>DELISTED</span>}
                           {g.mtfQty>0&&<span title={"MTF funded: "+g.mtfQty+" of "+g.totalQty+" shares"} style={{fontSize:8,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:5,padding:"1px 6px",flexShrink:0}}>MTF {g.mtfQty}</span>}
                         </div>
@@ -16561,27 +16561,27 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                           <span style={{fontSize:8,color:isOpen?"#7eb8ff":"#2a3a50",display:"inline-block",transform:isOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s cubic-bezier(.4,0,.2,1), color 0.2s ease"}}>▼</span>
                         </div>
                       </td>
-                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#e8eaf0",fontWeight:600}}>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#e8eaf0",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {g.totalQty>0?g.totalQty.toLocaleString("en-IN"):"—"}
                       </td>
-                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10}}>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {g.avgCmp>0?"₹"+g.avgCmp.toFixed(2):"—"}
                       </td>
-                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10}}>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {cr(g.totalInv)}
                       </td>
-                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0"}}>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {cr(g.totalVal)}
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,
-                        color:isGain?"#34d399":"#f87171",fontSize:10}}>
+                        color:isGain?"#34d399":"#f87171",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {(isGain?"+":"")+cr(Math.abs(g.totalPL))}
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
-                        color:ret!=null&&ret>=0?"#34d399":"#f87171"}}>
+                        color:ret!=null&&ret>=0?"#34d399":"#f87171",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {ret!=null?(ret>=0?"+":"")+ret.toFixed(1)+"%":"—"}
                       </td>
-                      <td style={{padding:"7px 10px"}}>
+                      <td style={{padding:"7px 10px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
                           {[...g.members].map(mn=>{
                             const mem=MEMBERS.filter(Boolean).find(function(m){return m.n===mn;});
