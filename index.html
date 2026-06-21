@@ -2777,6 +2777,73 @@ function DailyDigest({priceVersion, livePrices}) {
    Fund In/Out, STT, Interest, Brokerage, DP Charges, Dividends,
    MTF Interest, Stamp Duty, GST — manually logged, fully sortable
 ═══════════════════════════════════════════════════════════ */
+const LEDGER_SEED_DATA = [
+  {id:"seed_0",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-04-02",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 01.04.2025"},
+  {id:"seed_1",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2025-04-21",amount:482449.64,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_2",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-04-22",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 21.04.2025"},
+  {id:"seed_3",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-04-23",amount:647056.3,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_4",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2025-05-19",amount:250000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_5",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2025-06-02",amount:392138,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_6",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-06-16",amount:1339670.08,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_7",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-06-17",amount:567.62,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 16.06.2025"},
+  {id:"seed_8",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-07-16",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 15.07.2025"},
+  {id:"seed_9",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-07-25",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 24.07.2025"},
+  {id:"seed_10",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-08-26",amount:171400.4,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_11",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-08-26",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 25.08.2025"},
+  {id:"seed_12",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-08-29",amount:212793,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_13",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-10-09",amount:723635.05,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_14",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2025-10-15",amount:500228.69,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_15",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-10-28",amount:144576.61,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_16",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-11-03",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 31.10.2025"},
+  {id:"seed_17",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-11-19",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 18.11.2025"},
+  {id:"seed_18",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-11-20",amount:11517.1,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_19",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2025-11-21",amount:609913.77,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_20",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-12-03",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 02.12.2025"},
+  {id:"seed_21",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2025-12-04",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 03.12.2025"},
+  {id:"seed_22",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-12-17",amount:4255353.93,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_23",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2025-12-18",amount:520000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_24",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-06",amount:400000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_25",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-12",amount:100000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_26",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2026-01-16",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 14.01.2026"},
+  {id:"seed_27",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-17",amount:143298.75,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_28",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-19",amount:500000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_29",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-20",amount:200000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_30",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-22",amount:60295.05,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_31",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-01-23",amount:350000,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_32",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-01-30",amount:148065.31,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_33",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-02-13",amount:568590.28,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_34",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-02-16",amount:22750.11,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_35",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-02-20",amount:710898,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_36",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-03-09",amount:84078.58,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_37",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-03-17",amount:53069.9,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_38",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-03-23",amount:1644666.07,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_39",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-04-06",amount:312925,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_40",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2026-04-16",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 15.04.2026"},
+  {id:"seed_41",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-04-22",amount:255545.91,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_42",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2026-05-11",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 08.05.2026"},
+  {id:"seed_43",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-05-19",amount:1534712.69,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_44",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dp_charges",date:"2026-05-21",amount:17.7,note:"DR TWDS TRANSACTION CHRG OF SFSPL DP FOR THE PERIOD DATED 20.05.2026"},
+  {id:"seed_45",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-05-22",amount:167941.59,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_46",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-05-29",amount:173138.87,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_47",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_in",date:"2026-06-02",amount:217161.88,note:"IMPORT FROM ONLINE TRANSFER"},
+  {id:"seed_48",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2025-04-04",amount:2,note:"BEING WRONGLY SHORT RECOVERY OF STT IN MAR-25 NOW DEBITED HERE"},
+  {id:"seed_49",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2025-05-08",amount:1,note:"BEING WRONGLY SHORT RECOVERY OF STT IN APR-25 NOW DEBITED HERE"},
+  {id:"seed_50",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2025-06-05",amount:1,note:"BEING WRONGLY SHORT RECOVERY OF STT IN MAY-25 NOW DEBITED HERE"},
+  {id:"seed_51",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2025-07-10",amount:1,note:"BEING WRONGLY EXCESS RECOVERY OF STT IN JUN-25 NOW REFUNDED HERE"},
+  {id:"seed_52",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2025-08-22",amount:1,note:"BEING WRONGLY SHORT RECOVERY OF STT IN JUL-25 NOW DEBITED HERE"},
+  {id:"seed_53",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2025-09-10",amount:1,note:"BEING WRONGLY SHORT RECOVERY OF STT IN AUG-25 NOW DEBITED HERE"},
+  {id:"seed_54",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-02-03",amount:434392.15,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_55",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"stt",date:"2026-06-02",amount:1,note:"BEING WRONGLY SHORT RECOVERY OF STT IN MAY-26 NOW DEBITED HERE"},
+  {id:"seed_56",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dividend",date:"2025-06-02",amount:4160,note:"DIVIDEND RECD ON 160 QTY OF Angel One Ltd @ 26 EACH (HOLDING DATE : 30/MAY/2025)"},
+  {id:"seed_57",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-11-03",amount:25648.5,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_58",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-12-03",amount:4426.2,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_59",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2025-12-04",amount:2787.06,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_60",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dividend",date:"2026-01-23",amount:3680,note:"DIVIDEND RECD ON 160 QTY OF Angel One Ltd @ 23 EACH (HOLDING DATE : 21/JAN/2026)"},
+  {id:"seed_61",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dividend",date:"2026-02-12",amount:2600,note:"DIVIDEND RECD ON 2600 QTY OF Rail Vikas Nigam Ltd @ 1 EACH (HOLDING DATE : 11/FEB/2026)"},
+  {id:"seed_62",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"fund_out",date:"2026-04-16",amount:25207.48,note:"PAID AGAINST CREDIT BALANCE"},
+  {id:"seed_63",person:"Rasiklal HUF",custodian:"Sushil Financial",type:"dividend",date:"2026-05-18",amount:14490,note:"DIVIDEND RECD ON 1035 QTY OF Nuvama Wealth Management Ltd @ 14 EACH (HOLDING DATE : 15/MAY/2026)"},
+];
+
 function LedgerTab() {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
@@ -2799,7 +2866,9 @@ function LedgerTab() {
   const PERSONS = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;}).map(function(m){return m.n;});
 
   /* ── In-memory ledger state (session only — no persistence) ── */
-  const [entries, setEntries] = React.useState([]);
+  const [entries, setEntries] = React.useState(function(){
+    return typeof LEDGER_SEED_DATA!=="undefined" ? LEDGER_SEED_DATA.map(function(e){return {...e, drCr: (e.type==="fund_in"||e.type==="dividend")?"CR":"DR"};}) : [];
+  });
   const [showForm, setShowForm] = React.useState(false);
   const [editingId, setEditingId] = React.useState(null);
 
@@ -2897,11 +2966,18 @@ function LedgerTab() {
           <div style={{fontSize:16,fontWeight:800,color:"#e8eaf0"}}>📒 Family Ledger</div>
           <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}>Fund in/out, STT, interest, brokerage & all expenses — across every account</div>
         </div>
-        <button onClick={function(){setForm(blankForm);setEditingId(null);setShowForm(true);}}
-          className="btn-press"
-          style={{background:"#1e3a5f",border:"none",color:"#7eb8ff",borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700}}>
-          + Add Entry
-        </button>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={function(){if(window.confirm("Clear all ledger entries? This cannot be undone."))setEntries([]);}}
+            className="btn-press"
+            style={{background:"#1a1213",border:"1px solid #3a1a1a",color:"#f87171",borderRadius:8,padding:"8px 14px",cursor:"pointer",fontSize:11,fontWeight:600}}>
+            Clear All
+          </button>
+          <button onClick={function(){setForm(blankForm);setEditingId(null);setShowForm(true);}}
+            className="btn-press"
+            style={{background:"#1e3a5f",border:"none",color:"#7eb8ff",borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700}}>
+            + Add Entry
+          </button>
+        </div>
       </div>
 
       {/* ── Summary KPIs ── */}
