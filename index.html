@@ -4050,6 +4050,7 @@ const ADVISOR_TAGS_STORAGE = "shah_advisor_tags_v1";
 /* ── Default advisors (edit these to your actual advisors) ── */
 const DEFAULT_ADVISORS = [
   {id:"hiren", name:"Hiren Bhai", firm:"", type:"Family Friend", color:"#34d399"},
+  {id:"mitul", name:"Mitul Bhai", firm:"", type:"Family Friend", color:"#a78bfa"},
   {id:"adv1", name:"Advisor 1", firm:"", type:"Research Analyst", color:"#7eb8ff"},
   {id:"adv2", name:"Advisor 2", firm:"", type:"Portfolio Manager", color:"#34d399"},
   {id:"adv3", name:"Advisor 3", firm:"", type:"Family Friend",    color:"#f0b429"},
@@ -4057,6 +4058,71 @@ const DEFAULT_ADVISORS = [
   {id:"adv5", name:"Advisor 5", firm:"", type:"Broker",           color:"#f87171"},
   {id:"adv6", name:"Advisor 6", firm:"", type:"Research Analyst", color:"#fb923c"},
   {id:"adv7", name:"Advisor 7", firm:"", type:"Portfolio Manager","color":"#34d399"},
+];
+
+const DEFAULT_TAGS_MITUL = [
+  {id:"mitul_tag_0",stock:"Rain Industries",qty:4300,advisorId:"mitul",member:"Rasiklal Shah",date:"2025-12-15",buyPrice:115.4,currentPrice:0,value:0,invested:496220,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2025-12-15T00:00:00.000Z"},
+  {id:"mitul_tag_1",stock:"Rain Industries",qty:1800,advisorId:"mitul",member:"Rasiklal HUF",date:"2026-02-09",buyPrice:165,currentPrice:0,value:0,invested:297000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-09T00:00:00.000Z"},
+  {id:"mitul_tag_2",stock:"Samvardhana Motherson",qty:3600,advisorId:"mitul",member:"Vasumati Shah",date:"2025-12-24",buyPrice:119.45,currentPrice:0,value:0,invested:430020,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2025-12-24T00:00:00.000Z"},
+  {id:"mitul_tag_3",stock:"One Point One Solutions",qty:5400,advisorId:"mitul",member:"Rasiklal Shah",date:"2025-12-26",buyPrice:58.05,currentPrice:0,value:0,invested:313470,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2025-12-26T00:00:00.000Z"},
+  {id:"mitul_tag_4",stock:"Camlin Fine Sciences",qty:3600,advisorId:"mitul",member:"Rasiklal Shah",date:"2025-12-31",buyPrice:150.9,currentPrice:0,value:0,invested:543240,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2025-12-31T00:00:00.000Z"},
+  {id:"mitul_tag_5",stock:"Jai Balaji Industries",qty:1000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-01-01",buyPrice:71.65,currentPrice:0,value:0,invested:71650,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-01-01T00:00:00.000Z"},
+  {id:"mitul_tag_6",stock:"SBC Exports",qty:1000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-01-01",buyPrice:28.8,currentPrice:0,value:0,invested:28800,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-01-01T00:00:00.000Z"},
+  {id:"mitul_tag_7",stock:"NTPC Green Energy",qty:1000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-01-02",buyPrice:96.75,currentPrice:0,value:0,invested:96750,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-01-02T00:00:00.000Z"},
+  {id:"mitul_tag_8",stock:"MMTC",qty:6000,advisorId:"mitul",member:"Rasiklal HUF",date:"2026-01-14",buyPrice:71,currentPrice:0,value:0,invested:426000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-01-14T00:00:00.000Z"},
+  {id:"mitul_tag_9",stock:"Prime Focus",qty:2000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-01-19",buyPrice:222.5,currentPrice:0,value:0,invested:445000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-01-19T00:00:00.000Z"},
+  {id:"mitul_tag_10",stock:"Prime Focus",qty:3600,advisorId:"mitul",member:"Rasiklal HUF",date:"2026-01-28",buyPrice:214.5,currentPrice:0,value:0,invested:772200,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-01-28T00:00:00.000Z"},
+  {id:"mitul_tag_11",stock:"Natco Pharma",qty:500,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-02-05",buyPrice:854.55,currentPrice:0,value:0,invested:427275,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-02-05T00:00:00.000Z"},
+  {id:"mitul_tag_12",stock:"JSW Steel",qty:500,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-03-16",buyPrice:1141,currentPrice:0,value:0,invested:570500,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-03-16T00:00:00.000Z"},
+  {id:"mitul_tag_13",stock:"Reliance Infrastructure",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-05",buyPrice:129.8,currentPrice:0,value:0,invested:233640,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-05T00:00:00.000Z"},
+  {id:"mitul_tag_14",stock:"Religare Enterprises",qty:1800,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-02-06",buyPrice:254.5,currentPrice:0,value:0,invested:458100,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-06T00:00:00.000Z"},
+  {id:"mitul_tag_15",stock:"Paradeep Phosphates",qty:1800,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-02-09",buyPrice:129.5,currentPrice:0,value:0,invested:233100,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-02-09T00:00:00.000Z"},
+  {id:"mitul_tag_16",stock:"NOCIL",qty:1800,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-02-10",buyPrice:153.1,currentPrice:0,value:0,invested:275580,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-10T00:00:00.000Z"},
+  {id:"mitul_tag_17",stock:"NOCIL",qty:3600,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-09",buyPrice:153.5,currentPrice:0,value:0,invested:552600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-09T00:00:00.000Z"},
+  {id:"mitul_tag_18",stock:"Lloyds Engineering Works",qty:6000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-02-09",buyPrice:54.5,currentPrice:0,value:0,invested:327000,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-02-09T00:00:00.000Z"},
+  {id:"mitul_tag_19",stock:"Religare Enterprises",qty:6000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-11",buyPrice:266,currentPrice:0,value:0,invested:1596000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-11T00:00:00.000Z"},
+  {id:"mitul_tag_20",stock:"Religare Enterprises",qty:2000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-12",buyPrice:249.9,currentPrice:0,value:0,invested:499800,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-12T00:00:00.000Z"},
+  {id:"mitul_tag_21",stock:"Religare Enterprises",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-16",buyPrice:237,currentPrice:0,value:0,invested:426600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-16T00:00:00.000Z"},
+  {id:"mitul_tag_22",stock:"Religare Enterprises",qty:2000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-26",buyPrice:215,currentPrice:0,value:0,invested:430000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-26T00:00:00.000Z"},
+  {id:"mitul_tag_23",stock:"Star Health & Allied Insurance",qty:900,advisorId:"mitul",member:"Vasumati Shah",date:"2026-02-11",buyPrice:483.5,currentPrice:0,value:0,invested:435150,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-11T00:00:00.000Z"},
+  {id:"mitul_tag_24",stock:"Paradeep Phosphates",qty:2000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-02-17",buyPrice:125.2,currentPrice:0,value:0,invested:250400,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-02-17T00:00:00.000Z"},
+  {id:"mitul_tag_25",stock:"NOCIL",qty:1000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-03-10",buyPrice:135.5,currentPrice:0,value:0,invested:135500,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-03-10T00:00:00.000Z"},
+  {id:"mitul_tag_26",stock:"NOCIL",qty:1300,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-27",buyPrice:172,currentPrice:0,value:0,invested:223600,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-05-27T00:00:00.000Z"},
+  {id:"mitul_tag_27",stock:"Jio Financial Services",qty:4200,advisorId:"mitul",member:"Vasumati Shah",date:"2026-03-18",buyPrice:250,currentPrice:0,value:0,invested:1050000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-03-18T00:00:00.000Z"},
+  {id:"mitul_tag_28",stock:"Trigyn Technologies",qty:7200,advisorId:"mitul",member:"Praful Shah HUF",date:"2026-04-08",buyPrice:48,currentPrice:0,value:0,invested:345600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-08T00:00:00.000Z"},
+  {id:"mitul_tag_29",stock:"Trigyn Technologies",qty:4500,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-27",buyPrice:61,currentPrice:0,value:0,invested:274500,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-05-27T00:00:00.000Z"},
+  {id:"mitul_tag_30",stock:"Jaiprakash Power Ventures",qty:60000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-04-10",buyPrice:17.36,currentPrice:0,value:0,invested:1041600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-10T00:00:00.000Z"},
+  {id:"mitul_tag_31",stock:"Jaiprakash Power Ventures",qty:58000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-07",buyPrice:19.22,currentPrice:0,value:0,invested:1114760,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-05-07T00:00:00.000Z"},
+  {id:"mitul_tag_32",stock:"Jaiprakash Power Ventures",qty:36000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-26",buyPrice:19.35,currentPrice:0,value:0,invested:696600,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-05-26T00:00:00.000Z"},
+  {id:"mitul_tag_33",stock:"Bajel Projects",qty:3600,advisorId:"mitul",member:"Vasumati Shah",date:"2026-04-13",buyPrice:93.55,currentPrice:0,value:0,invested:336780,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-13T00:00:00.000Z"},
+  {id:"mitul_tag_34",stock:"Gujarat Pipavav Port",qty:3600,advisorId:"mitul",member:"Vasumati Shah",date:"2026-04-14",buyPrice:157,currentPrice:0,value:0,invested:565200,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-14T00:00:00.000Z"},
+  {id:"mitul_tag_35",stock:"Gujarat Pipavav Port",qty:4500,advisorId:"mitul",member:"Vasumati Shah",date:"2026-05-25",buyPrice:154,currentPrice:0,value:0,invested:693000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-05-25T00:00:00.000Z"},
+  {id:"mitul_tag_36",stock:"Ion Exchange India",qty:900,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-04-20",buyPrice:402,currentPrice:0,value:0,invested:361800,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-20T00:00:00.000Z"},
+  {id:"mitul_tag_37",stock:"Shriram Finance",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-04-27",buyPrice:980,currentPrice:0,value:0,invested:1764000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-27T00:00:00.000Z"},
+  {id:"mitul_tag_38",stock:"Walchandnagar Industries",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-04-28",buyPrice:232,currentPrice:0,value:0,invested:417600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-04-28T00:00:00.000Z"},
+  {id:"mitul_tag_39",stock:"Lloyds Engineering Works",qty:4500,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-26",buyPrice:76.4,currentPrice:0,value:0,invested:343800,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-05-26T00:00:00.000Z"},
+  {id:"mitul_tag_40",stock:"CESC",qty:1800,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-06",buyPrice:184.9,currentPrice:0,value:0,invested:332820,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-05-06T00:00:00.000Z"},
+  {id:"mitul_tag_41",stock:"AWL Agribusiness",qty:900,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-07",buyPrice:209.8,currentPrice:0,value:0,invested:188820,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-05-07T00:00:00.000Z"},
+  {id:"mitul_tag_42",stock:"Shakti Pumps India",qty:600,advisorId:"mitul",member:"Vasumati Shah",date:"2026-05-07",buyPrice:602,currentPrice:0,value:0,invested:361200,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-05-07T00:00:00.000Z"},
+  {id:"mitul_tag_43",stock:"Nuvoco Vistas",qty:600,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-07",buyPrice:337,currentPrice:0,value:0,invested:202200,notes:"Recommended by Mitul Bhai — UNCLEAR MEMBER, please verify",conviction:"High",addedAt:"2026-05-07T00:00:00.000Z"},
+  {id:"mitul_tag_44",stock:"Olectra Greentech",qty:600,advisorId:"mitul",member:"Rasiklal HUF",date:"2026-05-22",buyPrice:1219,currentPrice:0,value:0,invested:731400,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-05-22T00:00:00.000Z"},
+  {id:"mitul_tag_45",stock:"Pine Labs",qty:1800,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-05-27",buyPrice:151.7,currentPrice:0,value:0,invested:273060,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-05-27T00:00:00.000Z"},
+  {id:"mitul_tag_46",stock:"Satluj Jal Vidyut Nigam",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-06-02",buyPrice:72,currentPrice:0,value:0,invested:129600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-02T00:00:00.000Z"},
+  {id:"mitul_tag_47",stock:"Rail Vikas Nigam",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-06-02",buyPrice:241,currentPrice:0,value:0,invested:433800,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-02T00:00:00.000Z"},
+  {id:"mitul_tag_48",stock:"Info Edge (India)",qty:600,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-08",buyPrice:1003.5,currentPrice:0,value:0,invested:602100,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-08T00:00:00.000Z"},
+  {id:"mitul_tag_49",stock:"Mishra Dhatu Nigam",qty:1800,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-10",buyPrice:438,currentPrice:0,value:0,invested:788400,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-10T00:00:00.000Z"},
+  {id:"mitul_tag_50",stock:"Yasho Industries",qty:180,advisorId:"mitul",member:"Vasumati Shah",date:"2026-06-10",buyPrice:2500,currentPrice:0,value:0,invested:450000,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-10T00:00:00.000Z"},
+  {id:"mitul_tag_51",stock:"Inox Wind",qty:9000,advisorId:"mitul",member:"Vasumati Shah",date:"2026-06-12",buyPrice:83.41,currentPrice:0,value:0,invested:750690,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-12T00:00:00.000Z"},
+  {id:"mitul_tag_52",stock:"La Opala RG",qty:3500,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-15",buyPrice:179.65,currentPrice:0,value:0,invested:628775,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-15T00:00:00.000Z"},
+  {id:"mitul_tag_53",stock:"Capri Global Capital",qty:1800,advisorId:"mitul",member:"Vasumati Shah",date:"2026-06-16",buyPrice:219.5,currentPrice:0,value:0,invested:395100,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-16T00:00:00.000Z"},
+  {id:"mitul_tag_54",stock:"Trent",qty:400,advisorId:"mitul",member:"Rasiklal HUF",date:"2026-06-17",buyPrice:3091,currentPrice:0,value:0,invested:1236400,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-17T00:00:00.000Z"},
+  {id:"mitul_tag_55",stock:"Satluj Jal Vidyut Nigam",qty:6000,advisorId:"mitul",member:"Rasiklal HUF",date:"2026-06-17",buyPrice:74.6,currentPrice:0,value:0,invested:447600,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-17T00:00:00.000Z"},
+  {id:"mitul_tag_56",stock:"MSP Steel & Power",qty:6000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-18",buyPrice:42.15,currentPrice:0,value:0,invested:252900,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-18T00:00:00.000Z"},
+  {id:"mitul_tag_57",stock:"Shish Industries",qty:15000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-18",buyPrice:10.5,currentPrice:0,value:0,invested:157500,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-18T00:00:00.000Z"},
+  {id:"mitul_tag_58",stock:"Sudarshan Chemical Industries",qty:990,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-18",buyPrice:917,currentPrice:0,value:0,invested:907830,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-18T00:00:00.000Z"},
+  {id:"mitul_tag_59",stock:"MSP Steel & Power",qty:9000,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-19",buyPrice:44.1,currentPrice:0,value:0,invested:396900,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-19T00:00:00.000Z"},
+  {id:"mitul_tag_60",stock:"Paradeep Phosphates",qty:4200,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-19",buyPrice:135.91,currentPrice:0,value:0,invested:570822,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-19T00:00:00.000Z"},
+  {id:"mitul_tag_61",stock:"SML Isuzu",qty:180,advisorId:"mitul",member:"Rasiklal Shah",date:"2026-06-19",buyPrice:4080,currentPrice:0,value:0,invested:734400,notes:"Recommended by Mitul Bhai",conviction:"High",addedAt:"2026-06-19T00:00:00.000Z"},
 ];
 
 const DEFAULT_TAGS = [
@@ -4067,6 +4133,7 @@ const DEFAULT_TAGS = [
   {id:"hiren_tag_4",stock:"MTAR Technologies",qty:90,advisorId:"hiren",member:"Vasumati Shah",date:"2026-06-11",buyPrice:6418,currentPrice:0,value:0,invested:577620,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-11T00:00:00.000Z"},
   {id:"hiren_tag_5",stock:"Hindustan Construction",qty:50000,advisorId:"hiren",member:"Rasiklal HUF",date:"2026-06-16",buyPrice:25.4,currentPrice:0,value:0,invested:1270000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-16T00:00:00.000Z"},
   {id:"hiren_tag_6",stock:"Adani Total Gas",qty:5000,advisorId:"hiren",member:"Rasiklal Shah",date:"2026-06-19",buyPrice:735,currentPrice:0,value:0,invested:3675000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-19T00:00:00.000Z"},
+  ...DEFAULT_TAGS_MITUL,
 ];
 
 function AdvisorTrackerTab() {
@@ -5799,7 +5866,9 @@ function FamilyApp() {
                                   <div style={{width:8,height:8,borderRadius:"50%",background:h.color,flexShrink:0}}/>
                                   <span style={{color:"#c8d0e8",fontWeight:600}}>{h.member}</span>
                                   {h.mtf&&<span title={"MTF funded: "+(h.mtfQty||h.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px"}}>MTF</span>}
-                                  {(typeof DEFAULT_TAGS!=="undefined"&&DEFAULT_TAGS.some(function(t){return t.stock===sym&&t.member===h.member&&t.advisorId==="hiren";}))&&<span title="Recommended by Hiren Bhai" style={{fontSize:7,fontWeight:700,color:"#34d399",background:"#0a1f15",border:"1px solid #166534",borderRadius:4,padding:"1px 5px"}}>HA</span>}
+                                  {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===sym&&t.member===h.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
+                                    return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:4,padding:"1px 5px"}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
+                                  })}
                                 </div>
                               </td>
                               <td style={{padding:"7px 10px",color:"#3a5a7a",fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:140}}>{h.custodian}</td>
@@ -16502,7 +16571,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           </div>
 
           <div style={{overflowX:"auto"}}>
-            <table style={{width:Object.values(colWidths).reduce(function(s,w){return s+w;},126),borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
                   <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
@@ -16566,7 +16635,9 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                           <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.sym}</div>
                           {g.isDelisted&&<span style={{fontSize:8,fontWeight:700,color:"#ef4444",background:"#2a0a0a",border:"1px solid #5a1a1a",borderRadius:5,padding:"1px 6px",flexShrink:0}}>DELISTED</span>}
                           {g.mtfQty>0&&<span title={"MTF funded: "+g.mtfQty+" of "+g.totalQty+" shares"} style={{fontSize:8,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:5,padding:"1px 6px",flexShrink:0}}>MTF {g.mtfQty}</span>}
-                          {(typeof DEFAULT_TAGS!=="undefined"&&DEFAULT_TAGS.some(function(t){return t.stock===g.sym&&t.advisorId==="hiren";}))&&<span title="Recommended by Hiren Bhai" style={{fontSize:8,fontWeight:700,color:"#34d399",background:"#0a1f15",border:"1px solid #166534",borderRadius:5,padding:"1px 6px",flexShrink:0}}>HA</span>}
+                          {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
+                            return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:8,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:5,padding:"1px 6px",flexShrink:0}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
+                          })}
                         </div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
                           {sector&&<span style={{fontSize:8,background:"#0f1a2e",color:"#7eb8ff",padding:"1px 6px",borderRadius:8}}>{sector}</span>}
@@ -16634,7 +16705,9 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                                         <div style={{width:7,height:7,borderRadius:"50%",background:r.memberCol,flexShrink:0}}/>
                                         <span style={{color:"#c8d0e8",fontWeight:600}}>{r.member}</span>
                                         {r.mtf&&<span title={"MTF funded: "+(r.mtfQty||r.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px",flexShrink:0}}>MTF</span>}
-                                        {(typeof DEFAULT_TAGS!=="undefined"&&DEFAULT_TAGS.some(function(t){return t.stock===g.sym&&t.member===r.member&&t.advisorId==="hiren";}))&&<span title="Recommended by Hiren Bhai" style={{fontSize:7,fontWeight:700,color:"#34d399",background:"#0a1f15",border:"1px solid #166534",borderRadius:4,padding:"1px 5px",flexShrink:0}}>HA</span>}
+                                        {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym&&t.member===r.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
+                                          return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:4,padding:"1px 5px",flexShrink:0}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
+                                        })}
                                       </div>
                                     </td>
                                     <td style={{padding:"5px 10px",color:"#3a5a7a",fontSize:9}}>{r.custodian}</td>
