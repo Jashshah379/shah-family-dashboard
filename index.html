@@ -16405,17 +16405,17 @@ function AllHoldingsTab({livePrices, priceStatus}) {
       {/* - STOCK GROUP VIEW - */}
       {groupBy==="stock"&&stockGroups&&(
         <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden",marginBottom:12}}>
-          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
-              {stockGroups.length} unique stocks · {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))} total
-            </span>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,justifyContent:"flex-start"}}>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",display:"flex",alignItems:"center",gap:14}}>
             <button onClick={function(){setSelectionMode(function(v){if(v){setSelectedStocks({});}return !v;});}}
               style={{background:selectionMode?"#1e3a5f":"#0a0e1e",border:"1px solid "+(selectionMode?"#3b82f6":"#1d2545"),
                 borderRadius:7,padding:"5px 14px",color:selectionMode?"#7eb8ff":"#6a7a9a",
-                cursor:"pointer",fontSize:10,fontWeight:700}}>
+                cursor:"pointer",fontSize:10,fontWeight:700,flexShrink:0}}>
               {selectionMode?"✕ Cancel Select":"☑ Select"}
             </button>
+            <span style={{fontSize:11,fontWeight:600,color:"#3a4a6a"}}>
+              {stockGroups.length} unique stocks · {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))} total
+            </span>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginLeft:"auto"}}>
             {selectionMode&&Object.keys(selectedStocks).length>0&&(
               <span style={{fontSize:10,color:"#7eb8ff",fontWeight:600}}>{Object.keys(selectedStocks).length} selected</span>
             )}
