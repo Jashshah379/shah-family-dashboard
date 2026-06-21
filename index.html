@@ -4049,6 +4049,7 @@ const ADVISOR_TAGS_STORAGE = "shah_advisor_tags_v1";
 
 /* ── Default advisors (edit these to your actual advisors) ── */
 const DEFAULT_ADVISORS = [
+  {id:"hiren", name:"Hiren Bhai", firm:"", type:"Family Friend", color:"#34d399"},
   {id:"adv1", name:"Advisor 1", firm:"", type:"Research Analyst", color:"#7eb8ff"},
   {id:"adv2", name:"Advisor 2", firm:"", type:"Portfolio Manager", color:"#34d399"},
   {id:"adv3", name:"Advisor 3", firm:"", type:"Family Friend",    color:"#f0b429"},
@@ -4056,6 +4057,16 @@ const DEFAULT_ADVISORS = [
   {id:"adv5", name:"Advisor 5", firm:"", type:"Broker",           color:"#f87171"},
   {id:"adv6", name:"Advisor 6", firm:"", type:"Research Analyst", color:"#fb923c"},
   {id:"adv7", name:"Advisor 7", firm:"", type:"Portfolio Manager","color":"#34d399"},
+];
+
+const DEFAULT_TAGS = [
+  {id:"hiren_tag_0",stock:"Sammaan Capital",qty:10000,advisorId:"hiren",member:"Rasiklal Shah",date:"2026-05-08",buyPrice:151.9,currentPrice:0,value:0,invested:1519000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-05-08T00:00:00.000Z"},
+  {id:"hiren_tag_1",stock:"MTAR Technologies",qty:250,advisorId:"hiren",member:"Vasumati Shah",date:"2026-05-29",buyPrice:8045,currentPrice:0,value:0,invested:2011250,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-05-29T00:00:00.000Z"},
+  {id:"hiren_tag_2",stock:"MTAR Technologies",qty:100,advisorId:"hiren",member:"Rasiklal Shah",date:"2026-06-01",buyPrice:7350,currentPrice:0,value:0,invested:735000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-01T00:00:00.000Z"},
+  {id:"hiren_tag_3",stock:"MTAR Technologies",qty:150,advisorId:"hiren",member:"Rasiklal Shah",date:"2026-06-03",buyPrice:7450,currentPrice:0,value:0,invested:1117500,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-03T00:00:00.000Z"},
+  {id:"hiren_tag_4",stock:"MTAR Technologies",qty:90,advisorId:"hiren",member:"Vasumati Shah",date:"2026-06-11",buyPrice:6418,currentPrice:0,value:0,invested:577620,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-11T00:00:00.000Z"},
+  {id:"hiren_tag_5",stock:"Hindustan Construction",qty:50000,advisorId:"hiren",member:"Rasiklal HUF",date:"2026-06-16",buyPrice:25.4,currentPrice:0,value:0,invested:1270000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-16T00:00:00.000Z"},
+  {id:"hiren_tag_6",stock:"Adani Total Gas",qty:5000,advisorId:"hiren",member:"Rasiklal Shah",date:"2026-06-19",buyPrice:735,currentPrice:0,value:0,invested:3675000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-19T00:00:00.000Z"},
 ];
 
 function AdvisorTrackerTab() {
@@ -4066,7 +4077,7 @@ function AdvisorTrackerTab() {
     try{ const s=localStorage.getItem(ADVISOR_STORAGE); return s?JSON.parse(s):DEFAULT_ADVISORS; }catch{ return DEFAULT_ADVISORS; }
   });
   const [tags, setTags] = React.useState(()=>{
-    try{ const s=localStorage.getItem(ADVISOR_TAGS_STORAGE); return s?JSON.parse(s):[]; }catch{ return []; }
+    try{ const s=localStorage.getItem(ADVISOR_TAGS_STORAGE); return s?JSON.parse(s):DEFAULT_TAGS; }catch{ return DEFAULT_TAGS; }
   });
 
   const saveAdvisors = (list) => { setAdvisors(list); try{localStorage.setItem(ADVISOR_STORAGE,JSON.stringify(list));}catch{} };
@@ -16554,6 +16565,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                           <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.sym}</div>
                           {g.isDelisted&&<span style={{fontSize:8,fontWeight:700,color:"#ef4444",background:"#2a0a0a",border:"1px solid #5a1a1a",borderRadius:5,padding:"1px 6px",flexShrink:0}}>DELISTED</span>}
                           {g.mtfQty>0&&<span title={"MTF funded: "+g.mtfQty+" of "+g.totalQty+" shares"} style={{fontSize:8,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:5,padding:"1px 6px",flexShrink:0}}>MTF {g.mtfQty}</span>}
+                          {(typeof DEFAULT_TAGS!=="undefined"&&DEFAULT_TAGS.some(function(t){return t.stock===g.sym&&t.advisorId==="hiren";}))&&<span title="Recommended by Hiren Bhai" style={{fontSize:8,fontWeight:700,color:"#34d399",background:"#0a1f15",border:"1px solid #166534",borderRadius:5,padding:"1px 6px",flexShrink:0}}>HA</span>}
                         </div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
                           {sector&&<span style={{fontSize:8,background:"#0f1a2e",color:"#7eb8ff",padding:"1px 6px",borderRadius:8}}>{sector}</span>}
