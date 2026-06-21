@@ -5420,7 +5420,7 @@ function FamilyApp() {
     console.log("Live prices patched into holdings:", Object.keys(livePrices).length);
   }, [livePrices]);
 
-  const [tab,setTab]=React.useState("Overview");
+  const [tab,setTab]=React.useState("Home");
   const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
 
   /* Data integrity check: detect TRUE duplicate rows */
@@ -5958,7 +5958,7 @@ function FamilyApp() {
         border:"1px solid #1c2440",borderRadius:18,boxShadow:"0 4px 32px #00000044, inset 0 1px 0 #ffffff08"}}>
         <div>
           <div style={{display:"flex",alignItems:"baseline",gap:12}}>
-              <div onClick={()=>setTab("Overview")} style={{fontSize:22,fontWeight:800,letterSpacing:"-0.03em",
+              <div onClick={()=>setTab("Home")} style={{fontSize:22,fontWeight:800,letterSpacing:"-0.03em",
                 background:"linear-gradient(90deg,#e8eaf0 0%,#7eb8ff 55%,#a78bfa 100%)",
                 WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
                 cursor:"pointer"}} title="Go to Overview">
@@ -6469,7 +6469,7 @@ function FamilyApp() {
       {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:"fixed",inset:0,background:"#00000066",zIndex:999}}/>}
 
       {/* - OVERVIEW - */}
-      {tab==="Overview"&&<div>
+      {tab==="Home"&&<div>
         <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
@@ -13675,9 +13675,9 @@ const SIDEBAR_SECTIONS = [
   {title:"Analytics", tabs:["Insights","Tax","MTF","XIRR"]},
   {title:"Planning",  tabs:["Rebalance","SIP Tracker","Goals","What-If","Corp Actions","PPF"]},
   {title:"Portfolio", tabs:["Trend","Meeting Mode"]},
-  {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Advisors","Profiles","Estate","Changelog","Ledger"]},
+  {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Profiles","Estate","Changelog"]},
 ];
-const TABS = ["Overview","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Advisors"];
+const TABS = ["Home","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Ledger","Advisors"];
 const Panel = ({children, title, style}) => (
   <div style={{background:"linear-gradient(155deg,#10142a 0%,#0c1020 100%)",
     border:"1px solid #1c2440",borderRadius:16,padding:"18px 20px",marginBottom:14,
