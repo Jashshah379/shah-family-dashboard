@@ -5837,8 +5837,12 @@ function FamilyApp() {
         const totalRet  = totalInv>0?(totalUnrl/totalInv*100):null;
         const isGain    = totalUnrl>=0;
         const liveHolding = holdings.find(h=>h.chgPct!=null&&h.cmp>0);
-                    const avgCmp    = liveHolding ? liveHolding.cmp : (holdings.filter(h=>h.cmp>0).reduce((s,h)=>s+h.cmp,0)/(holdings.filter(h=>h.cmp>0).length||1));
-                    const chgPct = liveHolding ? liveHolding.chgPct : null;
+        /* Also check livePrices directly — sym is NSE symbol after normalization */
+        var _lpEntry = livePrices && (livePrices[sym] || livePrices[(typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[sym])||sym]);
+        var _liveCmp = liveHolding ? liveHolding.cmp : (_lpEntry ? _lpEntry.p : 0);
+        var _liveChgPct = liveHolding ? liveHolding.chgPct : (_lpEntry ? _lpEntry.pct : null);
+                    const avgCmp    = _liveCmp > 0 ? _liveCmp : (holdings.filter(h=>h.cmp>0).reduce((s,h)=>s+h.cmp,0)/(holdings.filter(h=>h.cmp>0).length||1));
+                    const chgPct = _liveChgPct;
         const avgAvg    = totalQty>0?totalInv/totalQty:0;
         /* DB lookup */
         const dbKey = Object.keys(STOCK_DB||{}).find(k=>sym.toLowerCase().includes(k.toLowerCase().slice(0,5))||k.toLowerCase().includes(sym.toLowerCase().slice(0,5)));
