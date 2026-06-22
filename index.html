@@ -16704,6 +16704,27 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
   const allMembers    = React.useMemo(() => ["All", ...new Set(allRows.map(r => r.member))], [allRows]);
   const allCustodians = React.useMemo(() => ["All", ...new Set(allRows.map(r => r.custodian))], [allRows]);
   const allStocks     = React.useMemo(() => [...new Set(allRows.map(r => r.sym))].sort(), [allRows]);
+  /* Search index: NSE symbol → all known display names for it */
+  const srchIndex     = React.useMemo(() => {
+    var idx = {}; /* sym -> Set of search terms */
+    allRows.forEach(function(r) {
+      if (!r.sym) return;
+      if (!idx[r.sym]) idx[r.sym] = new Set([r.sym.toLowerCase()]);
+      if (r.displayName) idx[r.sym].add(r.displayName.toLowerCase());
+    });
+    return idx;
+  }, [allRows]);
+  /* Search fn: returns NSE symbols that match query against sym OR any display name */
+  var srchMatch = function(query) {
+    var q = query.toLowerCase();
+    return allStocks.filter(function(sym) {
+      if (sym.toLowerCase().includes(q)) return true;
+      var names = srchIndex[sym];
+      if (!names) return false;
+      for (var n of names) { if (n.includes(q)) return true; }
+      return false;
+    });
+  };
 
   // Filter
   const filtered = React.useMemo(() => allRows.filter(r =>
@@ -16843,7 +16864,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
             onChange={function(e){setFilterStock(e.target.value);setSrchHi(0);setSrchOpen(true);}}
             onKeyDown={function(e){
               var matched = filterStock.length > 0
-                ? allStocks.filter(function(x){return x.toLowerCase().includes(filterStock.toLowerCase());}).slice(0,8)
+                ? srchMatch(filterStock).slice(0,8)
                 : [];
               if(e.key==="Enter"){
                 e.preventDefault();
@@ -16872,7 +16893,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
             style={{...selStyle,width:150,outline:"none"}}
           />
           {srchOpen&&filterStock.length>0&&(function(){
-            var matched = allStocks.filter(function(x){return x.toLowerCase().includes(filterStock.toLowerCase());}).slice(0,8);
+            var matched = srchMatch(filterStock).slice(0,8);
             if(!matched.length) return null;
             return (
               <div style={{position:"absolute",top:"calc(100% + 3px)",left:0,zIndex:9999,
@@ -16883,11 +16904,18 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                     <div key={s}
                       onMouseDown={function(e){e.preventDefault();setFilterStock(s);setSrchOpen(false);setSrchHi(0);}}
                       onMouseEnter={function(){setSrchHi(i);}}
-                      style={{padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600,
-                        color:i===srchHi?"#fff":"#c8d0e8",
+                      style={{padding:"6px 12px",cursor:"pointer",
                         background:i===srchHi?"#1e3a5f":"transparent",
                         borderBottom:i<matched.length-1?"1px solid #0d1020":"none"}}>
-                      {s}
+                      <div style={{fontSize:12,fontWeight:700,color:i===srchHi?"#fff":"#c8d0e8"}}>{s}</div>
+                      {srchIndex[s]&&(function(){
+                        var names=[...srchIndex[s]].filter(function(n){return n!==s.toLowerCase();});
+                        if(!names.length) return null;
+                        /* Show first display name that matches the query */
+                        var q=filterStock.toLowerCase();
+                        var best=names.find(function(n){return n.includes(q);})||names[0];
+                        return <div style={{fontSize:9,color:i===srchHi?"#93c5fd":"#3a4a6a",marginTop:1}}>{best}</div>;
+                      })()}
                     </div>
                   );
                 })}
