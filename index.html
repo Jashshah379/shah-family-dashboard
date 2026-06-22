@@ -2668,19 +2668,22 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const hasLivePct = allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
   const withRet = allH.filter(function(h){return h.inv>5000&&h.val>0;});
 
+  /* Normalise display names → NSE symbol to avoid duplicates ("NOCIL"/"Nocil Limited") */
+  var _normKey = function(s){ return (typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[s])?SYMBOL_MAP[s]:s; };
   var _seenG={}, _seenL={};
   withRet.forEach(function(h){
     if(!h.s) return;
+    var _k = _normKey(h.s); /* use NSE symbol as dedup key */
     if(hasLivePct){
       if(h.chgPct==null) return;
-      if(!_seenG[h.s]||h.chgPct>_seenG[h.s].chgPct) _seenG[h.s]=h;
-      if(!_seenL[h.s]||h.chgPct<_seenL[h.s].chgPct) _seenL[h.s]=h;
+      if(!_seenG[_k]||h.chgPct>_seenG[_k].chgPct) _seenG[_k]=Object.assign({},h,{s:_k});
+      if(!_seenL[_k]||h.chgPct<_seenL[_k].chgPct) _seenL[_k]=Object.assign({},h,{s:_k});
     } else {
       var ret=h.inv>0?(h.val-h.inv)/h.inv:0;
-      var prev=_seenG[h.s]?(_seenG[h.s].inv>0?(_seenG[h.s].val-_seenG[h.s].inv)/_seenG[h.s].inv:0):null;
-      if(prev===null||ret>prev) _seenG[h.s]=h;
-      var prevL=_seenL[h.s]?(_seenL[h.s].inv>0?(_seenL[h.s].val-_seenL[h.s].inv)/_seenL[h.s].inv:0):null;
-      if(prevL===null||ret<prevL) _seenL[h.s]=h;
+      var prev=_seenG[_k]?(_seenG[_k].inv>0?(_seenG[_k].val-_seenG[_k].inv)/_seenG[_k].inv:0):null;
+      if(prev===null||ret>prev) _seenG[_k]=Object.assign({},h,{s:_k});
+      var prevL=_seenL[_k]?(_seenL[_k].inv>0?(_seenL[_k].val-_seenL[_k].inv)/_seenL[_k].inv:0):null;
+      if(prevL===null||ret<prevL) _seenL[_k]=Object.assign({},h,{s:_k});
     }
   });
 
