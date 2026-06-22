@@ -5591,7 +5591,7 @@ function FamilyApp() {
     /* Force re-render by updating a counter */
     setPriceVersion(function(v) { return v + 1; });
     console.log("Live prices patched into holdings:", Object.keys(livePrices).length);
-  }, [livePrices]);
+  }, [livePrices, manualCmp]);
 
   const [tab,setTab]=React.useState("Home");
   const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
@@ -5648,11 +5648,23 @@ function FamilyApp() {
   /* ── Live Price Coverage ── */
   const [showCoverage, setShowCoverage] = React.useState(false);
   const [coverageView, setCoverageView] = React.useState("stale"); /* "live" | "stale" */
+  var NON_EQUITY_SYMBOLS = new Set([
+  "BILNCD2021-N3","GOLDBEES-E","GOLDCASE-E","JUNIORBEES","NIFTYBEES","PSUBNKBEES",
+  "LIQUIDBEES-F","SGBDE31III-GB","SGBFEB32IV-GB","SGBJUN31I-GB","INE2J8701016",
+  "IKS","LENSKART","MEESHO","HERIT-RE-R","SKFINDUS","PARTYCRUS-SM","SAJHOTELS-SM",
+  "PREMIERENE-BL","GSCLCEMENT6","VIPCLOTHNG-T","TATASTLBSL-T","LTM",
+  "Cash and Equivalent","Dividend / Interest receivable",
+  "PARAG PARIKH FLEXI CAP FUND - DIRECT PLA","HDFC MID CAP FUND - DIRECT PLAN",
+  "DSP BSE Liquid ETF","Liquid BeES",
+  "PFC NCD 7.15%","BALLARPUR LST PEN",
+]);
+
   const priceCoverage = React.useMemo(function() {
     var all = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
     var unique = {};
     all.forEach(function(h) {
       if (!h || !h.s) return;
+      if (NON_EQUITY_SYMBOLS.has(h.s)) return; /* skip bonds/ETFs/pre-IPO */
       if (!unique[h.s]) unique[h.s] = {sym: h.s, isLive: false, val: 0, cmp: 0, chgPct: null};
       if (h.isLive) {
         unique[h.s].isLive = true;
@@ -12820,7 +12832,7 @@ const SYMBOL_MAP = {
   "Aditya Birla Cap": "ABCAPITAL",
   "Aditya Birla RE": "ABREL",
   "Aditya Birla Sun AMC": "ABSLAMC",
-  "Aegis Logistics": "AEGISCHEM",
+  "Aegis Logistics": "AEGISLOG",
   "Ajmera Realty": "AJMERA",
   "Alicon Cast.": "ALICON",
   "Alivus Life": "ALIVUS",
@@ -12973,8 +12985,8 @@ const SYMBOL_MAP = {
   "Epigral": "EPIGRAL",
   "Equitas Holdings": "EQUITASBNK",
   "Escorts Kubota": "ESCORTS",
-  "Eternal": "ETERNAL",
-  "Eternal (Zomato)": "ETERNAL",
+  "Eternal": "ZOMATO",
+  "Eternal (Zomato)": "ZOMATO",
   "Eveready Inds.": "EVEREADY",
   "Everready Inds.": "EVERREADY",
   "Exide Inds.": "EXIDEIND",
@@ -12997,7 +13009,7 @@ const SYMBOL_MAP = {
   "GEE Ltd": "GEE",
   "GEI Industrial": "GEIIL",
   "GENESYS International": "GENESYS",
-  "GFL Limited": "GFL",
+  "GFL Limited": "FLUOROCHEM",
   "GIC Housing Fin": "GICHSGFIN",
   "GMM Pfaudler": "GMMPFAUDLR",
   "GNA Axles": "GNA",
@@ -13053,8 +13065,8 @@ const SYMBOL_MAP = {
   "Hindustan Construction": "HINDCONS",
   "Hindustan Copper": "HINDCOPPER",
   "Hindustan Media": "HTMEDIA",
-  "Hitachi Energy": "POWERINDIA",
-  "Hitachi Energy India": "POWERINDIA",
+  "Hitachi Energy": "ABBPOW",
+  "Hitachi Energy India": "ABBPOW",
   "Honeywell Automation": "HONAUT",
   "I R C T C": "IRCTC",
   "I R F C": "IRFC",
@@ -13422,7 +13434,7 @@ const SYMBOL_MAP = {
   "Zaggle Prepaid": "ZAGGLE",
   "Zee Entertainmen": "ZEEL",
   "Zee Learn": "ZEELEARN",
-  "Zomato": "ETERNAL",
+  "Zomato": "ZOMATO",
   "Zuari Agro": "ZUARI",  "360 One": "360ONE",
   "AU Small Finance Bank": "AUBANK",
   "Aadhar Housing Finance": "AADHARHFC",
@@ -13448,7 +13460,7 @@ const SYMBOL_MAP = {
   "Eveready Industries": "EVEREADY",
   "Expleo Solutions": "EXPLEOSOL",
   "Five-Star Business Finance": "FIVESTAR",
-  "GFL": "GFLLIMITED",
+  "GFL": "FLUOROCHEM",
   "Goa Carbon": "GOACARBON",
   "Gokaldas Exports": "GOKEX",
   "Gujarat Fluorochem": "FLUOROCHEM",
@@ -13477,7 +13489,7 @@ const SYMBOL_MAP = {
   "LKP Securities Limited": "LKPSEC",
   "MOIL": "MOIL",
   "MRPL": "MRPL",
-  "MTAR Technologies": "MTAR",
+  "MTAR Technologies": "MTARTECH",
   "Mahanagar Gas": "MGL",
   "NESCO": "NESCO",
   "Natco Pharma": "NATCOPHARM",
@@ -13537,6 +13549,61 @@ const SYMBOL_MAP = {
   "Associated Alcohols": "ASSOCALCO",
   "Anjani Portland Cement": "APCL",
   "GOCL Corp": "GOCLCORP",
+  "Ion Exchange India": "IONEXCHANG",
+  "Ion Exchange (India)": "IONEXCHANG",
+  "Genesys International Corporat": "GENESYS",
+  "Kaynes Technology": "KAYNES",
+  "Kaynes Technology India": "KAYNES",
+  "Man Infraconstruction Limited": "MANINFRA",
+  "Nelco Limited": "NELCO",
+  "Greaves Cotton Limited": "GREAVESCOT",
+  "Jamna Auto Industries": "JAMNAAUTO",
+  "Lloyds Engineering Works": "LLOYDSENGG",
+  "Lloyds Engineeringworks": "LLOYDSENGG",
+  "Shriram Finance": "SHRIRAMFIN",
+  "Sudarshan Chemical Industries": "SUDARSCHEM",
+  "Sudarshan Colorants India": "SUDARSCHEM",
+  "Tata Coffee": "TATACONSUM",
+  "TATACOFFEE": "TATACONSUM",
+  "Mindtree": "LTIM",
+  "MINDTREE": "LTIM",
+  "LTIMindtree": "LTIM",
+  "LTI Mindtree": "LTIM",
+  "SKF India": "SKFINDIA",
+  "SKFINDUS": "SKFINDIA",
+  "Ola Electric Mobility": "OLAELEC",
+  "Olectra Greentech": "OLECTRA",
+  "Olectra Greentec": "OLECTRA",
+  "Greaves Cotton": "GREAVESCOT",
+  "Dredging Corporation of India": "DCI",
+  "Container Corporation of India": "CONCOR",
+  "Engineers India": "ENGINERSIN",
+  "Persistent Systems": "PERSISTENT",
+  "Jio Financial Services Limited": "JIOFIN",
+  "JSW Infrastructure": "JSWINFRA",
+  "Info Edge (India)": "NAUKRI",
+  "Info Edge India": "NAUKRI",
+  "Tube Investments": "TIINDIA",
+  "Tube Investments of India": "TIINDIA",
+  "Hero Motocorp": "HEROMOTOCO",
+  "Navin Fluorine": "NAVINFLUOR",
+  "Inox Wind": "INOXWIND",
+  "Inox Wind Energy": "INOXWIND",
+  "Astra Microwave": "ASTRAMICRO",
+  "MTAR Technologies Ltd": "MTARTECH",
+  "Nuvama Wealth": "NUVAMA",
+  "Nuvama Wealth Management": "NUVAMA",
+  "Brigade Enterprises": "BRIGADE",
+  "DCX Systems": "DCXINDIA",
+  "Bajaj Housing Finance": "BAJAJHFL",
+  "Gail (India)": "GAIL",
+  "Gail India": "GAIL",
+  "Divis Laboratories": "DIVISLAB",
+  "Divi's Laboratories": "DIVISLAB",
+  "Tata Technologies": "TATATECH",
+  "L&T Technology Services": "LTTS",
+  "Premier Energies": "PREMIERENE",
+  "Premier Energies Ltd": "PREMIERENE",
 
 };
 
