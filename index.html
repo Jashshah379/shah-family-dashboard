@@ -13601,6 +13601,10 @@ const SYMBOL_MAP = {
   "Associated Alcohols": "ASSOCALCO",
   "Anjani Portland Cement": "APCL",
   "GOCL Corp": "GOCLCORP",
+  "Dredging Corp.": "DREDGECORP",
+  "Dredging Corp": "DREDGECORP",
+  "DREDGING CORP": "DREDGECORP",
+  "Dredging Corporation of India Ltd": "DREDGECORP",
   /* === Added display name variants === */
   "AstraZeneca Pharma India": "ASTRAZEN",
   "Astrazeneca Pharma India": "ASTRAZEN",
@@ -16613,7 +16617,8 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
   const [groupBy, setGroupBy] = React.useState("stock"); // none | stock | member | custodian
   const [expandedStock, setExpandedStock] = React.useState(null);
   const [holView, setHolView] = React.useState("holdings");
-  const [srchHi, setSrchHi] = React.useState(0); /* highlighted suggestion index */
+  const [srchHi, setSrchHi] = React.useState(0);   /* highlighted suggestion index */
+  const [srchOpen, setSrchOpen] = React.useState(false); /* dropdown open */
   const [colWidths, setColWidths] = React.useState({sym:220,totalQty:80,avgCmp:90,totalInv:100,totalVal:110,totalDayPL:90,totalPL:100,ret:80});
   const resizing = React.useRef(null);
   const [selectedStocks, setSelectedStocks] = React.useState({});
@@ -16884,59 +16889,64 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
       {/* Filters */}
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
         {/* ── Search with suggestions + Enter-to-select ── */}
-        {(function(){
-          var suggs = filterStock.length > 0
-            ? allStocks.filter(function(s){return s.toLowerCase().includes(filterStock.toLowerCase());}).slice(0,8)
-            : [];
-          return (
-            <div style={{position:"relative",flexShrink:0}}>
-              <input
-                value={filterStock}
-                onChange={function(e){setFilterStock(e.target.value);setSrchHi(0);}}
-                onKeyDown={function(e){
-                  var s = filterStock.length > 0
-                    ? allStocks.filter(function(x){return x.toLowerCase().includes(filterStock.toLowerCase());})
-                    : [];
-                  if(e.key==="Enter"){
-                    e.preventDefault();
-                    if(s.length>0){ setFilterStock(s[srchHi]||s[0]); setSrchHi(0); }
-                  } else if(e.key==="ArrowDown"){
-                    e.preventDefault();
-                    setSrchHi(function(i){return Math.min(i+1,Math.min(s.length,8)-1);});
-                  } else if(e.key==="ArrowUp"){
-                    e.preventDefault();
-                    setSrchHi(function(i){return Math.max(i-1,0);});
-                  } else if(e.key==="Escape"){
-                    setFilterStock("");setSrchHi(0);
-                  }
-                }}
-                onFocus={function(){setSrchHi(0);}}
-                placeholder="Search stock…"
-                style={{...selStyle,width:150,outline:"none"}}
-              />
-              {suggs.length>0&&(
-                <div style={{position:"absolute",top:"100%",left:0,zIndex:9999,
-                  background:"#0a0e1e",border:"1px solid #1e3a5f",borderRadius:8,
-                  marginTop:3,minWidth:180,boxShadow:"0 8px 24px #00000088",overflow:"hidden"}}>
-                  {suggs.map(function(s,i){
-                    return (
-                      <div key={s}
-                        onMouseDown={function(e){e.preventDefault();setFilterStock(s);setSrchHi(0);}}
-                        onMouseEnter={function(){setSrchHi(i);}}
-                        style={{padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:600,
-                          color:i===srchHi?"#7eb8ff":"#c8d0e8",
-                          background:i===srchHi?"#0d1a2e":"transparent",
-                          borderBottom:i<suggs.length-1?"1px solid #0d1020":"none",
-                          transition:"background 0.1s"}}>
-                        {s}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })()}
+        <div style={{position:"relative",flexShrink:0}}>
+          <input
+            value={filterStock}
+            onChange={function(e){setFilterStock(e.target.value);setSrchHi(0);setSrchOpen(true);}}
+            onKeyDown={function(e){
+              var matched = filterStock.length > 0
+                ? allStocks.filter(function(x){return x.toLowerCase().includes(filterStock.toLowerCase());}).slice(0,8)
+                : [];
+              if(e.key==="Enter"){
+                e.preventDefault();
+                if(matched.length>0){
+                  setFilterStock(matched[srchHi]||matched[0]);
+                  setSrchOpen(false);
+                  setSrchHi(0);
+                }
+              } else if(e.key==="ArrowDown"){
+                e.preventDefault();
+                setSrchOpen(true);
+                setSrchHi(function(i){return Math.min(i+1,matched.length-1);});
+              } else if(e.key==="ArrowUp"){
+                e.preventDefault();
+                setSrchHi(function(i){return Math.max(i-1,0);});
+              } else if(e.key==="Escape"){
+                setSrchOpen(false);
+                setSrchHi(0);
+              } else {
+                setSrchOpen(true);
+              }
+            }}
+            onFocus={function(){setSrchOpen(true);setSrchHi(0);}}
+            onBlur={function(){setTimeout(function(){setSrchOpen(false);},150);}}
+            placeholder="Search stock…"
+            style={{...selStyle,width:150,outline:"none"}}
+          />
+          {srchOpen&&filterStock.length>0&&(function(){
+            var matched = allStocks.filter(function(x){return x.toLowerCase().includes(filterStock.toLowerCase());}).slice(0,8);
+            if(!matched.length) return null;
+            return (
+              <div style={{position:"absolute",top:"calc(100% + 3px)",left:0,zIndex:9999,
+                background:"#0a0e1e",border:"1px solid #1e3a5f",borderRadius:8,
+                minWidth:180,boxShadow:"0 8px 24px #00000088",overflow:"hidden"}}>
+                {matched.map(function(s,i){
+                  return (
+                    <div key={s}
+                      onMouseDown={function(e){e.preventDefault();setFilterStock(s);setSrchOpen(false);setSrchHi(0);}}
+                      onMouseEnter={function(){setSrchHi(i);}}
+                      style={{padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600,
+                        color:i===srchHi?"#fff":"#c8d0e8",
+                        background:i===srchHi?"#1e3a5f":"transparent",
+                        borderBottom:i<matched.length-1?"1px solid #0d1020":"none"}}>
+                      {s}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
         <select value={filterMember} onChange={e=>setFilterMember(e.target.value)} style={selStyle}>
           {allMembers.map(m=><option key={m} value={m}>{m}</option>)}
         </select>
