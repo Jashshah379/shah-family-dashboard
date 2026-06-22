@@ -2631,7 +2631,7 @@ function GlobalIndicesWidget() {
 }
 
 
-function DailyDigest({priceVersion, livePrices}) {
+function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
@@ -2795,10 +2795,16 @@ function DailyDigest({priceVersion, livePrices}) {
             var dispLabel = hasLivePct ? "today" : "overall";
             var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
             return (
-              <div key={i} style={{padding:"8px 14px",borderBottom:i<5?"1px solid #0d1f0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div key={i}
+                onClick={function(){if(onStockClick) onStockClick(h.s);}}
+                style={{padding:"8px 14px",borderBottom:i<5?"1px solid #0d1f0d":"none",
+                  display:"flex",justifyContent:"space-between",alignItems:"center",
+                  cursor:"pointer",transition:"background 0.12s"}}
+                onMouseEnter={function(e){e.currentTarget.style.background="#0d2a14";}}
+                onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
                 <div>
                   <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
-                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]} <span style={{color:"#1e3a20"}}>→ Stock List</span></div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:12,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>▲{Math.abs(dispPct||0).toFixed(2)}%</div>
@@ -2817,10 +2823,16 @@ function DailyDigest({priceVersion, livePrices}) {
             var dispLabel = hasLivePct ? "today" : "overall";
             var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
             return (
-              <div key={i} style={{padding:"8px 14px",borderBottom:i<5?"1px solid #1f0d0d":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div key={i}
+                onClick={function(){if(onStockClick) onStockClick(h.s);}}
+                style={{padding:"8px 14px",borderBottom:i<5?"1px solid #1f0d0d":"none",
+                  display:"flex",justifyContent:"space-between",alignItems:"center",
+                  cursor:"pointer",transition:"background 0.12s"}}
+                onMouseEnter={function(e){e.currentTarget.style.background="#2a0d0d";}}
+                onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
                 <div>
                   <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
-                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]} <span style={{color:"#3a1e1e"}}>→ Stock List</span></div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:12,fontWeight:800,color:"#ef4444",fontFamily:"monospace"}}>▼{Math.abs(dispPct||0).toFixed(2)}%</div>
@@ -5611,6 +5623,7 @@ function FamilyApp() {
   }, [livePrices, manualCmp]);
 
   const [tab,setTab]=React.useState("Home");
+  const [jumpStock, setJumpStock] = React.useState(null);
   const [priceVersion,setPriceVersion]=React.useState(0); /* increments when live prices arrive */
 
   /* Data integrity check: detect TRUE duplicate rows */
@@ -6692,7 +6705,7 @@ function FamilyApp() {
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
         
-        <DailyDigest priceVersion={priceVersion} livePrices={livePrices}/>
+        <DailyDigest priceVersion={priceVersion} livePrices={livePrices} onStockClick={function(sym){setTab("Stock List");setJumpStock(sym);}}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Net Family Wealth" value={cr(netWealth)} sub="Equity (ex-MTF) + MF + Bank + PPF" color="#7eb8ff"/>
           <M label="Gross Assets" value={cr(grandTotal)} sub="Includes MTF-funded positions" color="#a78bfa"/>
@@ -7407,7 +7420,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion}/>}
+      {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion} jumpStock={jumpStock} onJumpConsumed={function(){setJumpStock(null);}}/>}
       {tab==="Tax"&&<TaxTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
@@ -7484,6 +7497,23 @@ function PinLockScreen({ onUnlock }) {
     }
     if (locked && lockTimer === 0) setLocked(false);
   }, [locked, lockTimer]);
+
+  /* ── Keyboard support ── */
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (locked) return;
+      if (e.key >= "0" && e.key <= "9") {
+        handleDigit(e.key);
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        handleBack();
+      } else if (e.key === "Escape") {
+        setPin("");
+        setError(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [locked, pin]);
 
   const handleDigit = (d) => {
     if (locked) return;
@@ -16579,7 +16609,7 @@ function KarishmaTab() {
    Consolidates every member's equity holdings into one sortable, filterable table.
    Each row shows stock, member, custodian, qty, avg, CMP, value, P&L, P&L%.
    - */
-function AllHoldingsTab({livePrices, priceStatus}) {
+function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
   const [sortCol, setSortCol] = React.useState("sym");
   const [sortDir, setSortDir] = React.useState(1);
   const [filterMember, setFilterMember] = React.useState("All");
@@ -16589,12 +16619,24 @@ function AllHoldingsTab({livePrices, priceStatus}) {
   const [groupBy, setGroupBy] = React.useState("stock"); // none | stock | member | custodian
   const [expandedStock, setExpandedStock] = React.useState(null);
   const [holView, setHolView] = React.useState("holdings");
+  const [srchHi, setSrchHi] = React.useState(0); /* highlighted suggestion index */
   const [colWidths, setColWidths] = React.useState({sym:220,totalQty:80,avgCmp:90,totalInv:100,totalVal:110,totalDayPL:90,totalPL:100,ret:80});
   const resizing = React.useRef(null);
   const [selectedStocks, setSelectedStocks] = React.useState({});
   const [selectionMode, setSelectionMode] = React.useState(false);
   const letterRefs = React.useRef({});
   const tableRef = React.useRef(null);
+
+  /* Consume jumpStock from parent (click-through from Home gainers/losers) */
+  React.useEffect(function() {
+    if (jumpStock) {
+      setFilterStock(jumpStock);
+      setGroupBy("stock");
+      if (onJumpConsumed) onJumpConsumed();
+      /* Scroll to top so user sees filtered result */
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }
+  }, [jumpStock]);
 
   const startResize = React.useCallback(function(col, e) {
     e.preventDefault();
@@ -16847,9 +16889,60 @@ function AllHoldingsTab({livePrices, priceStatus}) {
 
       {/* Filters */}
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
-        <input value={filterStock} onChange={e=>setFilterStock(e.target.value)}
-          placeholder="Search stock…"
-          style={{...selStyle,width:130,outline:"none"}}/>
+        {/* ── Search with suggestions + Enter-to-select ── */}
+        {(function(){
+          var suggs = filterStock.length > 0
+            ? allStocks.filter(function(s){return s.toLowerCase().includes(filterStock.toLowerCase());}).slice(0,8)
+            : [];
+          return (
+            <div style={{position:"relative",flexShrink:0}}>
+              <input
+                value={filterStock}
+                onChange={function(e){setFilterStock(e.target.value);setSrchHi(0);}}
+                onKeyDown={function(e){
+                  var s = filterStock.length > 0
+                    ? allStocks.filter(function(x){return x.toLowerCase().includes(filterStock.toLowerCase());})
+                    : [];
+                  if(e.key==="Enter"){
+                    e.preventDefault();
+                    if(s.length>0){ setFilterStock(s[srchHi]||s[0]); setSrchHi(0); }
+                  } else if(e.key==="ArrowDown"){
+                    e.preventDefault();
+                    setSrchHi(function(i){return Math.min(i+1,Math.min(s.length,8)-1);});
+                  } else if(e.key==="ArrowUp"){
+                    e.preventDefault();
+                    setSrchHi(function(i){return Math.max(i-1,0);});
+                  } else if(e.key==="Escape"){
+                    setFilterStock("");setSrchHi(0);
+                  }
+                }}
+                onFocus={function(){setSrchHi(0);}}
+                placeholder="Search stock…"
+                style={{...selStyle,width:150,outline:"none"}}
+              />
+              {suggs.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,zIndex:9999,
+                  background:"#0a0e1e",border:"1px solid #1e3a5f",borderRadius:8,
+                  marginTop:3,minWidth:180,boxShadow:"0 8px 24px #00000088",overflow:"hidden"}}>
+                  {suggs.map(function(s,i){
+                    return (
+                      <div key={s}
+                        onMouseDown={function(e){e.preventDefault();setFilterStock(s);setSrchHi(0);}}
+                        onMouseEnter={function(){setSrchHi(i);}}
+                        style={{padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:600,
+                          color:i===srchHi?"#7eb8ff":"#c8d0e8",
+                          background:i===srchHi?"#0d1a2e":"transparent",
+                          borderBottom:i<suggs.length-1?"1px solid #0d1020":"none",
+                          transition:"background 0.1s"}}>
+                        {s}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
         <select value={filterMember} onChange={e=>setFilterMember(e.target.value)} style={selStyle}>
           {allMembers.map(m=><option key={m} value={m}>{m}</option>)}
         </select>
