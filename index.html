@@ -693,61 +693,9 @@ function BreezeImportTab() {
       {/* Download script button */}
       <div style={{background:"#080b18",borderRadius:8,padding:"12px 14px",fontSize:10,color:"#3a4a6a",lineHeight:1.6}}>
         💡 Run <span style={{fontFamily:"monospace",color:"#34d399"}}>breeze_fetch.py</span> each morning before checking the dashboard. Session tokens are valid for 1 day — API key and secret are permanent.
-
-      {/* ── Wealth Attribution Card ── */}
-      {wealthAttr && wealthAttr.totalInvested > 0 && (
-        <div style={{background:"linear-gradient(135deg,#0a0f1f 0%,#070a16 100%)",
-          border:"1px solid #1e2848",borderRadius:14,padding:"16px 20px",marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-            <div>
-              <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",letterSpacing:"0.08em",textTransform:"uppercase"}}>Wealth Attribution</div>
-              <div style={{fontSize:11,color:"#2a3a5a",marginTop:2}}>Current value vs capital deployed · equity + MF</div>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontSize:9,color:"#3a4a6a"}}>Return on invested capital</div>
-              <div style={{fontSize:22,fontWeight:900,fontFamily:"monospace",
-                color:wealthAttr.gainPct>=0?"#10b981":"#ef4444"}}>
-                {wealthAttr.gainPct>=0?"+":""}{wealthAttr.gainPct.toFixed(1)}%
-              </div>
-            </div>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:10}}>
-            <div style={{background:"#070a16",borderRadius:10,padding:"12px 14px",border:"1px solid #1a2035"}}>
-              <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Total Invested</div>
-              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#7eb8ff"}}>{fC(wealthAttr.totalInvested)}</div>
-              <div style={{fontSize:9,color:"#2a3a5a",marginTop:3}}>Equity {fC(wealthAttr.eqInv)} · MF {fC(wealthAttr.mfInv)}</div>
-            </div>
-            <div style={{background:"#070a16",borderRadius:10,padding:"12px 14px",border:"1px solid #1a2035"}}>
-              <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Current Value</div>
-              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#e8eaf0"}}>{fC(wealthAttr.totalCurrent)}</div>
-              <div style={{fontSize:9,color:"#2a3a5a",marginTop:3}}>Equity {fC(wealthAttr.eqVal)} · MF {fC(wealthAttr.mfVal)}</div>
-            </div>
-            <div style={{background:wealthAttr.marketGain>=0?"#071a0f":"#1a0707",borderRadius:10,padding:"12px 14px",
-              border:"1px solid "+(wealthAttr.marketGain>=0?"#0d3320":"#331010")}}>
-              <div style={{fontSize:9,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4,
-                color:wealthAttr.marketGain>=0?"#10b981":"#ef4444"}}>Markets Made</div>
-              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",
-                color:wealthAttr.marketGain>=0?"#10b981":"#ef4444"}}>
-                {wealthAttr.marketGain>=0?"+":""}{fC(wealthAttr.marketGain)}
-              </div>
-              <div style={{fontSize:9,marginTop:3,color:wealthAttr.marketGain>=0?"#0d5c30":"#5c1a1a"}}>Pure appreciation</div>
-            </div>
-          </div>
-          {wealthAttr.divTotal > 0 && (
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-              padding:"8px 12px",background:"#071a0f",borderRadius:8,border:"1px solid #0d3320"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#10b981"}}>
-                Total Wealth Created (appreciation + dividends {fC(wealthAttr.divTotal)})
-              </div>
-              <div style={{fontSize:14,fontWeight:900,fontFamily:"monospace",color:"#10b981"}}>
-                +{fC(wealthAttr.totalCreated)}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
       </div>
     </div>
+
   );
 }
 
@@ -7108,6 +7056,59 @@ function FamilyApp() {
           <M label="Bank" value={cr(totalBank)} sub="All accounts" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Unrealised P/L" value={cr(FAMILY_EQ_PL)} sub={FAMILY_EQ_PL>=0?"Equity gain":"Equity loss"} color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
         </div>
+
+        {/* ── Wealth Attribution ── */}
+        {(function(){
+          var eqInv=FAMILY_EQ_TOTAL_COST||0;
+          var eqVal=_usingLive
+            ? MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef];})
+                .reduce(function(s,m){return s+(MEMBER_HOLDINGS[m.holdingsRef]||[]).reduce(function(ss,h){return ss+(h.val||0);},0);},0)
+            : FAMILY_EQ_TOTAL_MKT||0;
+          var mfVal=0,mfInv=0;
+          if(typeof MEMBER_MF_FOLIOS!=="undefined") Object.values(MEMBER_MF_FOLIOS).forEach(function(fs){(fs||[]).forEach(function(f){mfVal+=(f.value||0);mfInv+=(f.invested||0);});});
+          if(typeof COIN_MF_ADDITIONAL!=="undefined") Object.entries(COIN_MF_ADDITIONAL).forEach(function(e){(e[1]||[]).forEach(function(f){mfVal+=(f.value||0);mfInv+=(f.invested||0);});});
+          var divTotal=(typeof LEDGER_SEED_DATA!=="undefined")?LEDGER_SEED_DATA.filter(function(e){return e.type==="dividend";}).reduce(function(s,e){return s+(e.amount||0);},0):0;
+          var totalInv=eqInv+mfInv,totalCur=eqVal+mfVal,gain=totalCur-totalInv;
+          var gainPct=totalInv>0?(gain/totalInv*100):0;
+          if(totalInv<=0) return null;
+          return (
+            <div style={{marginBottom:14,background:"linear-gradient(135deg,#0a0f1f,#070a16)",border:"1px solid #1e2848",borderRadius:14,padding:"18px 22px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                <div>
+                  <div style={{fontSize:11,fontWeight:700,color:"#7eb8ff",letterSpacing:"0.05em"}}>Wealth Attribution</div>
+                  <div style={{fontSize:11,color:"#3a4a6a",marginTop:3}}>What markets gave you vs what you put in</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:9,color:"#3a4a6a",marginBottom:2}}>Return on invested capital</div>
+                  <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:gain>=0?"#10b981":"#ef4444"}}>{gain>=0?"+":""}{gainPct.toFixed(1)}%</div>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                <div style={{background:"#050810",borderRadius:10,padding:"14px",border:"1px solid #1a2035"}}>
+                  <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",marginBottom:5}}>You Put In</div>
+                  <div style={{fontSize:18,fontWeight:800,fontFamily:"monospace",color:"#7eb8ff"}}>{cr(totalInv)}</div>
+                  <div style={{fontSize:9,color:"#2a3a5a",marginTop:4}}>Eq {cr(eqInv)} · MF {cr(mfInv)}</div>
+                </div>
+                <div style={{background:"#050810",borderRadius:10,padding:"14px",border:"1px solid #1a2035"}}>
+                  <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",marginBottom:5}}>Worth Now</div>
+                  <div style={{fontSize:18,fontWeight:800,fontFamily:"monospace",color:"#e8eaf0"}}>{cr(totalCur)}</div>
+                  <div style={{fontSize:9,color:"#2a3a5a",marginTop:4}}>Eq {cr(eqVal)} · MF {cr(mfVal)}</div>
+                </div>
+                <div style={{background:gain>=0?"#071a0f":"#1a0707",borderRadius:10,padding:"14px",
+                  border:"1px solid "+(gain>=0?"#0d3320":"#331010")}}>
+                  <div style={{fontSize:9,fontWeight:700,textTransform:"uppercase",marginBottom:5,color:gain>=0?"#10b981":"#ef4444"}}>Markets Made</div>
+                  <div style={{fontSize:18,fontWeight:800,fontFamily:"monospace",color:gain>=0?"#10b981":"#ef4444"}}>{gain>=0?"+":""}{cr(gain)}</div>
+                  <div style={{fontSize:9,marginTop:4,color:gain>=0?"#10b98180":"#ef444480"}}>Pure appreciation</div>
+                </div>
+              </div>
+              {divTotal>0&&<div style={{display:"flex",justifyContent:"space-between",padding:"10px 14px",background:"#071a0f",borderRadius:9,border:"1px solid #0d3320",marginTop:10}}>
+                <span style={{fontSize:11,fontWeight:700,color:"#10b981"}}>+ Dividends received</span>
+                <span style={{fontSize:13,fontWeight:900,fontFamily:"monospace",color:"#10b981"}}>+{cr(divTotal)}</span>
+              </div>}
+            </div>
+          );
+        })()}
+
         {/* - LIVE PORTFOLIO PULSE - */}
         <div style={{background:"linear-gradient(135deg,#0d1a10 0%,#0a1a0d 100%)",border:"1px solid #1a3a20",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
