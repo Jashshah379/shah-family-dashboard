@@ -2645,9 +2645,16 @@ function DailyDigest({priceVersion, livePrices}) {
   const totalPPF  = ppf.reduce((s,p)=>s+(p.bal||0),0);
   const totalInv  = allH.reduce((s,h)=>s+(h.inv||0),0);
   const totalVal  = allH.reduce((s,h)=>s+(h.val||0),0);
-  /* Use live FAMILY_TOP val when prices are loaded; fall back to static m.stocks snapshot */
+  /* Use live MEMBER_HOLDINGS (same logic as Stock List) — avoids FAMILY_TOP double-counting */
+  const _mhLiveEq = (typeof MEMBER_HOLDINGS !== "undefined")
+    ? mems.filter(function(m){return m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY";})
+        .reduce(function(s,m){
+          var arr=MEMBER_HOLDINGS[m.holdingsRef]||[];
+          return s+arr.reduce(function(ss,h){return ss+(h&&h.val?h.val:0);},0);
+        },0)
+    : 0;
   const _staticEq = mems.reduce((s,m)=>s+(m.stocks||0),0);
-  const totalEq   = totalVal > _staticEq ? totalVal : _staticEq;
+  const totalEq   = _mhLiveEq > _staticEq * 0.5 ? _mhLiveEq : _staticEq;
   /* MTF borrowing — subtract broker loan to get real net wealth */
   const _mtfFunding = (typeof MTF_SUMMARY !== "undefined" && MTF_SUMMARY.total_funding) ? MTF_SUMMARY.total_funding : 0;
   const totalWealth = (totalEq - _mtfFunding) + totalMF + totalBank + totalPPF;
@@ -5651,10 +5658,16 @@ function FamilyApp() {
                   only the equity you put in (own_capital), so we swap funding→own_capital. */
   /* Live equity: read from FAMILY_TOP (patched in-place by useEffect) when prices loaded.
      priceVersion increments after each price patch, so this recomputes automatically. */
-  var _familyTop = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
-  var _liveEq = _familyTop.filter(function(h){return h&&h.val>0;}).reduce(function(s,h){return s+(h.val||0);},0);
+  /* Compute live equity exactly like Stock List: one holdingsRef per member, no double-counting */
+  var _liveEq = (typeof MEMBERS !== "undefined" && typeof MEMBER_HOLDINGS !== "undefined")
+    ? MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY";})
+        .reduce(function(s,m){
+          var arr = MEMBER_HOLDINGS[m.holdingsRef] || [];
+          return s + arr.reduce(function(ss,h){return ss+(h&&h.val?h.val:0);},0);
+        },0)
+    : 0;
   var _staticEq = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+(m.stocks||0);},0);
-  var _usingLive = _liveEq > _staticEq;
+  var _usingLive = _liveEq > _staticEq * 0.5; /* sanity: live must be at least half of static */
   const totalStocks = _usingLive ? _liveEq : _staticEq;
   const totalMFAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0), 0);
   const totalBankAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.bank||0), 0);
