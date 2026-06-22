@@ -264,6 +264,44 @@ function useLivePrices() {
 
   return {prices, indices, status, lastUpdate, refresh: fetchPrices};
 }
+
+function useIsMobile() {
+  const [mobile, setMobile] = React.useState(
+    typeof window !== "undefined" && window.innerWidth < 768
+  );
+  React.useEffect(function() {
+    var fn = function() { setMobile(window.innerWidth < 768); };
+    window.addEventListener("resize", fn);
+    return function() { window.removeEventListener("resize", fn); };
+  }, []);
+  return mobile;
+}
+
+function useLiveNAV() {
+  const WORKER = "https://noisy-sea-5936.jashshah379.workers.dev/nav";
+  const SCHEMES = "Aditya Birla Multicap Fund|Axis ELSS Tax Saver Fund (G)|Axis Large & Midcap Fund|Axis Long Term Equity|Bandhan Small Cap Fund Reg (G)|Baroda BNP Paribas ELSS Tax Saver Fund Reg (G)|Canara Robeco Bluechip|Canara Robeco ELSS Tax Saver Fund Reg (G)|Canara Robeco Equity Tax Saver Fund|Canara Robeco Large and Mid Cap Fund Reg (G)|Canara Robeco Multicap Fund|DSP ELSS Tax Saver Fund Reg (G)|Franklin India Opportunities Fund (G)|HDFC Children's Fund Regular Plan|HDFC Dividend Yield Fund Reg (G)|HDFC Mid Cap Fund - Direct Plan|ICICI Pru Balanced Advantage|ICICI Prudential Flexicap Fund|Invesco India Mid Cap Fund (G)|Kotak ELSS Tax Saver Fund (G)|Kotak Focused Equity Fund|Kotak Midcap Fund|Kotak Midcap Fund (G)|Kotak Multicap Fund|Kotak Multicap Fund (G)|Mirae Asset ELSS Tax Saver Fund Reg (G)|Mirae Asset Large Cap|Mirae Asset Multicap Fund|Mirae Asset Small Cap Fund|Nippon India Consumption Fund (G)|Nippon India Power & Infra|Parag Parikh ELSS Tax Saver Fund|Parag Parikh ELSS Tax Saver Fund (G)|Parag Parikh Flexi Cap Fund|Parag Parikh Flexi Cap Fund - Direct Plan|Parag Parikh Flexi Cap Fund Reg (G)|Praful Shah Hybrid|Quant Small Cap Fund";
+  const [navs, setNavs] = React.useState({});
+  const [navStatus, setNavStatus] = React.useState("idle");
+
+  React.useEffect(function() {
+    if (!SCHEMES) return;
+    setNavStatus("loading");
+    fetch(WORKER + "?schemes=" + encodeURIComponent(SCHEMES))
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.navs && Object.keys(d.navs).length > 0) {
+          setNavs(d.navs);
+          setNavStatus("live");
+          console.log("Live NAVs loaded:", Object.keys(d.navs).length);
+        } else {
+          setNavStatus("error");
+        }
+      })
+      .catch(function() { setNavStatus("error"); });
+  }, []);
+
+  return { navs, navStatus };
+}
 function useNewsFeed(stockNames) {
   /* ── News hook — fetches headlines for top holdings via Cloudflare Worker proxy ── */
   const NEWS_SERVER_URL = "https://noisy-sea-5936.jashshah379.workers.dev/news";
@@ -5552,6 +5590,37 @@ function FamilyApp() {
   const [hideValues, setHideValues] = React.useState(false);
   if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
+  const { navs: liveNavs, navStatus } = useLiveNAV();
+  const isMobile = useIsMobile();
+
+  /* Apply live NAVs to MEMBER_MF_FOLIOS + COIN_MF_ADDITIONAL */
+  React.useEffect(function() {
+    if (!liveNavs || Object.keys(liveNavs).length === 0) return;
+    var updated = 0;
+    var applyNav = function(folio) {
+      if (!folio || !folio.scheme) return;
+      var entry = liveNavs[folio.scheme];
+      if (!entry) return;
+      var units = folio.units || folio.qty || 0;
+      if (units <= 0) return;
+      folio.nav = entry.nav;
+      folio.navDate = entry.date;
+      folio.value = Math.round(entry.nav * units);
+      folio.isLiveNAV = true;
+      updated++;
+    };
+    if (typeof MEMBER_MF_FOLIOS !== "undefined") {
+      Object.values(MEMBER_MF_FOLIOS).forEach(function(folios) {
+        (folios||[]).forEach(applyNav);
+      });
+    }
+    if (typeof COIN_MF_ADDITIONAL !== "undefined") {
+      Object.entries(COIN_MF_ADDITIONAL).forEach(function(e) {
+        (e[1]||[]).forEach(applyNav);
+      });
+    }
+    console.log("Live NAVs applied to", updated, "MF folios");
+  }, [liveNavs]);
 
   /* ── Top 40 holdings by value, for news feed ── */
   const top40StockNames = React.useMemo(function() {
@@ -5811,6 +5880,93 @@ function FamilyApp() {
     {d:"Mar'25", val:80.2},{d:"Jun'25", val:82.0},{d:"Sep'25", val:83.5},
     {d:"Oct'25", val:84.2},{d:"Dec'25", val:85.5},{d:"Mar'26", val:85.2},{d:"May'26", val:85.9}
   ];
+
+  /* ─── Mobile shell ─────────────────────────────────────── */
+  if (isMobile) {
+    var _dayPL = 0;
+    MEMBERS.filter(function(m){return m&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef];}).forEach(function(m){
+      (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(function(h){ _dayPL += ((h.chg||0)*(h.qty||0)); });
+    });
+    var _isUp = _dayPL >= 0;
+    var _liveEqM = (function(){
+      var s=0;
+      MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef];}).forEach(function(m){
+        (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(function(h){s+=(h.val||0);});
+      });
+      return s||MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+(m.stocks||0);},0);
+    })();
+    var _liveMovers = (function(){
+      var seen={};
+      MEMBERS.filter(function(m){return m&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef];}).forEach(function(m){
+        (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(function(h){
+          if(!h.s||!h.chgPct||!h.val) return;
+          var k=(typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[h.s])?SYMBOL_MAP[h.s]:h.s;
+          if(!seen[k]||Math.abs(h.chgPct)>Math.abs(seen[k].chgPct)) seen[k]={s:k,chgPct:h.chgPct,dayPL:(h.chg||0)*(h.qty||0),val:h.val};
+        });
+      });
+      return Object.values(seen).sort(function(a,b){return Math.abs(b.chgPct)-Math.abs(a.chgPct);}).slice(0,8);
+    })();
+    return (
+      <div style={{background:"#070a16",minHeight:"100vh",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden"}}>
+        {/* Mobile header */}
+        <div style={{background:"linear-gradient(135deg,#0e1228,#070a16)",padding:"16px",borderBottom:"1px solid #1a2035"}}>
+          <div style={{fontSize:11,color:"#3a4a6a",fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:4}}>Shah Family Office</div>
+          <div style={{fontSize:28,fontWeight:900,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{cr(_liveEqM)}</div>
+          <div style={{fontSize:11,color:"#3a4a6a",marginTop:4}}>
+            {priceStatus==="live"&&<span style={{color:"#10b981"}}>● Live · </span>}
+            Equity across {MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).length} members
+          </div>
+        </div>
+        {/* Today P&L */}
+        <div style={{margin:"12px 16px",background:_isUp?"#071a0f":"#1a0707",border:"1px solid "+(_isUp?"#0d3320":"#331010"),borderRadius:14,padding:"16px"}}>
+          <div style={{fontSize:10,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Today's P&L</div>
+          <div style={{fontSize:32,fontWeight:900,color:_isUp?"#10b981":"#ef4444",fontFamily:"'JetBrains Mono',monospace"}}>{_isUp?"+":""}{cr(_dayPL)}</div>
+          <div style={{fontSize:11,color:_isUp?"#10b981":"#ef4444",marginTop:4}}>
+            {priceStatus==="live"?"Live prices":"Prices loading…"}
+          </div>
+        </div>
+        {/* Quick stats */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,margin:"0 16px 12px"}}>
+          {[
+            {l:"Mutual Funds", v:cr(MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+(m.mf||0);},0)), c:"#34d399"},
+            {l:"Bank", v:cr(MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+(m.bank||0);},0)), c:"#fbbf24"},
+          ].map(function(item){
+            return (
+              <div key={item.l} style={{background:"#0a0d1c",border:"1px solid #1a2035",borderRadius:10,padding:"12px"}}>
+                <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",marginBottom:4}}>{item.l}</div>
+                <div style={{fontSize:18,fontWeight:800,color:item.c,fontFamily:"monospace"}}>{item.v}</div>
+              </div>
+            );
+          })}
+        </div>
+        {/* Top movers */}
+        <div style={{margin:"0 16px 16px",background:"#0a0d1c",border:"1px solid #1a2035",borderRadius:14,overflow:"hidden"}}>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",fontSize:10,fontWeight:700,color:"#7eb8ff",letterSpacing:"0.06em",textTransform:"uppercase"}}>
+            {priceStatus==="live"?"📊 Top Movers Today":"Holdings"}
+          </div>
+          {_liveMovers.slice(0,8).map(function(m){
+            var up=m.chgPct>=0;
+            return (
+              <div key={m.s} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:"1px solid #0d1020"}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:"#e8eaf0"}}>{m.s}</div>
+                  <div style={{fontSize:10,color:"#3a4a6a",marginTop:2,fontFamily:"monospace"}}>{up?"+":""}{cr(m.dayPL)}</div>
+                </div>
+                <div style={{fontSize:15,fontWeight:800,color:up?"#10b981":"#ef4444",fontFamily:"monospace"}}>{up?"▲":"▼"}{Math.abs(m.chgPct).toFixed(2)}%</div>
+              </div>
+            );
+          })}
+          {_liveMovers.length===0&&(
+            <div style={{padding:"20px",textAlign:"center",color:"#3a4a6a",fontSize:12}}>Prices loading…</div>
+          )}
+        </div>
+        {/* Footer — switch to full view */}
+        <div style={{textAlign:"center",padding:"16px",color:"#3a4a6a",fontSize:11}}>
+          Rotate to landscape or visit on desktop for full dashboard
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw"}}>
