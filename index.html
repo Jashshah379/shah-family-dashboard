@@ -5818,9 +5818,13 @@ function FamilyApp() {
         if(!sym){return null;}
         /* gather all family holdings of this stock */
         const holdings = [];
+        /* Match by: exact sym, OR SYMBOL_MAP[h.s] === sym (display name → NSE code match) */
+        var _symLo = sym.toLowerCase();
         MEMBERS.filter(m=>!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef]).forEach(m=>{
           (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(h=>{
-            if((h.s||h.sym||"").toLowerCase()===sym.toLowerCase()){
+            var _hs = (h.s||h.sym||"").toLowerCase();
+            var _mapped = (typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[h.s||h.sym||""]) ? SYMBOL_MAP[h.s||h.sym||""].toLowerCase() : "";
+            if(_hs===_symLo || _mapped===_symLo){
               holdings.push({
                 member:m.n, color:m.c, initial:m.i,
                 custodian:h._custodian||m.holdingsRef,
@@ -6287,10 +6291,12 @@ function FamilyApp() {
               const stockMap={};
               MEMBERS.filter(m=>!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef]).forEach(m=>{
                 (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(h=>{
-                  const sym=(h.s||h.sym||"");
-                  if(!sym) return;
-                  const nseCode=(typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[sym])?SYMBOL_MAP[sym].toLowerCase():"";
-                  if(q.length>0 && !sym.toLowerCase().includes(q) && !nseCode.includes(q)) return;
+                  var _rawSym=(h.s||h.sym||"");
+                  if(!_rawSym) return;
+                  /* Normalise to NSE symbol */
+                  var sym=(typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[_rawSym])?SYMBOL_MAP[_rawSym]:_rawSym;
+                  const nseCode=sym.toLowerCase();
+                  if(q.length>0 && !_rawSym.toLowerCase().includes(q) && !nseCode.includes(q)) return;
                   const key=sym.toLowerCase();
                   if(!stockMap[key]) stockMap[key]={sym,holders:[],totalVal:0,totalInv:0,totalUnreal:0,totalQty:0,cmp:0,sector:"",mcap:"",desc:""};
                   const val=h.val||h.mkt||0,inv=h.inv||h.cost||0,unrl=h.unreal||h.pl||0,qty=h.qty||0,avg=h.avg||0,cmp=h.cmp||h.ltp||0;
