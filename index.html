@@ -216,33 +216,75 @@ function Cell(p){return null;} var Cell2=Cell;
 function LabelList(p){return null;}
 /* ── End recharts stub ── */
 
+/* ─── Market hours helper (IST = UTC+5:30) ─────────────────────────────── */
+function getNSEStatus() {
+  var now = new Date();
+  /* Convert to IST */
+  var utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  var ist = new Date(utc + 5.5 * 3600000);
+  var day = ist.getDay(); /* 0=Sun, 6=Sat */
+  var h = ist.getHours(), m = ist.getMinutes();
+  var mins = h * 60 + m; /* minutes since midnight IST */
+  var PRE  = 9 * 60;        /* 9:00 */
+  var OPEN = 9 * 60 + 15;   /* 9:15 */
+  var CLOSE = 15 * 60 + 30; /* 15:30 */
+  var POST  = 16 * 60;       /* 16:00 */
+
+  if (day === 0 || day === 6) {
+    /* Weekend — next open: Monday 9:15 */
+    var daysTo = day === 0 ? 1 : 2;
+    return { isOpen: false, label: "NSE Closed", sub: "Weekend", color: "#3a4a6a",
+      refreshSecs: null, nextLabel: "Opens Monday 9:15 AM" };
+  }
+  if (mins < PRE) {
+    var secsTo = (PRE - mins) * 60;
+    return { isOpen: false, label: "Pre-Market", sub: "Opens 9:15 AM", color: "#f0b429",
+      refreshSecs: secsTo, nextLabel: "Pre-market at 9:00 AM" };
+  }
+  if (mins >= PRE && mins < OPEN) {
+    return { isOpen: false, label: "Pre-Market", sub: "Opens " + (OPEN - mins) + " min", color: "#f0b429",
+      refreshSecs: 60, nextLabel: null };
+  }
+  if (mins >= OPEN && mins < CLOSE) {
+    return { isOpen: true, label: "NSE Open", sub: "Closes " + String(15).padStart(2,"0") + ":30",
+      color: "#10b981", refreshSecs: 3 * 60, nextLabel: null };
+  }
+  if (mins >= CLOSE && mins < POST) {
+    return { isOpen: false, label: "Closing Session", sub: "Post-market till 4 PM", color: "#f0b429",
+      refreshSecs: 5 * 60, nextLabel: null };
+  }
+  /* After 4 PM on weekday */
+  var daysToMon = day === 5 ? 3 : 1;
+  return { isOpen: false, label: "NSE Closed", sub: "Opens tomorrow 9:15 AM",
+    color: "#3a4a6a", refreshSecs: null,
+    nextLabel: day === 5 ? "Opens Monday 9:15 AM" : "Opens tomorrow 9:15 AM" };
+}
+
 function useLivePrices() {
-  /* ── Live price hook — fetches from Render.com backend ─────────────────── */
-  /* After deploying server.py, replace PRICE_SERVER_URL with your Render URL */
   const PRICE_SERVER_URL = "https://noisy-sea-5936.jashshah379.workers.dev/prices";
+  const REFRESH_SECS = 3 * 60; /* 3 minutes during market hours */
 
   const [prices, setPrices] = React.useState({});
   const [indices, setIndices] = React.useState({});
   const [status, setStatus] = React.useState("idle");
   const [lastUpdate, setLastUpdate] = React.useState(null);
+  const [countdown, setCountdown] = React.useState(REFRESH_SECS);
+  const [mktStatus, setMktStatus] = React.useState(getNSEStatus);
+  const timerRef = React.useRef(null);
 
-  const fetchPrices = React.useCallback(async () => {
+  const fetchPrices = React.useCallback(async function() {
     setStatus("loading");
     try {
       const res = await fetch(PRICE_SERVER_URL, {signal: AbortSignal.timeout(60000)});
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       const all = data.prices || {};
-
-      /* Split into indices and stocks */
-      const idx = {};
-      const stocks = {};
+      const idx = {}, stocks = {};
       const INDEX_KEYS = ["NIFTY50","SENSEX","BANKNIFTY","USDINR","GOLD","CRUDEOIL"];
-      Object.entries(all).forEach(function(entry) {
-        if (INDEX_KEYS.includes(entry[0])) idx[entry[0]] = entry[1];
-        else stocks[entry[0]] = entry[1];
+      Object.entries(all).forEach(function(e) {
+        if (INDEX_KEYS.includes(e[0])) idx[e[0]] = e[1];
+        else stocks[e[0]] = e[1];
       });
-
       setPrices(stocks);
       setIndices(idx);
       setLastUpdate(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}));
@@ -250,19 +292,32 @@ function useLivePrices() {
     } catch(e) {
       console.warn("Price fetch failed:", e.message);
       setStatus("error");
-      /* Auto-retry after 15s in case server was sleeping */
-      setTimeout(fetchPrices, 15000);
     }
   }, []);
 
+  /* Countdown + auto-refresh loop */
   React.useEffect(function() {
-    fetchPrices();
-    /* Refresh every 3 minutes */
-    var t = setInterval(fetchPrices, 3 * 60 * 1000);
-    return function() { clearInterval(t); };
+    fetchPrices(); /* initial fetch always */
+
+    var tick = setInterval(function() {
+      var mkt = getNSEStatus();
+      setMktStatus(mkt);
+      setCountdown(function(c) {
+        /* Only count down / refresh when market is open (or post-market) */
+        var refreshSecs = mkt.refreshSecs || (mkt.isOpen ? REFRESH_SECS : null);
+        if (refreshSecs === null) return REFRESH_SECS; /* frozen when market closed */
+        if (c <= 1) {
+          fetchPrices();
+          return refreshSecs;
+        }
+        return c - 1;
+      });
+    }, 1000);
+
+    return function() { clearInterval(tick); };
   }, [fetchPrices]);
 
-  return {prices, indices, status, lastUpdate, refresh: fetchPrices};
+  return {prices, indices, status, lastUpdate, refresh: fetchPrices, countdown, mktStatus};
 }
 
 function useIsMobile() {
@@ -372,50 +427,68 @@ function useMarketNews() {
 
 
 
-function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh }) {
+function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh, countdown, mktStatus }) {
   const total = prices ? Object.keys(prices).length : 0;
   const isLive = status === "live" && total > 0;
   const isLoading = status === "loading";
   const isError = status === "error";
+  const mkt = mktStatus || { isOpen: false, label: "NSE", sub: "", color: "#3a4a6a", refreshSecs: null };
+
+  /* Format countdown mm:ss */
+  var _cd = countdown || 0;
+  var _cdStr = Math.floor(_cd / 60) + ":" + String(_cd % 60).padStart(2, "0");
 
   return (
     <div style={{display:"flex",alignItems:"center",gap:10,padding:"5px 14px",
       background:"#070a16",borderBottom:"1px solid #1a2035",fontSize:10,flexWrap:"wrap"}}>
-      
-      {/* Status indicator */}
-      <div style={{display:"flex",alignItems:"center",gap:5}}>
-        {isLive&&<span style={{width:6,height:6,borderRadius:"50%",background:"#34d399",
-          display:"inline-block",boxShadow:"0 0 6px #34d399",animation:"pulse 2s infinite"}}/>}
-        {isLoading&&<span style={{width:6,height:6,borderRadius:"50%",background:"#f0b429",
-          display:"inline-block"}}/>}
-        {isError&&<span style={{width:6,height:6,borderRadius:"50%",background:"#f87171",
-          display:"inline-block"}}/>}
-        <span style={{color:isLive?"#34d399":isError?"#f87171":"#f0b429",fontWeight:600}}>
-          {isLive?"● LIVE":isLoading?"○ Updating...":isError?"● Offline":"○ Connecting..."}
-        </span>
+
+      {/* Market hours badge — prominent */}
+      <div style={{display:"flex",alignItems:"center",gap:5,padding:"2px 9px",
+        borderRadius:6,background:mkt.isOpen?"#071a0f":"#0d0d14",
+        border:"1px solid "+(mkt.isOpen?"#0d3320":"#1a2035")}}>
+        <span style={{width:5,height:5,borderRadius:"50%",background:mkt.color,
+          display:"inline-block",boxShadow:mkt.isOpen?"0 0 5px "+mkt.color:"none",
+          animation:mkt.isOpen?"pulse 2s infinite":"none"}}/>
+        <span style={{fontWeight:700,color:mkt.color}}>{mkt.label}</span>
+        {mkt.sub&&<span style={{color:"#3a4a6a",fontSize:9}}>{mkt.sub}</span>}
       </div>
 
-      {/* Stock count */}
-      {isLive&&<span style={{color:"#3a4a6a"}}>{total} stocks · {updatedCount||0} updated</span>}
-
-      {/* Last updated time */}
-      {lastUpdate&&(
-        <span style={{color:"#2a3a5a"}}>
-          Updated {lastUpdate}
+      {/* Price feed status */}
+      <div style={{display:"flex",alignItems:"center",gap:5}}>
+        {isLive&&<span style={{width:5,height:5,borderRadius:"50%",background:"#34d399",
+          display:"inline-block",animation:"pulse 2s infinite"}}/>}
+        {isLoading&&<span style={{width:5,height:5,borderRadius:"50%",background:"#f0b429",display:"inline-block"}}/>}
+        {isError&&<span style={{width:5,height:5,borderRadius:"50%",background:"#f87171",display:"inline-block"}}/>}
+        <span style={{color:isLive?"#34d399":isError?"#f87171":"#f0b429",fontWeight:600}}>
+          {isLive?"LIVE":isLoading?"Updating…":isError?"Offline":"Connecting…"}
         </span>
+        {isLive&&<span style={{color:"#2a3a5a"}}>{total} prices</span>}
+        {lastUpdate&&<span style={{color:"#2a3a5a"}}>· {lastUpdate}</span>}
+      </div>
+
+      {/* Countdown — only during market hours */}
+      {mkt.refreshSecs&&isLive&&(
+        <div style={{display:"flex",alignItems:"center",gap:4,color:"#2a3a5a"}}>
+          <span>↻ in</span>
+          <span style={{fontFamily:"monospace",fontWeight:700,
+            color:_cd<=30?"#f0b429":"#3a4a6a"}}>{_cdStr}</span>
+        </div>
+      )}
+      {!mkt.isOpen&&mkt.nextLabel&&(
+        <span style={{color:"#2a3a5a",fontSize:9}}>{mkt.nextLabel}</span>
       )}
 
-      {/* Spacer */}
       <div style={{flex:1}}/>
 
-      {/* Refresh button */}
+      {/* Manual refresh */}
       <button onClick={onRefresh} disabled={isLoading}
-        title="Refresh live prices"
+        title="Refresh live prices now"
         style={{display:"flex",alignItems:"center",gap:4,background:"none",
-          border:"1px solid #1d2545",borderRadius:6,color:isLoading?"#1d2545":"#7eb8ff",
+          border:"1px solid #1d2545",borderRadius:6,
+          color:isLoading?"#1d2545":"#7eb8ff",
           fontSize:9,padding:"3px 10px",cursor:isLoading?"not-allowed":"pointer",fontWeight:600}}>
         <span style={{display:"inline-block",animation:isLoading?"spin 1s linear infinite":"none"}}>↻</span>
-        {isLoading?"Fetching...":"Refresh Prices"}
+        {isLoading?"Fetching…":"Refresh"}
       </button>
 
       <style>{`
@@ -5589,7 +5662,7 @@ function MembersTab() {
 function FamilyApp() {
   const [hideValues, setHideValues] = React.useState(false);
   if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
-  const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices } = useLivePrices();
+  const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices, countdown: priceCountdown, mktStatus } = useLivePrices();
   const { navs: liveNavs, navStatus } = useLiveNAV();
   const isMobile = useIsMobile();
 
@@ -6935,7 +7008,7 @@ function FamilyApp() {
 
       {/* - OVERVIEW - */}
       {tab==="Home"&&<div>
-        <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices}/>
+        <LivePriceBar prices={livePrices} status={priceStatus} lastUpdate={priceLastUpdate} updatedCount={priceCount} onRefresh={fetchPrices} countdown={priceCountdown} mktStatus={mktStatus}/>
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
         
