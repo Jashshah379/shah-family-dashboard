@@ -16567,6 +16567,8 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
   const [holView, setHolView] = React.useState("holdings");
   const [srchHi, setSrchHi] = React.useState(0);   /* highlighted suggestion index */
   const [srchOpen, setSrchOpen] = React.useState(false); /* dropdown open */
+  const [srchTyped, setSrchTyped] = React.useState(""); /* what user actually typed */
+  const srchRef = React.useRef(null); /* input ref for setSelectionRange */
   const [colWidths, setColWidths] = React.useState({sym:220,totalQty:80,avgCmp:90,totalInv:100,totalVal:110,totalDayPL:90,totalPL:100,ret:80});
   const resizing = React.useRef(null);
   const [selectedStocks, setSelectedStocks] = React.useState({});
@@ -16857,50 +16859,79 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
 
       {/* Filters */}
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
-        {/* ── Search with inline autocomplete (ghost text) ── */}
+        {/* ── Search with native selection-based autocomplete ── */}
         {(function(){
-          var _top = filterStock.length > 0 ? (srchMatch(filterStock)[0]||null) : null;
-          /* Ghost suffix: what comes after the typed portion in the top suggestion */
-          var _ghost = (function(){
-            if (!_top || !filterStock) return "";
-            var lo = _top.toLowerCase();
-            var qi = lo.indexOf(filterStock.toLowerCase());
-            if (qi === 0) return _top.slice(filterStock.length); /* prefix match */
-            /* check display names for prefix match */
+          /* Top match for the current typed text */
+          var _matches = srchTyped.length > 0 ? srchMatch(srchTyped) : [];
+          var _top = _matches[srchHi] || _matches[0] || null;
+
+          /* Determine the autocomplete suffix shown as selection */
+          var _suffix = (function(){
+            if (!_top || !srchTyped) return "";
+            if (_top.toLowerCase().startsWith(srchTyped.toLowerCase()))
+              return _top.slice(srchTyped.length);
+            /* Try display names */
             var names = srchIndex[_top] ? [...srchIndex[_top]] : [];
             for (var n of names) {
-              if (n.startsWith(filterStock.toLowerCase())) {
-                return n.slice(filterStock.length); /* show ghost from display name */
-              }
+              if (n.startsWith(srchTyped.toLowerCase()))
+                return n.slice(srchTyped.length);
             }
-            return ""; /* not a prefix match — no ghost, only dropdown */
+            return "";
           })();
-          var accept = function() {
-            if (_top) { setFilterStock(_top); setSrchOpen(false); setSrchHi(0); }
+
+          /* Value shown in input = typed + suffix (suffix gets auto-selected) */
+          var _inputVal = srchTyped + _suffix;
+
+          /* After render: select only the suffix portion */
+          React.useEffect(function() {
+            var el = srchRef.current;
+            if (!el || !srchTyped || !_suffix) return;
+            /* Use rAF to set selection after browser paints */
+            var id = requestAnimationFrame(function() {
+              if (document.activeElement === el) {
+                el.setSelectionRange(srchTyped.length, _inputVal.length);
+              }
+            });
+            return function(){ cancelAnimationFrame(id); };
+          });
+
+          var accept = function(sym) {
+            var s = sym || _top;
+            if (s) {
+              setFilterStock(s);
+              setSrchTyped(s);
+              setSrchOpen(false);
+              setSrchHi(0);
+            }
           };
+
           return (
             <div style={{position:"relative",flexShrink:0}}>
-              {/* Ghost text layer — sits behind the real input */}
-              <div aria-hidden="true" style={{
-                position:"absolute",top:0,left:0,right:0,bottom:0,
-                display:"flex",alignItems:"center",
-                padding:"4px 9px",fontSize:11,fontFamily:"inherit",
-                pointerEvents:"none",whiteSpace:"nowrap",overflow:"hidden",
-                color:"transparent",userSelect:"none",
-              }}>
-                <span>{filterStock}</span>
-                <span style={{color:"#3a4a6a",opacity:0.7}}>{_ghost}</span>
-              </div>
               <input
-                value={filterStock}
-                onChange={function(e){setFilterStock(e.target.value);setSrchHi(0);setSrchOpen(true);}}
+                ref={srchRef}
+                value={_inputVal}
+                onChange={function(e){
+                  /* Only use the portion before any selection — that's what user typed */
+                  var el = e.target;
+                  var newVal = el.value;
+                  /* If selection was present and user typed a char, newVal replaced the suffix */
+                  /* Just use full newVal as the new typed text */
+                  setSrchTyped(newVal);
+                  setFilterStock(newVal);
+                  setSrchHi(0);
+                  setSrchOpen(true);
+                }}
                 onKeyDown={function(e){
-                  var matched = filterStock.length > 0 ? srchMatch(filterStock).slice(0,8) : [];
-                  if(e.key==="Enter"||e.key==="Tab"||(e.key==="ArrowRight"&&e.target.selectionEnd===filterStock.length)){
-                    if(_ghost&&e.key!=="Tab") e.preventDefault();
-                    if(e.key==="Tab"&&!_ghost) return; /* let Tab work normally if no ghost */
-                    if(e.key==="Tab") e.preventDefault();
+                  var matched = srchTyped.length > 0 ? srchMatch(srchTyped).slice(0,8) : [];
+                  if(e.key==="Enter"){
+                    e.preventDefault();
                     accept();
+                  } else if(e.key==="Tab"){
+                    if(_suffix){ e.preventDefault(); accept(); }
+                    /* else let Tab move focus normally */
+                  } else if(e.key==="ArrowRight"){
+                    /* accept if cursor at end of typed text (in the suffix) */
+                    if(_suffix){ e.preventDefault(); accept(); }
                   } else if(e.key==="ArrowDown"){
                     e.preventDefault();
                     setSrchOpen(true);
@@ -16909,19 +16940,19 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                     e.preventDefault();
                     setSrchHi(function(i){return Math.max(i-1,0);});
                   } else if(e.key==="Escape"){
-                    setFilterStock(""); setSrchOpen(false); setSrchHi(0);
+                    setSrchTyped(""); setFilterStock(""); setSrchOpen(false); setSrchHi(0);
                   } else {
                     setSrchOpen(true);
                   }
                 }}
                 onFocus={function(){setSrchOpen(true);setSrchHi(0);}}
                 onBlur={function(){setTimeout(function(){setSrchOpen(false);},150);}}
-                placeholder={filterStock?"":"Search stock…"}
-                style={{...selStyle,width:180,outline:"none",background:"transparent",position:"relative"}}
+                placeholder="Search stock…"
+                style={{...selStyle,width:180,outline:"none"}}
               />
-              {/* Dropdown list */}
-              {srchOpen&&filterStock.length>0&&(function(){
-                var matched = srchMatch(filterStock).slice(0,8);
+              {/* Dropdown */}
+              {srchOpen&&srchTyped.length>0&&(function(){
+                var matched = srchMatch(srchTyped).slice(0,8);
                 if(!matched.length) return null;
                 return (
                   <div style={{position:"absolute",top:"calc(100% + 3px)",left:0,zIndex:9999,
@@ -16930,7 +16961,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                     {matched.map(function(s,i){
                       return (
                         <div key={s}
-                          onMouseDown={function(e){e.preventDefault();setFilterStock(s);setSrchOpen(false);setSrchHi(0);}}
+                          onMouseDown={function(e){e.preventDefault();accept(s);}}
                           onMouseEnter={function(){setSrchHi(i);}}
                           style={{padding:"6px 12px",cursor:"pointer",
                             background:i===srchHi?"#1e3a5f":"transparent",
@@ -16939,7 +16970,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                           {srchIndex[s]&&(function(){
                             var names=[...srchIndex[s]].filter(function(n){return n!==s.toLowerCase();});
                             if(!names.length) return null;
-                            var q=filterStock.toLowerCase();
+                            var q=srchTyped.toLowerCase();
                             var best=names.find(function(n){return n.includes(q);})||names[0];
                             return <div style={{fontSize:9,color:i===srchHi?"#93c5fd":"#3a4a6a",marginTop:1,textTransform:"capitalize"}}>{best}</div>;
                           })()}
