@@ -2640,13 +2640,15 @@ function DailyDigest({priceVersion, livePrices}) {
   const ppf   = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]);
   const mfReg = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
 
-  const totalEq   = mems.reduce((s,m)=>s+(m.stocks||0),0);
   const totalMF   = mems.reduce((s,m)=>s+(m.mf||0),0);
   const totalBank = bank.reduce((s,b)=>s+(b.b||0),0);
   const totalPPF  = ppf.reduce((s,p)=>s+(p.bal||0),0);
-  const totalWealth = totalEq+totalMF+totalBank+totalPPF;
   const totalInv  = allH.reduce((s,h)=>s+(h.inv||0),0);
   const totalVal  = allH.reduce((s,h)=>s+(h.val||0),0);
+  /* Use live FAMILY_TOP val when prices are loaded; fall back to static m.stocks snapshot */
+  const _staticEq = mems.reduce((s,m)=>s+(m.stocks||0),0);
+  const totalEq   = totalVal > _staticEq ? totalVal : _staticEq;
+  const totalWealth = totalEq+totalMF+totalBank+totalPPF;
   const totalPL   = totalVal-totalInv;
   const retPct    = totalInv>0?(totalPL/totalInv*100):0;
   const totalDayPL = allH.reduce((s,h)=>s+(h.dayPL||0),0);
@@ -5641,7 +5643,13 @@ function FamilyApp() {
                   PLUS own capital actually deployed into MTF positions.
                   This matches the "real money" view: you don't own the borrowed shares' full value,
                   only the equity you put in (own_capital), so we swap funding→own_capital. */
-  const totalStocks = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0), 0);
+  /* Live equity: read from FAMILY_TOP (patched in-place by useEffect) when prices loaded.
+     priceVersion increments after each price patch, so this recomputes automatically. */
+  var _familyTop = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
+  var _liveEq = _familyTop.filter(function(h){return h&&h.val>0;}).reduce(function(s,h){return s+(h.val||0);},0);
+  var _staticEq = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+(m.stocks||0);},0);
+  var _usingLive = _liveEq > _staticEq;
+  const totalStocks = _usingLive ? _liveEq : _staticEq;
   const totalMFAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0), 0);
   const totalBankAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.bank||0), 0);
   const totalPPFAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.ppf||0), 0);
@@ -6665,7 +6673,7 @@ function FamilyApp() {
         <DailyDigest priceVersion={priceVersion} livePrices={livePrices}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
           <M label="Grand Total" value={cr(grandTotal)} sub="All assets · May 29 '26"/>
-          <M label="Stock Portfolios" value={cr(totalStocks)} sub="May 29 '26 snapshot" color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
+          <M label="Stock Portfolios" value={cr(totalStocks)} sub={_usingLive?"Live ("+priceVersion+" updates)":"May 29 '26 snapshot"} color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
           <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
           <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
