@@ -5772,6 +5772,8 @@ function FamilyApp() {
   const [bSort,setBSort]=React.useState("b");
   const [searchQ,setSearchQ]=React.useState("");
   const [searchOpen,setSearchOpen]=React.useState(false);
+  const [searchTyped,setSearchTyped]=React.useState(""); /* what user actually typed */
+  const searchInputRef=React.useRef(null); /* for setSelectionRange */
   const [selMFMember,setSelMFMember]=React.useState(null);
   const [mfSort,setMfSort]=React.useState("val");
   const [mfDir2,setMfDir2]=React.useState(-1);
@@ -6209,14 +6211,77 @@ function FamilyApp() {
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           {/* Global search */}
           <div style={{position:"relative"}}>
-            <input value={searchQ}
-              onChange={e=>{setSearchQ(e.target.value);setSearchOpen(e.target.value.length>1);}}
-              onBlur={()=>setTimeout(()=>setSearchOpen(false),300)}
-              placeholder="⌕  Search any stock across all accounts…"
-              style={{background:"linear-gradient(135deg,#0e1228 0%,#0b0f20 100%)",border:"1px solid "+(searchOpen?"#3a6abf":"#1e2848"),
-                borderRadius:12,padding:"8px 16px",color:"#c8d0e8",fontSize:12.5,
-                outline:"none",width:320,transition:"all .25s cubic-bezier(.4,0,.2,1)",
-                boxShadow:searchOpen?"0 0 0 3px #1e3a7a44, 0 4px 20px #00000044":"inset 0 1px 3px #00000033"}}/>
+            {/* ── Global search with inline autocomplete ── */}
+            {(function(){
+              /* Build top autocomplete suggestion from all stock names */
+              var _q = searchTyped.toLowerCase();
+              var _topSym = null;
+              var _topDisplay = null;
+              if (_q.length > 0) {
+                /* Check against all MEMBER_HOLDINGS stock display names and NSE codes */
+                var _seen = {};
+                MEMBERS.filter(function(m){return m&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef];}).forEach(function(m){
+                  (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(function(h){
+                    var s = h.s||h.sym||"";
+                    if (!s || _seen[s]) return;
+                    _seen[s] = true;
+                    var nseSym = (typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[s]) ? SYMBOL_MAP[s] : s;
+                    /* Prefix match on display name */
+                    if (!_topSym && s.toLowerCase().startsWith(_q)) { _topSym=nseSym; _topDisplay=s; }
+                    /* Prefix match on NSE symbol */
+                    if (!_topSym && nseSym.toLowerCase().startsWith(_q)) { _topSym=nseSym; _topDisplay=nseSym; }
+                  });
+                });
+              }
+              /* Suffix to show as selection */
+              var _suffix = (function(){
+                if (!_topDisplay || !searchTyped) return "";
+                if (_topDisplay.toLowerCase().startsWith(_q)) return _topDisplay.slice(searchTyped.length);
+                if (_topSym && _topSym.toLowerCase().startsWith(_q)) return _topSym.slice(searchTyped.length);
+                return "";
+              })();
+              var _inputVal = searchTyped + _suffix;
+
+              /* Apply selection after render */
+              React.useEffect(function(){
+                var el = searchInputRef.current;
+                if (!el || !searchTyped || !_suffix) return;
+                var id = requestAnimationFrame(function(){
+                  if (document.activeElement === el) {
+                    el.setSelectionRange(searchTyped.length, _inputVal.length);
+                  }
+                });
+                return function(){ cancelAnimationFrame(id); };
+              });
+
+              return (
+                <input ref={searchInputRef}
+                  value={_inputVal}
+                  onChange={function(e){
+                    var v = e.target.value;
+                    setSearchTyped(v);
+                    setSearchQ(v);
+                    setSearchOpen(v.length>1);
+                  }}
+                  onKeyDown={function(e){
+                    if(e.key==="Enter"){
+                      e.preventDefault();
+                      if(_topSym){ setStockDetail(_topSym); setSearchQ(""); setSearchTyped(""); setSearchOpen(false); }
+                    } else if(e.key==="Tab"||e.key==="ArrowRight"){
+                      if(_suffix){ e.preventDefault(); setSearchTyped(_topDisplay||_topSym||searchTyped); setSearchQ(_topDisplay||_topSym||searchQ); }
+                    } else if(e.key==="Escape"){
+                      setSearchQ(""); setSearchTyped(""); setSearchOpen(false);
+                    }
+                  }}
+                  onFocus={function(){if(searchTyped.length>1) setSearchOpen(true);}}
+                  onBlur={function(){setTimeout(function(){setSearchOpen(false);},300);}}
+                  placeholder="⌕  Search any stock across all accounts…"
+                  style={{background:"linear-gradient(135deg,#0e1228 0%,#0b0f20 100%)",border:"1px solid "+(searchOpen?"#3a6abf":"#1e2848"),
+                    borderRadius:12,padding:"8px 16px",color:"#c8d0e8",fontSize:12.5,
+                    outline:"none",width:320,transition:"all .25s cubic-bezier(.4,0,.2,1)",
+                    boxShadow:searchOpen?"0 0 0 3px #1e3a7a44, 0 4px 20px #00000044":"inset 0 1px 3px #00000033"}}/>
+              );
+            })()}
             {searchOpen&&(()=>{
               const q=searchQ.toLowerCase();
               const stockMap={};
