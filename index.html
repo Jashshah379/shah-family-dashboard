@@ -5537,6 +5537,8 @@ function FamilyApp() {
   const { items: marketNewsItems, status: marketNewsStatus, lastUpdate: marketNewsLastUpdate, refresh: refreshMarketNews } = useMarketNews();
 
   /* ── Patch live prices into holdings data ─────────────────────────────── */
+  const [manualCmp, setManualCmp] = React.useState({});
+
   React.useEffect(function() {
     if (!livePrices || Object.keys(livePrices).length === 0) return;
     var symMap = typeof SYMBOL_MAP !== "undefined" ? SYMBOL_MAP : {};
@@ -5649,22 +5651,18 @@ function FamilyApp() {
   const [showCoverage, setShowCoverage] = React.useState(false);
   const [coverageView, setCoverageView] = React.useState("stale"); /* "live" | "stale" */
   var NON_EQUITY_SYMBOLS = new Set([
-  "BILNCD2021-N3","GOLDBEES-E","GOLDCASE-E","JUNIORBEES","NIFTYBEES","PSUBNKBEES",
-  "LIQUIDBEES-F","SGBDE31III-GB","SGBFEB32IV-GB","SGBJUN31I-GB","INE2J8701016",
-  "IKS","LENSKART","MEESHO","HERIT-RE-R","SKFINDUS","PARTYCRUS-SM","SAJHOTELS-SM",
-  "PREMIERENE-BL","GSCLCEMENT6","VIPCLOTHNG-T","TATASTLBSL-T","LTM",
-  "Cash and Equivalent","Dividend / Interest receivable",
-  "PARAG PARIKH FLEXI CAP FUND - DIRECT PLA","HDFC MID CAP FUND - DIRECT PLAN",
-  "DSP BSE Liquid ETF","Liquid BeES",
-  "PFC NCD 7.15%","BALLARPUR LST PEN",
-]);
+    "BILNCD2021-N3","GOLDBEES-E","GOLDCASE-E","JUNIORBEES","NIFTYBEES","PSUBNKBEES",
+    "LIQUIDBEES-F","SGBDE31III-GB","SGBFEB32IV-GB","SGBJUN31I-GB","INE2J8701016",
+    "IKS","LENSKART","MEESHO","HERIT-RE-R","SKFINDUS","PARTYCRUS-SM","SAJHOTELS-SM",
+    "PREMIERENE-BL","GSCLCEMENT6","VIPCLOTHNG-T","TATASTLBSL-T","LTM",
+  ]);
 
   const priceCoverage = React.useMemo(function() {
     var all = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
     var unique = {};
     all.forEach(function(h) {
       if (!h || !h.s) return;
-      if (NON_EQUITY_SYMBOLS.has(h.s)) return; /* skip bonds/ETFs/pre-IPO */
+      if (NON_EQUITY_SYMBOLS.has(h.s)) return;
       if (!unique[h.s]) unique[h.s] = {sym: h.s, isLive: false, val: 0, cmp: 0, chgPct: null};
       if (h.isLive) {
         unique[h.s].isLive = true;
@@ -5688,7 +5686,6 @@ function FamilyApp() {
     };
   }, [priceVersion]);
 
-  const [manualCmp, setManualCmp] = React.useState({});
   const [showManualCmp, setShowManualCmp] = React.useState(false);
   const [manualInput, setManualInput] = React.useState({sym:"", price:""});
   /* Stocks missing CMP */
@@ -13574,7 +13571,6 @@ const SYMBOL_MAP = {
   "Ola Electric Mobility": "OLAELEC",
   "Olectra Greentech": "OLECTRA",
   "Olectra Greentec": "OLECTRA",
-  "Greaves Cotton": "GREAVESCOT",
   "Dredging Corporation of India": "DCI",
   "Container Corporation of India": "CONCOR",
   "Engineers India": "ENGINERSIN",
@@ -13604,6 +13600,8 @@ const SYMBOL_MAP = {
   "L&T Technology Services": "LTTS",
   "Premier Energies": "PREMIERENE",
   "Premier Energies Ltd": "PREMIERENE",
+  "Sagility": "SAGILITY",
+  "Sagility India": "SAGILITY",
 
 };
 
