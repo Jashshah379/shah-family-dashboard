@@ -6706,17 +6706,11 @@ function FamilyApp() {
         <GlobalIndicesWidget/>
         
         <DailyDigest priceVersion={priceVersion} livePrices={livePrices} onStockClick={function(sym){setTab("Stock List");setJumpStock(sym);}}/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(138px,1fr))",gap:9,marginBottom:14}}>
-          <M label="Net Family Wealth" value={cr(netWealth)} sub="Equity (ex-MTF) + MF + Bank + PPF" color="#7eb8ff"/>
-          <M label="Gross Assets" value={cr(grandTotal)} sub="Includes MTF-funded positions" color="#a78bfa"/>
-          <M label="Stock Portfolios" value={cr(totalStocks)} sub={_usingLive?"Live · all equity incl MTF":"Snapshot (prices loading…)"} color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
-          <M label="Mutual Funds" value={cr(totalMF)} sub="10 members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
-          <M label="Bank Balances" value={cr(totalBank)} sub="15 May 2026" color="#fbbf24" onClick={()=>setTab("Bank")}/>
-          <M label="Family Equity P/L" value={cr(FAMILY_EQ_PL)} sub="Unrealised" color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
-          <M label="CAS Peak" value="₹88.1 Cr" sub="Jan '25 · CDSL+NSDL+MF" color="#a78bfa"/>
-          <M label="Net Capital (Own)" value={cr(MTF_SUMMARY.own_capital)} sub="Invested in MTF positions · live" color="#c084fc" onClick={()=>setTab("MTF")}/>
-          <M label="MTF Borrowing" value={cr(MTF_SUMMARY.total_funding)} sub={MTF_SUMMARY.accounts.length+" account"+(MTF_SUMMARY.accounts.length!==1?"s":"")+" · live"} color="#f87171" onClick={()=>setTab("MTF")}/>
-          <M label="Portfolio ex-MTF" value={cr(totalStocks-MTF_SUMMARY.total_funding)} sub="Total equity minus MTF value" color="#34d399" onClick={()=>setTab("MTF")}/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
+          <M label="Equity" value={cr(totalStocks)} sub={_usingLive?"Live prices":"Loading…"} color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
+          <M label="Mutual Funds" value={cr(totalMF)} sub="All members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
+          <M label="Bank" value={cr(totalBank)} sub="All accounts" color="#fbbf24" onClick={()=>setTab("Bank")}/>
+          <M label="Unrealised P/L" value={cr(FAMILY_EQ_PL)} sub={FAMILY_EQ_PL>=0?"Equity gain":"Equity loss"} color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
         </div>
         {/* - LIVE PORTFOLIO PULSE - */}
         <div style={{background:"linear-gradient(135deg,#0d1a10 0%,#0a1a0d 100%)",border:"1px solid #1a3a20",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
