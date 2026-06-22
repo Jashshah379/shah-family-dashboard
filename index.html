@@ -474,9 +474,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh, cou
             color:_cd<=30?"#f0b429":"#3a4a6a"}}>{_cdStr}</span>
         </div>
       )}
-      {!mkt.isOpen&&mkt.nextLabel&&(
-        <span style={{color:"#2a3a5a",fontSize:9}}>{mkt.nextLabel}</span>
-      )}
+
 
       <div style={{flex:1}}/>
 
@@ -2774,6 +2772,44 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const retPct    = totalInv>0?(totalPL/totalInv*100):0;
   const totalDayPL = allH.reduce((s,h)=>s+(h.dayPL||0),0);
   const hasLive   = allH.some(h=>h.dayPL!=null&&h.dayPL!==0);
+
+  /* ── Wealth Attribution ─────────────────────────────────────────
+     Answers: "How much of my portfolio growth is markets vs fresh capital?"
+     Equity: sum from MEMBER_HOLDINGS (live-patched, no FAMILY_TOP dupes)
+     MF: sum from MEMBER_MF_FOLIOS + COIN_MF_ADDITIONAL                   */
+  const wealthAttr = React.useMemo(function() {
+    /* Equity — same source as Stock List to avoid double-counting */
+    var eqVal=0, eqInv=0;
+    mems.filter(function(m){return m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&typeof MEMBER_HOLDINGS!=="undefined"&&MEMBER_HOLDINGS[m.holdingsRef];})
+      .forEach(function(m){
+        (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(function(h){
+          eqVal += (h.val||0);
+          eqInv += (h.inv||0);
+        });
+      });
+    /* Mutual Funds */
+    var mfVal=0, mfInv=0;
+    if (typeof MEMBER_MF_FOLIOS!=="undefined") {
+      Object.values(MEMBER_MF_FOLIOS).forEach(function(folios){
+        (folios||[]).forEach(function(f){ mfVal+=(f.value||0); mfInv+=(f.invested||0); });
+      });
+    }
+    if (typeof COIN_MF_ADDITIONAL!=="undefined") {
+      Object.entries(COIN_MF_ADDITIONAL).forEach(function(e){
+        (e[1]||[]).forEach(function(f){ mfVal+=(f.value||0); mfInv+=(f.invested||0); });
+      });
+    }
+    /* Dividends received */
+    var divTotal = (typeof LEDGER_SEED_DATA!=="undefined")
+      ? LEDGER_SEED_DATA.filter(function(e){return e.type==="dividend";}).reduce(function(s,e){return s+(e.amount||0);},0)
+      : 0;
+    var totalInvested = eqInv + mfInv;
+    var totalCurrent  = eqVal + mfVal;
+    var marketGain    = totalCurrent - totalInvested;
+    var totalCreated  = marketGain + divTotal;
+    var gainPct       = totalInvested > 0 ? (marketGain / totalInvested * 100) : 0;
+    return { eqVal, eqInv, mfVal, mfInv, divTotal, totalInvested, totalCurrent, marketGain, totalCreated, gainPct };
+  }, [mems, totalVal]);
 
   /* Top 5 performers and losers — uses live chgPct (today) when available */
   const hasLivePct = allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
@@ -17372,6 +17408,101 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
         );
       })()}
+
+      {/* ── Wealth Attribution Card ── */}
+      {wealthAttr.totalInvested > 0 && (
+        <div style={{background:"linear-gradient(135deg,#0a0f1f 0%,#070a16 100%)",
+          border:"1px solid #1e2848",borderRadius:14,padding:"16px 20px",
+          marginBottom:14}}>
+          {/* Header */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <div>
+              <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",letterSpacing:"0.08em",textTransform:"uppercase"}}>
+                Wealth Attribution
+              </div>
+              <div style={{fontSize:11,color:"#2a3a5a",marginTop:2}}>
+                Current value vs capital deployed · equity + MF
+              </div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:9,color:"#3a4a6a"}}>Return on invested capital</div>
+              <div style={{fontSize:20,fontWeight:900,fontFamily:"monospace",
+                color:wealthAttr.gainPct>=0?"#10b981":"#ef4444"}}>
+                {wealthAttr.gainPct>=0?"+":""}{wealthAttr.gainPct.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+
+          {/* Three columns */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:14}}>
+            {/* Invested */}
+            <div style={{background:"#070a16",borderRadius:10,padding:"12px 14px",border:"1px solid #1a2035"}}>
+              <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>
+                Total Invested
+              </div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#7eb8ff"}}>
+                {fC(wealthAttr.totalInvested)}
+              </div>
+              <div style={{fontSize:9,color:"#2a3a5a",marginTop:3}}>
+                Equity {fC(wealthAttr.eqInv)} · MF {fC(wealthAttr.mfInv)}
+              </div>
+            </div>
+            {/* Current */}
+            <div style={{background:"#070a16",borderRadius:10,padding:"12px 14px",border:"1px solid #1a2035"}}>
+              <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>
+                Current Value
+              </div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#e8eaf0"}}>
+                {fC(wealthAttr.totalCurrent)}
+              </div>
+              <div style={{fontSize:9,color:"#2a3a5a",marginTop:3}}>
+                Equity {fC(wealthAttr.eqVal)} · MF {fC(wealthAttr.mfVal)}
+              </div>
+            </div>
+            {/* Market gain */}
+            <div style={{background:wealthAttr.marketGain>=0?"#071a0f":"#1a0707",
+              borderRadius:10,padding:"12px 14px",
+              border:"1px solid "+(wealthAttr.marketGain>=0?"#0d3320":"#331010")}}>
+              <div style={{fontSize:9,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4,
+                color:wealthAttr.marketGain>=0?"#10b981":"#ef4444"}}>
+                Markets Made
+              </div>
+              <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",
+                color:wealthAttr.marketGain>=0?"#10b981":"#ef4444"}}>
+                {wealthAttr.marketGain>=0?"+":""}{fC(wealthAttr.marketGain)}
+              </div>
+              <div style={{fontSize:9,marginTop:3,color:wealthAttr.marketGain>=0?"#0d5c30":"#5c1a1a"}}>
+                Pure appreciation · not from deposits
+              </div>
+            </div>
+          </div>
+
+          {/* Dividends row */}
+          {wealthAttr.divTotal > 0 && (
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+              padding:"8px 12px",background:"#080c18",borderRadius:8,border:"1px solid #0f1830"}}>
+              <div style={{fontSize:10,color:"#3a4a6a"}}>
+                + Dividends received (tracked Sushil accounts)
+              </div>
+              <div style={{fontSize:12,fontWeight:700,fontFamily:"monospace",color:"#7eb8ff"}}>
+                +{fC(wealthAttr.divTotal)}
+              </div>
+            </div>
+          )}
+          {wealthAttr.divTotal > 0 && (
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+              padding:"8px 12px",background:"#071a0f",borderRadius:8,marginTop:6,
+              border:"1px solid #0d3320"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#10b981"}}>
+                Total Wealth Created (appreciation + dividends)
+              </div>
+              <div style={{fontSize:14,fontWeight:900,fontFamily:"monospace",color:"#10b981"}}>
+                +{fC(wealthAttr.totalCreated)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* - CUSTODIAN SUMMARY CARDS - */}
       {groupBy==="custodian"&&custGroups&&(
