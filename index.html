@@ -5656,8 +5656,7 @@ function FamilyApp() {
     "IKS","LENSKART","MEESHO","HERIT-RE-R","SKFINDUS","PARTYCRUS-SM","SAJHOTELS-SM",
     "PREMIERENE-BL","GSCLCEMENT6","VIPCLOTHNG-T","TATASTLBSL-T","LTM",
     "PFC NCD 7.15%","DSP BSE Liquid ETF","Cash and Equivalent",
-    "Dividend / Interest receivable","PARAG PARIKH FLEXI CAP FUND - DIRECT PLA",
-    "HDFC MID CAP FUND - DIRECT PLAN","Liquid BeES","Pine Labs",
+    "Dividend / Interest receivable","Pine Labs",
   ]);
 
   const priceCoverage = React.useMemo(function() {
@@ -16582,7 +16581,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           member:    m.n,
           memberCol: m.c,
           memberI:   m.i,
-          custodian,          // exact custodian for this row
+          custodian,
           ref,
           qty:       h.qty,
           avg:       h.avg || null,
@@ -16591,6 +16590,10 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           inv:       h.inv || null,
           pl,
           plPct,
+          chg:       h.chg || 0,
+          chgPct:    h.chgPct != null ? h.chgPct : null,
+          dayPL:     Math.round((h.chg || 0) * (h.qty || 0)),
+          isLive:    h.isLive || false,
           sector:    h.sector || null,
           delisted:  h.delisted || false,
           mtf:       h.mtf || false,
@@ -16635,7 +16638,7 @@ function AllHoldingsTab({livePrices, priceStatus}) {
     const map = {};
     filtered.forEach(r => {
       const key = r.sym;
-      if(!map[key]) map[key] = {sym:key, rows:[], totalVal:0, totalInv:0, totalPL:0, totalQty:0, members:new Set(), custodians:new Set(), avgCmp:0, cmpCount:0, isDelisted:false, mtfQty:0};
+      if(!map[key]) map[key] = {sym:key, rows:[], totalVal:0, totalInv:0, totalPL:0, totalQty:0, totalDayPL:0, chgPct:null, members:new Set(), custodians:new Set(), avgCmp:0, cmpCount:0, isDelisted:false, mtfQty:0};
       map[key].rows.push(r);
       map[key].totalVal += (r.val||0);
       map[key].totalInv += (r.inv||0);
@@ -16646,6 +16649,11 @@ function AllHoldingsTab({livePrices, priceStatus}) {
       if(r.mtf) map[key].mtfQty += (r.mtfQty||r.qty||0);
       map[key].members.add(r.member);
       map[key].custodians.add(r.custodian);
+      map[key].totalDayPL += (r.dayPL || 0);
+      /* Use first live chgPct as representative for whole stock */
+      if (r.isLive && r.chgPct != null && map[key].chgPct == null) {
+        map[key].chgPct = r.chgPct;
+      }
     });
     Object.values(map).forEach(g => {
       if(g.cmpCount > 0) g.avgCmp = g.avgCmp / g.cmpCount;
@@ -16759,6 +16767,68 @@ function AllHoldingsTab({livePrices, priceStatus}) {
           </span>}
         </div>
       </div>
+
+      {/* ── Day P&L Summary Banner ── */}
+      {(function(){
+        var liveRows = filtered.filter(function(r){ return r.isLive && r.chgPct != null; });
+        if (liveRows.length === 0) return null;
+        var totalDayPL = filtered.reduce(function(s,r){ return s + (r.dayPL||0); }, 0);
+        var totalVal   = filtered.reduce(function(s,r){ return s + (r.val||0); }, 0);
+        var dayPct     = totalVal > 0 ? (totalDayPL / totalVal * 100) : 0;
+        var isUp       = totalDayPL >= 0;
+        var liveCount  = new Set(liveRows.map(function(r){ return r.sym; })).size;
+        /* Top movers */
+        var symMap = {};
+        filtered.forEach(function(r){
+          if (!r.isLive || r.chgPct == null) return;
+          if (!symMap[r.sym]) symMap[r.sym] = {sym:r.sym, dayPL:0, chgPct:r.chgPct, val:0};
+          symMap[r.sym].dayPL += (r.dayPL||0);
+          symMap[r.sym].val   += (r.val||0);
+        });
+        var movers = Object.values(symMap).sort(function(a,b){ return Math.abs(b.dayPL)-Math.abs(a.dayPL); }).slice(0,5);
+        return (
+          <div style={{background:isUp?"linear-gradient(135deg,#071a0f 0%,#05130a 100%)":"linear-gradient(135deg,#1a0707 0%,#130505 100%)",
+            border:"1px solid "+(isUp?"#0d3320":"#331010"),borderRadius:14,padding:"14px 18px",
+            marginBottom:14,display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
+            {/* Main Day P&L */}
+            <div style={{display:"flex",flexDirection:"column",minWidth:150}}>
+              <div style={{fontSize:10,color:"#3a4a6a",fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:3}}>
+                Today's P&L · {liveCount} live stocks
+              </div>
+              <div style={{fontSize:26,fontWeight:900,color:isUp?"#10b981":"#ef4444",fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>
+                {isUp?"+":""}{fC(totalDayPL)}
+              </div>
+              <div style={{fontSize:12,color:isUp?"#10b981":"#ef4444",fontWeight:700,marginTop:3,fontFamily:"monospace"}}>
+                {isUp?"▲":"▼"} {Math.abs(dayPct).toFixed(2)}% on portfolio
+              </div>
+            </div>
+            {/* Divider */}
+            <div style={{width:1,height:50,background:"#1a2535",flexShrink:0}}/>
+            {/* Top movers */}
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{fontSize:9,color:"#3a4a6a",fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:6}}>Top movers today</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {movers.map(function(m){
+                  var up = m.dayPL >= 0;
+                  return (
+                    <div key={m.sym} style={{background:up?"#071a0f":"#1a0707",
+                      border:"1px solid "+(up?"#0d3320":"#331010"),borderRadius:8,
+                      padding:"4px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                      <div style={{fontSize:10,fontWeight:700,color:"#e8eaf0"}}>{m.sym}</div>
+                      <div style={{fontSize:11,fontWeight:800,color:up?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                        {up?"+":""}{fC(m.dayPL)}
+                      </div>
+                      <div style={{fontSize:9,color:up?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                        {up?"▲":"▼"}{Math.abs(m.chgPct).toFixed(2)}%
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* - CUSTODIAN SUMMARY CARDS - */}
       {groupBy==="custodian"&&custGroups&&(
@@ -16961,6 +17031,16 @@ function AllHoldingsTab({livePrices, priceStatus}) {
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {cr(g.totalVal)}
+                      </td>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
+                        color:g.totalDayPL>0?"#10b981":g.totalDayPL<0?"#ef4444":"#3a4a6a",
+                        fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                        {g.chgPct!=null?(
+                          <div>
+                            <div style={{fontWeight:700}}>{g.totalDayPL>0?"+":""}{fC(g.totalDayPL)}</div>
+                            <div style={{fontSize:9,opacity:0.85}}>{g.chgPct>=0?"▲":"▼"}{Math.abs(g.chgPct).toFixed(2)}%</div>
+                          </div>
+                        ):"—"}
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,
                         color:isGain?"#34d399":"#f87171",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
