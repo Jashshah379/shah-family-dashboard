@@ -4625,6 +4625,46 @@ function LedgerTab() {
 
   const hasActiveFilters = filterPerson!=="All"||filterCustodian!=="All"||filterType!=="All"||filterDrCr!=="All"||filterFrom||filterTo;
 
+  /* ── Net Position Calculator — which line items to include ── */
+  var CALC_ROWS = [
+    {k:"fund_in",      l:"Total Fund In",        sign:+1, color:"#34d399", help:"Fresh capital deposited into broker accounts"},
+    {k:"fund_out",     l:"Total Fund Out",       sign:-1, color:"#f87171", help:"Capital withdrawn from broker accounts"},
+    {k:"mtf_interest", l:"MTF Interest",         sign:-1, color:"#f87171", help:"Daily interest charged on MTF borrowed amount"},
+    {k:"mtf_debit",    l:"MTF Debit (positions)",sign:-1, color:"#f59e0b", help:"MTF funding deployed into positions"},
+    {k:"mtf_credit",   l:"MTF Credit (closes)",  sign:+1, color:"#34d399", help:"MTF positions closed / loan repaid"},
+    {k:"stt",          l:"STT / Taxes",          sign:-1, color:"#f0b429", help:"Securities Transaction Tax"},
+    {k:"dp_charges",   l:"DP Charges",           sign:-1, color:"#f0b429", help:"Demat and depository charges"},
+    {k:"dividend",     l:"Dividends Received",   sign:+1, color:"#34d399", help:"Dividend income credited"},
+    {k:"other",        l:"Other Charges",        sign:-1, color:"#8899bb", help:"Miscellaneous charges"},
+    {k:"interest",     l:"Other Interest",       sign:-1, color:"#f0b429", help:"Non-MTF interest charges"},
+  ];
+  var _initCalcSel = {};
+  CALC_ROWS.forEach(function(r){ _initCalcSel[r.k] = true; });
+  const [calcSel, setCalcSel] = React.useState(_initCalcSel);
+  const [showCalc, setShowCalc] = React.useState(true);
+
+  /* Totals per type across ALL entries (unfiltered) */
+  const calcTotals = React.useMemo(function() {
+    var t = {};
+    CALC_ROWS.forEach(function(r){ t[r.k] = 0; });
+    entries.forEach(function(e) { if(t[e.type]!==undefined) t[e.type] += e.amount; });
+    return t;
+  }, [entries]);
+
+  /* Current portfolio value from global constants */
+  var _calcPortfolioVal = (function() {
+    var eq=0, mf=0, bank=0;
+    if(typeof MEMBER_HOLDINGS!=="undefined" && typeof MEMBERS!=="undefined") {
+      MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"&&MEMBER_HOLDINGS[m.holdingsRef];}).forEach(function(m){
+        (MEMBER_HOLDINGS[m.holdingsRef]||[]).forEach(function(h){ eq += (h.val||0); });
+      });
+    }
+    if(typeof MEMBER_MF_FOLIOS!=="undefined") Object.values(MEMBER_MF_FOLIOS).forEach(function(fs){ (fs||[]).forEach(function(f){ mf+=(f.value||0); }); });
+    if(typeof COIN_MF_ADDITIONAL!=="undefined") Object.entries(COIN_MF_ADDITIONAL).forEach(function(e){ (e[1]||[]).forEach(function(f){ mf+=(f.value||0); }); });
+    if(typeof MEMBERS!=="undefined") MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).forEach(function(m){ bank+=(m.bank||0); });
+    return {eq:eq, mf:mf, bank:bank, total:eq+mf+bank};
+  })();
+
   var selStyle = {background:"#0d1020",border:"1px solid #1d2545",borderRadius:6,padding:"5px 9px",color:"#c8d0e8",fontSize:11,outline:"none"};
 
   return (
@@ -4647,6 +4687,117 @@ function LedgerTab() {
             + Add Entry
           </button>
         </div>
+      </div>
+
+      {/* ── Net Position Calculator ── */}
+      <div style={{background:"linear-gradient(135deg,#080c18,#060910)",border:"1px solid #1e2848",borderRadius:14,marginBottom:14,overflow:"hidden"}}>
+        {/* Header */}
+        <div onClick={function(){setShowCalc(function(v){return !v;});}}
+          style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+            padding:"12px 18px",cursor:"pointer",userSelect:"none",
+            borderBottom:showCalc?"1px solid #1e2848":"none"}}>
+          <div>
+            <span style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>🧮 Net Position Calculator</span>
+            <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>Select what to include in your true wealth calculation</span>
+          </div>
+          <span style={{color:"#3a4a6a",fontSize:12}}>{showCalc?"▲":"▼"}</span>
+        </div>
+
+        {showCalc&&(function(){
+          /* Compute net adjustment from selected rows */
+          var netAdj = 0;
+          CALC_ROWS.forEach(function(r) {
+            if (calcSel[r.k]) netAdj += (calcTotals[r.k]||0) * r.sign;
+          });
+          var portfolioVal = _calcPortfolioVal.total;
+          var netPosition  = portfolioVal + netAdj;
+          var netAdjPos = netAdj >= 0;
+
+          return (
+            <div style={{padding:"16px 18px"}}>
+              {/* Row table */}
+              <table style={{width:"100%",borderCollapse:"collapse",marginBottom:14}}>
+                <thead>
+                  <tr style={{borderBottom:"1px solid #1e2848"}}>
+                    <th style={{textAlign:"left",fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",padding:"4px 8px",width:24}}>✓</th>
+                    <th style={{textAlign:"left",fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",padding:"4px 8px"}}>Line Item</th>
+                    <th style={{textAlign:"right",fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",padding:"4px 8px",width:90}}>Amount</th>
+                    <th style={{textAlign:"center",fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",padding:"4px 8px",width:50}}>DR/CR</th>
+                    <th style={{textAlign:"right",fontSize:9,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase",padding:"4px 8px",width:100}}>Net Effect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CALC_ROWS.map(function(r) {
+                    var amt = calcTotals[r.k]||0;
+                    var effect = amt * r.sign;
+                    var isSelected = calcSel[r.k];
+                    var hasDdata = amt > 0;
+                    return (
+                      <tr key={r.k}
+                        onClick={function(){ setCalcSel(function(s){ var n={...s}; n[r.k]=!n[r.k]; return n; }); }}
+                        style={{borderBottom:"1px solid #0d1020",cursor:"pointer",opacity:hasDdata?1:0.4,
+                          background:isSelected?"#0d1428":"transparent",transition:"background 0.1s"}}
+                        title={r.help}>
+                        <td style={{padding:"8px 8px",textAlign:"center"}}>
+                          <div style={{width:14,height:14,borderRadius:3,border:"1px solid "+(isSelected?r.color:"#2a3a5a"),
+                            background:isSelected?r.color+"33":"transparent",
+                            display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto"}}>
+                            {isSelected&&<span style={{fontSize:9,color:r.color,lineHeight:1}}>✓</span>}
+                          </div>
+                        </td>
+                        <td style={{padding:"8px 8px"}}>
+                          <div style={{fontSize:11,fontWeight:600,color:isSelected?"#e8eaf0":"#5a6a8a"}}>{r.l}</div>
+                          {!hasDdata&&<div style={{fontSize:9,color:"#3a4a6a"}}>no data</div>}
+                        </td>
+                        <td style={{padding:"8px 8px",textAlign:"right",fontFamily:"monospace",fontSize:11,
+                          fontWeight:700,color:hasDdata?r.color:"#2a3a5a"}}>
+                          {hasDdata?cr(amt):"—"}
+                        </td>
+                        <td style={{padding:"8px 8px",textAlign:"center"}}>
+                          <span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,
+                            background:r.sign>0?"#0d3320":"#2a0d0d",
+                            color:r.sign>0?"#10b981":"#f87171"}}>
+                            {r.sign>0?"CR":"DR"}
+                          </span>
+                        </td>
+                        <td style={{padding:"8px 8px",textAlign:"right",fontFamily:"monospace",fontSize:11,
+                          fontWeight:700,color:!isSelected||!hasDdata?"#2a3a5a":effect>=0?"#10b981":"#f87171"}}>
+                          {isSelected&&hasDdata?((effect>=0?"+":"")+cr(effect)):"—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Result panel */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                <div style={{background:"#050810",borderRadius:10,padding:"12px 14px",border:"1px solid #1a2035"}}>
+                  <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",fontWeight:600,marginBottom:4}}>Current Portfolio</div>
+                  <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:"#e8eaf0"}}>{cr(portfolioVal)}</div>
+                  <div style={{fontSize:9,color:"#2a3a5a",marginTop:3}}>Eq {cr(_calcPortfolioVal.eq)} · MF {cr(_calcPortfolioVal.mf)} · Bank {cr(_calcPortfolioVal.bank)}</div>
+                </div>
+                <div style={{background:netAdjPos?"#071a0f":"#1a0707",borderRadius:10,padding:"12px 14px",
+                  border:"1px solid "+(netAdjPos?"#0d3320":"#331010")}}>
+                  <div style={{fontSize:9,fontWeight:600,textTransform:"uppercase",marginBottom:4,color:netAdjPos?"#10b981":"#f87171"}}>Selected Adjustments</div>
+                  <div style={{fontSize:16,fontWeight:800,fontFamily:"monospace",color:netAdjPos?"#10b981":"#f87171"}}>
+                    {netAdj>=0?"+":""}{cr(netAdj)}
+                  </div>
+                  <div style={{fontSize:9,color:netAdjPos?"#0d5c30":"#5c1a1a",marginTop:3}}>
+                    {Object.values(calcSel).filter(Boolean).length} of {CALC_ROWS.length} items selected
+                  </div>
+                </div>
+                <div style={{background:"linear-gradient(135deg,#0a1628,#0d1a2e)",borderRadius:10,padding:"12px 14px",border:"2px solid #1e3a5f"}}>
+                  <div style={{fontSize:9,color:"#7eb8ff",fontWeight:700,textTransform:"uppercase",marginBottom:4}}>Net Position</div>
+                  <div style={{fontSize:18,fontWeight:900,fontFamily:"monospace",color:netPosition>=0?"#10b981":"#f87171"}}>
+                    {cr(netPosition)}
+                  </div>
+                  <div style={{fontSize:9,color:"#3a4a6a",marginTop:3}}>Portfolio ± selected ledger flows</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── Summary KPIs ── */}
