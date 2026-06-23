@@ -3842,6 +3842,7 @@ function LedgerTab() {
     {k:"stt",       l:"STT",            dr_cr:"DR", color:"#f0b429"},
     {k:"interest",  l:"Interest",       dr_cr:"DR", color:"#f0b429"},
     {k:"mtf_interest",l:"MTF Interest", dr_cr:"DR", color:"#f87171"},
+    {k:"mtf_close",   l:"MTF Close",     dr_cr:"CR", color:"#34d399"},
     {k:"brokerage", l:"Brokerage",      dr_cr:"DR", color:"#f0b429"},
     {k:"dp_charges",l:"DP Charges",     dr_cr:"DR", color:"#f0b429"},
     {k:"stamp_duty",l:"Stamp Duty",     dr_cr:"DR", color:"#f0b429"},
@@ -3856,7 +3857,7 @@ function LedgerTab() {
 
   /* ── In-memory ledger state (session only — no persistence) ── */
   const [entries, setEntries] = React.useState(function(){
-    return typeof LEDGER_SEED_DATA!=="undefined" ? LEDGER_SEED_DATA.map(function(e){return {...e, drCr: (e.type==="fund_in"||e.type==="dividend")?"CR":"DR"};}) : [];
+    return typeof LEDGER_SEED_DATA!=="undefined" ? LEDGER_SEED_DATA.map(function(e){return {...e, drCr: (e.type==="fund_in"||e.type==="dividend"||e.type==="mtf_close")?"CR":"DR"};}) : [];
   });
   const [showForm, setShowForm] = React.useState(false);
   const [editingId, setEditingId] = React.useState(null);
