@@ -9004,133 +9004,130 @@ function FamilyApp() {
           </div>
         </div>
 
-        {/* ── Merged News Widget ── */}
+        {/* ── News Feed (merged) ── */}
         {(function(){
-          /* Add newsTab state via a ref trick since we're in an IIFE */
-          var [_newsTab, _setNewsTab] = React.useState("market");
-
-          /* Build combined portfolio feed */
-          var portfolioItems = [];
-          Object.entries(stockNews).forEach(function(e2){
-            var stock = e2[0], items = e2[1];
-            (items||[]).forEach(function(item){ portfolioItems.push({...item, stock:stock}); });
-          });
-          portfolioItems.sort(function(a,b){
-            return (Date.parse(b.pubDate)||0)-(Date.parse(a.pubDate)||0);
-          });
-
-          var activeItems = _newsTab==="market" ? (marketNewsItems||[]) : portfolioItems;
-          var activeStatus = _newsTab==="market" ? marketNewsStatus : newsStatus;
-          var onRefresh = _newsTab==="market" ? refreshMarketNews : refreshNews;
-
-          function timeAgo(pubDate) {
-            if (!pubDate) return "";
-            var ms = Date.now() - (Date.parse(pubDate)||0);
+          /* Merge market + portfolio news into one chronological stream */
+          function timeAgo(d) {
+            if (!d) return "";
+            var ms = Date.now() - (Date.parse(d)||0);
             var m = Math.floor(ms/60000);
             return m<1?"just now":m<60?m+"m ago":m<1440?Math.floor(m/60)+"h ago":Math.floor(m/1440)+"d ago";
           }
-
-          /* Source initial badge */
-          function srcBadge(src) {
-            if (!src) return "?";
-            var words = src.replace(/[^a-zA-Z ]/g,"").trim().split(" ");
-            return (words[0]||"?")[0].toUpperCase() + (words[1]?words[1][0].toUpperCase():"");
+          function domain(url) {
+            try { return new URL(url).hostname.replace("www.",""); } catch(e2) { return ""; }
+          }
+          function faviconUrl(url) {
+            try { var d = new URL(url).origin; return "https://www.google.com/s2/favicons?sz=32&domain_url="+encodeURIComponent(d); }
+            catch(e2) { return ""; }
           }
 
-          var BADGE_COLORS = ["#7eb8ff","#34d399","#f0b429","#a78bfa","#f87171","#34d399","#e879f9","#22d3ee"];
-          function badgeColor(src) {
-            var h = 0; for (var i=0; i<(src||"").length; i++) h = (h*31+src.charCodeAt(i))&0xff;
-            return BADGE_COLORS[h%BADGE_COLORS.length];
+          var combined = [];
+          /* Market news */
+          (marketNewsItems||[]).forEach(function(item){
+            combined.push({...item, _tag:"market"});
+          });
+          /* Portfolio news — flatten stock→items map */
+          Object.entries(stockNews||{}).forEach(function(e2){
+            var stock = e2[0], items = e2[1];
+            (items||[]).forEach(function(item){ combined.push({...item, _tag:"portfolio", _stock:stock}); });
+          });
+          /* Sort newest first, dedupe by title */
+          combined.sort(function(a,b){ return (Date.parse(b.pubDate)||0)-(Date.parse(a.pubDate)||0); });
+          var seen = {}; combined = combined.filter(function(x){ if(seen[x.title]) return false; seen[x.title]=1; return true; });
+
+          var isLive = marketNewsStatus==="live"||newsStatus==="live";
+          var isLoading = marketNewsStatus==="loading"||newsStatus==="loading";
+
+          /* Accent color per source domain */
+          var ACCENTS = ["#7eb8ff","#34d399","#f0b429","#a78bfa","#f87171","#22d3ee","#e879f9","#fb923c"];
+          function accentFor(url) {
+            var d = domain(url||""); var h=0;
+            for(var i=0;i<d.length;i++) h=(h*31+d.charCodeAt(i))&0xff;
+            return ACCENTS[h%ACCENTS.length];
           }
 
           return (
-            <div style={{background:"#080b18",border:"1px solid #1a2035",borderRadius:14,
-              marginBottom:14,overflow:"hidden"}}>
-
+            <div style={{background:"#080b18",border:"1px solid #1a2035",borderRadius:14,marginBottom:14,overflow:"hidden"}}>
               {/* Header */}
-              <div style={{padding:"14px 18px 0",borderBottom:"1px solid #1a2035"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",borderBottom:"1px solid #0d1428"}}>
+                <div>
                   <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>📡 News Feed</div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:8,fontWeight:700,padding:"2px 7px",borderRadius:6,
-                      background:activeStatus==="live"?"#071a0f":activeStatus==="loading"?"#1a1500":"#2a0a0a",
-                      color:activeStatus==="live"?"#10b981":activeStatus==="loading"?"#f0b429":"#f87171"}}>
-                      {activeStatus==="live"?"● LIVE":activeStatus==="loading"?"⟳ FETCHING":"● OFFLINE"}
-                    </span>
-                    <button onClick={onRefresh}
-                      style={{background:"none",border:"1px solid #1a2035",color:"#3a4a6a",borderRadius:6,
-                        padding:"3px 10px",fontSize:9,cursor:"pointer",fontWeight:600}}>
-                      ↻ Refresh
-                    </button>
-                  </div>
+                  <div style={{fontSize:10,color:"#3a4a6a",marginTop:2}}>Market + portfolio headlines · merged · latest first</div>
                 </div>
-                {/* Tabs */}
-                <div style={{display:"flex",gap:0}}>
-                  {[["market","📈 Market"],["portfolio","📰 Portfolio"]].map(function(t){
-                    var active = _newsTab===t[0];
-                    return (
-                      <button key={t[0]} onClick={function(){_setNewsTab(t[0]);}}
-                        style={{padding:"7px 18px",fontSize:11,fontWeight:700,cursor:"pointer",border:"none",
-                          borderBottom:active?"2px solid #7eb8ff":"2px solid transparent",
-                          background:"transparent",
-                          color:active?"#7eb8ff":"#3a4a6a",
-                          transition:"all 0.15s"}}>
-                        {t[1]}
-                      </button>
-                    );
-                  })}
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:6,
+                    background:isLive?"#071a0f":isLoading?"#1a1500":"#2a0a0a",
+                    color:isLive?"#10b981":isLoading?"#f0b429":"#f87171"}}>
+                    {isLive?"● LIVE":isLoading?"⟳ LOADING":"● OFFLINE"}
+                  </span>
+                  <button onClick={function(){refreshMarketNews();refreshNews();}}
+                    style={{background:"none",border:"1px solid #1a2035",color:"#3a4a6a",borderRadius:6,padding:"3px 10px",fontSize:9,cursor:"pointer",fontWeight:600}}>
+                    ↻ Refresh
+                  </button>
                 </div>
               </div>
 
-              {/* Feed */}
-              <div style={{maxHeight:420,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:2}}>
-                {activeItems.length===0?(
-                  <div style={{textAlign:"center",padding:"28px 0",color:"#3a4a6a",fontSize:11}}>
-                    {activeStatus==="loading"?"Fetching headlines…":activeStatus==="error"?"Feed unavailable":"No news yet"}
+              {/* Cards */}
+              <div style={{maxHeight:520,overflowY:"auto",padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                {combined.length===0?(
+                  <div style={{textAlign:"center",padding:"32px 0",color:"#3a4a6a",fontSize:12}}>
+                    {isLoading?"Fetching headlines…":"No news yet — click Refresh"}
                   </div>
-                ):activeItems.slice(0,30).map(function(item,i){
-                  var ago = timeAgo(item.pubDate);
-                  var src = item.source||"";
-                  var bc  = badgeColor(src);
-                  var badge = srcBadge(src);
+                ):combined.slice(0,40).map(function(item,i){
+                  var accent = accentFor(item.link);
+                  var fav    = item.link ? faviconUrl(item.link) : "";
+                  var src    = domain(item.link||"") || (item.source||"");
+                  var ago    = timeAgo(item.pubDate);
+                  var isPort = item._tag==="portfolio";
                   return (
-                    <div key={i}
-                      onClick={function(){
-                        if(item.link) {
-                          try { window.open(item.link,"_blank","noopener,noreferrer"); }
-                          catch(e2) { window.location.href = item.link; }
-                        }
-                      }}
-                      style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 8px",
-                        borderRadius:8,cursor:"pointer",transition:"background 0.1s",userSelect:"none"}}
-                      onMouseEnter={function(e){e.currentTarget.style.background="#0d1228";}}
-                      onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                    <a key={i} href={item.link||"#"} target="_blank" rel="noopener noreferrer"
+                      style={{display:"flex",gap:10,padding:"10px 10px",borderRadius:10,
+                        background:"#0a0d1c",border:"1px solid #0f1428",
+                        textDecoration:"none",transition:"border-color 0.12s, background 0.12s",
+                        borderLeft:"3px solid "+accent}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#0e1228";e.currentTarget.style.borderColor=accent;}}
+                      onMouseLeave={function(e){e.currentTarget.style.background="#0a0d1c";e.currentTarget.style.borderColor="transparent";e.currentTarget.style.borderLeftColor=accent;}}>
 
-                      {/* Source badge circle */}
-                      <div style={{width:28,height:28,borderRadius:"50%",flexShrink:0,
-                        background:bc+"22",border:"1px solid "+bc+"55",
-                        display:"flex",alignItems:"center",justifyContent:"center",
-                        fontSize:9,fontWeight:800,color:bc,marginTop:1}}>
-                        {badge}
+                      {/* Favicon / icon */}
+                      <div style={{width:32,height:32,borderRadius:8,flexShrink:0,overflow:"hidden",
+                        background:accent+"18",border:"1px solid "+accent+"33",
+                        display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>
+                        {fav
+                          ? <img src={fav} alt="" width={18} height={18}
+                              style={{borderRadius:3}}
+                              onError={function(e){e.target.style.display="none";e.target.nextSibling.style.display="flex";}}
+                            />
+                          : null}
+                        <span style={{fontSize:9,fontWeight:800,color:accent,display:fav?"none":"flex"}}>
+                          {src.slice(0,2).toUpperCase()||"?"}
+                        </span>
                       </div>
 
-                      {/* Content */}
+                      {/* Text */}
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:12,color:"#c8d0e8",lineHeight:1.45,fontWeight:500,
+                        <div style={{fontSize:12,fontWeight:600,color:"#d0d8f0",lineHeight:1.45,
                           overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>
                           {item.title}
                         </div>
-                        <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
-                          {item.stock&&(
-                            <span style={{fontSize:8,fontWeight:700,color:bc,background:bc+"18",
-                              padding:"1px 6px",borderRadius:4}}>{item.stock}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:5,marginTop:5,flexWrap:"wrap"}}>
+                          {isPort&&item._stock&&(
+                            <span style={{fontSize:8,fontWeight:800,padding:"2px 6px",borderRadius:4,
+                              background:accent+"22",color:accent}}>
+                              {item._stock}
+                            </span>
                           )}
-                          <span style={{fontSize:9,color:"#2a3a5a"}}>{src}</span>
+                          {!isPort&&(
+                            <span style={{fontSize:8,fontWeight:700,padding:"2px 6px",borderRadius:4,
+                              background:"#1a2035",color:"#7eb8ff"}}>
+                              MARKET
+                            </span>
+                          )}
+                          {src&&<span style={{fontSize:9,color:"#3a4a6a"}}>{src}</span>}
                           {ago&&<span style={{fontSize:9,color:"#2a3a5a"}}>· {ago}</span>}
-                          <span style={{fontSize:9,color:"#1e2848",marginLeft:"auto"}}>↗</span>
+                          <span style={{marginLeft:"auto",fontSize:9,color:accent,fontWeight:700}}>↗</span>
                         </div>
                       </div>
-                    </div>
+                    </a>
                   );
                 })}
               </div>
