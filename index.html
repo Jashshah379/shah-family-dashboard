@@ -13375,7 +13375,6 @@ var FAMILY_TOP = (function() {
     {arr: typeof ASHA_SUSHIL_HOLDINGS!=="undefined"?ASHA_SUSHIL_HOLDINGS:[],  m:"Asha Shah",        c:"Sushil Financial"},
     {arr: typeof ASHA_BOND_HOLDINGS!=="undefined"?ASHA_BOND_HOLDINGS:[],      m:"Asha Shah",        c:"Sushil Financial"},
     /* ── Maya Shah ── */
-    {arr: typeof MAYA_SUSHIL_HOLDINGS!=="undefined"?MAYA_SUSHIL_HOLDINGS:[],  m:"Maya Shah",        c:"Sushil Financial"},
     {arr: typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:[],    m:"Maya Shah",        c:"Sushil Financial"},
     {arr: typeof M34_BOND_HOLDINGS!=="undefined"?M34_BOND_HOLDINGS:[],        m:"Maya Shah",        c:"Sushil Financial"},
     /* ── Praful Shah HUF ── */
@@ -13461,7 +13460,7 @@ const MEMBER_HOLDINGS = {
   "HUF":       _tag(typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[], "Chetan Shah HUF", "Sushil Financial"),
   "PRAFUL_HUF":_tag(PRAFUL_HUF_SUSHIL,          "Praful Shah HUF", "Sushil Financial"),
   "A46":       _tag(ASHA_SUSHIL_HOLDINGS,        "Asha Shah",       "Sushil Financial"),
-  "MAYA_SUSHIL":_tag(MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
+  "MAYA_SUSHIL":_tag(typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
   "CHETAN": [
     ..._tag(CHETAN_HOLDINGS,            "Chetan Shah", "Zerodha"),
     ..._tag(CHETAN_V60_SUSHIL_HOLDINGS, "Chetan Shah", "Sushil Financial"),
