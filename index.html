@@ -9080,15 +9080,6 @@ function FamilyApp() {
             "DEL": {l:"Delisting",    bg:"#2a0a0a", color:"#f87171", border:"#4a1010"},
           };
           var now = new Date();
-          var upcoming = corpActions.filter(function(a){
-            var d = new Date(a.exDate||a.recordDate||"2000"); return d >= now;
-          });
-          var recent = corpActions.filter(function(a){
-            var d = new Date(a.exDate||a.recordDate||"2000");
-            var diff = (now-d)/(1000*86400);
-            return d < now && diff <= 30;
-          });
-
           function parseNSEDate(s) {
             if(!s) return null;
             /* DD-Mon-YYYY or DD-MM-YYYY */
@@ -9096,6 +9087,17 @@ function FamilyApp() {
             if(m) return new Date(m[1]+" "+m[2]+" "+m[3]);
             return new Date(s);
           }
+          var upcoming = corpActions.filter(function(a){
+            var d = parseNSEDate(a.exDate||a.recordDate||""); return d && d >= now;
+          });
+          var recent = corpActions.filter(function(a){
+            var d = parseNSEDate(a.exDate||a.recordDate||"");
+            if (!d) return false;
+            var diff = (now-d)/(1000*86400);
+            return d < now && diff <= 45;
+          });
+
+          
           function fmtDate(s) {
             var d = parseNSEDate(s); if(!d||isNaN(d)) return s||"–";
             return d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"2-digit"});
@@ -9119,7 +9121,7 @@ function FamilyApp() {
                 <div>
                   <span style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>🗓 Corporate Actions</span>
                   <span style={{fontSize:10,color:"#3a4a6a",marginLeft:10}}>
-                    {isLive?`${upcoming.length} upcoming · ${recent.length} recent (30d)`:"Dividend · Buyback · AGM · Split · Rights"}
+                    {isLive?`${upcoming.length} upcoming · ${recent.length} recent (45d)`:"Dividend · Buyback · AGM · Split · Rights"}
                   </span>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
