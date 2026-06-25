@@ -6208,6 +6208,8 @@ const ADVISOR_TAGS_STORAGE = "shah_advisor_tags_v1";
 const DEFAULT_ADVISORS = [
   {id:"hiren", name:"Hiren Bhai", firm:"", type:"Family Friend", color:"#34d399"},
   {id:"mitul", name:"Mitul Bhai", firm:"", type:"Family Friend", color:"#a78bfa"},
+  {id:"dharmesh", name:"Dharmesh", firm:"Sushil Financial", type:"Advisor", color:"#22d3ee",
+   note:"FY24-26: ₹18.03Cr traded · -₹14.2L net realised (-0.79%) · 127 trades · 70W/57L · IWEL star performer · Open: ₹12.99Cr in 8 stocks"},
   {id:"rupen", name:"Rupen Bhai", firm:"Sushil Financial", type:"Advisor", color:"#f0b429",
    note:"FY25-26 realised P&L: ₹-82.7L on ₹439.8L (-18.8%) · 26 trades · holdings in Sushil to be tagged"},
   {id:"rupen_t0",advisorId:"rupen",stock:"AUTOMOTIVE AXLES",qty:100,buyPrice:1610.0,sellPrice:1569.0,invested:161000,value:156900,date:"2025-04-01",sellDate:"2026-03-31",pl:-4100,plPct:-2.55,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
@@ -13429,6 +13431,17 @@ var FAMILY_EQ_TOTAL_COST = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.inv
 
 var FAMILY_EQ_TOTAL_MKT  = (FAMILY_TOP||[]).reduce(function(s,h){return s+(h.val||0);}, 0);
 
+
+const DHARMESH_HOLDINGS = [
+  {s:"CAREERP",qty:9000,avg:503.87,cmp:0,val:0,inv:4534830},
+  {s:"FLUOROCHEM",qty:15289,avg:3451.63,cmp:0,val:0,inv:52771971},
+  {s:"GENESYS",qty:43200,avg:663.0,cmp:0,val:0,inv:28641600},
+  {s:"GFLLIMITED",qty:35000,avg:97.0,cmp:0,val:0,inv:3395000},
+  {s:"IWEL",qty:800,avg:10783.73,cmp:0,val:0,inv:8626984},
+  {s:"NELCO",qty:30100,avg:998.26,cmp:0,val:0,inv:30047626},
+  {s:"SHREDIGCEM",qty:9000,avg:103.07,cmp:0,val:0,inv:927630},
+  {s:"SPARC",qty:4500,avg:221.7,cmp:0,val:0,inv:997650}
+];
 
 const MEMBER_HOLDINGS = {
   "V129": [
