@@ -6335,8 +6335,10 @@ function AdvisorTrackerTab() {
          from localStorage (name/color edits), drop blanks and duplicates */
       var defById = {};
       DEFAULT_ADVISORS.filter(function(a){return a&&a.id&&a.name;}).forEach(function(a){ defById[a.id]=a; });
-      /* Apply any user edits from localStorage on top of defaults */
-      (stored||[]).filter(function(a){return a&&a.id&&a.name;}).forEach(function(a){
+      /* Apply user edits from localStorage — skip generic placeholders (Advisor 1/2/3) */
+      (stored||[]).filter(function(a){
+        return a&&a.id&&a.name&&!/^Advisor\s*\d+$/i.test(a.name.trim());
+      }).forEach(function(a){
         defById[a.id] = Object.assign({}, defById[a.id]||{}, a);
       });
       return Object.values(defById);
@@ -9885,17 +9887,7 @@ function FamilyApp() {
       {tab==="SIP Tracker"&&<SIPTracker/>}
       {tab==="Watchlist"&&<WatchlistTab/>}
       {tab==="Profiles"&&<ProfilesTab/>}
-       {tab==="Mutual Funds"&&<MutualFundsTab/>}
-       {tab==="P&L"&&<PLTab plCol={plCol} setPlCol={setPlCol} plDir={plDir} setPlDir={setPlDir} plView={plView} setPlView={setPlView} plFilter={plFilter} setPlFilter={setPlFilter}/>}
-       
-       {tab==="MTF"&&<MTFTab/>}
-       {tab==="Advisors"&&<AdvisorTrackerTab/>}
-       {tab==="Changelog"&&<ChangelogTab/>}
-       {tab==="Bank Statements"&&<BankStatementTab/>}
-       {tab==="ICICI Live"&&<BreezeImportTab/>}
-       {tab==="Upload"&&<SmartUploadTab/>}
-       {tab==="Meeting Mode"&&<FamilyMeetingTab/>}
-       {tab==="What-If"&&<WhatIfTab/>}
+
        {tab==="Goals"&&<GoalTrackerTab/>}
        {tab==="Tax Optimiser"&&<TaxOptimiserTab/>}
        {tab==="Corp Actions"&&<CorporateActionsTab/>}
