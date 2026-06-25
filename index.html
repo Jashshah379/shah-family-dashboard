@@ -6440,7 +6440,12 @@ function AdvisorTrackerTab() {
 
       {/* Leaderboard */}
       <div style={{display:"flex",flexDirection:"column",gap:9}}>
-        {advisorStats.filter(a=>a.count>0||true).sort((a,b)=>b.retPct-a.retPct).map((adv,i)=>(
+        {advisorStats.sort(function(a,b){
+            if(!a.count && !b.count) return 0; /* both empty — keep order */
+            if(!a.count) return 1;              /* a empty → goes to bottom */
+            if(!b.count) return -1;             /* b empty → goes to bottom */
+            return (b.totalVal||0)-(a.totalVal||0); /* both active → sort by value desc */
+          }).map((adv,i)=>(
           <div key={adv.id} onClick={()=>{setSelectedAdvisor(adv.id);setView("advisor");}}
             style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:`1px solid ${adv.count>0?adv.color+"44":"#1d2545"}`,
               borderLeft:`3px solid ${adv.count>0?adv.color:"#1d2545"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",
