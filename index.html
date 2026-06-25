@@ -9004,127 +9004,139 @@ function FamilyApp() {
           </div>
         </div>
 
-        {/* - MARKET NEWS WIDGET - */}
-        <div style={{background:"linear-gradient(135deg,#14120d 0%,#0d0a08 100%)",border:"1px solid #2e2418",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div>
-              <div style={{fontSize:10,color:"#f0b429",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700}}>
-                📈 Market & Economy News
-                <span style={{marginLeft:8,fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:8,
-                  background:marketNewsStatus==="live"?"#1a1500":marketNewsStatus==="loading"?"#1a1500":"#2a0a0a",
-                  color:marketNewsStatus==="live"?"#f0b429":marketNewsStatus==="loading"?"#f0b429":"#f87171"}}>
-                  {marketNewsStatus==="live"?"LIVE":marketNewsStatus==="loading"?"FETCHING":"OFFLINE"}
-                </span>
-              </div>
-              <div style={{fontSize:9,color:"#5a4a35",marginTop:3}}>
-                Sensex, Nifty & broader economy · refreshes every 15 min{marketNewsLastUpdate?" · last "+marketNewsLastUpdate:""}
-              </div>
-            </div>
-            <button onClick={refreshMarketNews} style={{background:"#1a1500",border:"1px solid #3a2a00",color:"#f0b429",
-              borderRadius:6,padding:"5px 12px",fontSize:10,fontWeight:600,cursor:"pointer"}}>↻ Refresh</button>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:6}}>
-            {(()=>{
-              if (!marketNewsItems || marketNewsItems.length===0) {
-                return (
-                  <div style={{textAlign:"center",padding:20,fontSize:11,color:"#5a4a35"}}>
-                    {marketNewsStatus==="loading"?"Fetching market headlines…":marketNewsStatus==="error"?"Couldn't reach the news feed — check the Worker has the /market-news endpoint.":"No news yet."}
-                  </div>
-                );
-              }
-              return marketNewsItems.slice(0,8).map(function(item,i){
-                var timeAgo = "";
-                if (item.pubDate) {
-                  var diffMs = Date.now() - new Date(item.pubDate).getTime();
-                  var mins = Math.floor(diffMs/60000);
-                  timeAgo = mins<60 ? mins+"m ago" : mins<1440 ? Math.floor(mins/60)+"h ago" : Math.floor(mins/1440)+"d ago";
-                }
-                return (
-                  <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
-                    style={{display:"block",padding:"8px 10px",borderRadius:8,textDecoration:"none",
-                      background:"#0d0a05",border:"1px solid #2a2015"}}
-                    onMouseEnter={function(e){e.currentTarget.style.background="#181208";}}
-                    onMouseLeave={function(e){e.currentTarget.style.background="#0d0a05";}}>
-                    <div style={{fontSize:11,color:"#d8c8a8",lineHeight:1.4}}>{item.title}</div>
-                    <div style={{fontSize:9,color:"#5a4a35",marginTop:3}}>
-                      {item.source}{item.source&&timeAgo?" · ":""}{timeAgo}
-                    </div>
-                  </a>
-                );
-              });
-            })()}
-          </div>
-        </div>
+        {/* ── Merged News Widget ── */}
+        {(function(){
+          /* Add newsTab state via a ref trick since we're in an IIFE */
+          var [_newsTab, _setNewsTab] = React.useState("market");
 
-        {/* - NEWS WIDGET - */}
-        <div style={{background:"linear-gradient(135deg,#0d1218 0%,#0a0d14 100%)",border:"1px solid #1d2545",borderRadius:12,padding:"16px 20px",marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div>
-              <div style={{fontSize:10,color:"#7eb8ff",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700}}>
-                📰 Portfolio News
-                <span style={{marginLeft:8,fontSize:8,fontWeight:700,padding:"2px 8px",borderRadius:8,
-                  background:newsStatus==="live"?"#0a1a0f":newsStatus==="loading"?"#1a1500":"#2a0a0a",
-                  color:newsStatus==="live"?"#34d399":newsStatus==="loading"?"#f0b429":"#ef4444"}}>
-                  {newsStatus==="live"?"LIVE":newsStatus==="loading"?"FETCHING":newsStatus==="error"?"OFFLINE":"…"}
-                </span>
+          /* Build combined portfolio feed */
+          var portfolioItems = [];
+          Object.entries(stockNews).forEach(function(e2){
+            var stock = e2[0], items = e2[1];
+            (items||[]).forEach(function(item){ portfolioItems.push({...item, stock:stock}); });
+          });
+          portfolioItems.sort(function(a,b){
+            return (Date.parse(b.pubDate)||0)-(Date.parse(a.pubDate)||0);
+          });
+
+          var activeItems = _newsTab==="market" ? (marketNewsItems||[]) : portfolioItems;
+          var activeStatus = _newsTab==="market" ? marketNewsStatus : newsStatus;
+          var onRefresh = _newsTab==="market" ? refreshMarketNews : refreshNews;
+
+          function timeAgo(pubDate) {
+            if (!pubDate) return "";
+            var ms = Date.now() - (Date.parse(pubDate)||0);
+            var m = Math.floor(ms/60000);
+            return m<1?"just now":m<60?m+"m ago":m<1440?Math.floor(m/60)+"h ago":Math.floor(m/1440)+"d ago";
+          }
+
+          /* Source initial badge */
+          function srcBadge(src) {
+            if (!src) return "?";
+            var words = src.replace(/[^a-zA-Z ]/g,"").trim().split(" ");
+            return (words[0]||"?")[0].toUpperCase() + (words[1]?words[1][0].toUpperCase():"");
+          }
+
+          var BADGE_COLORS = ["#7eb8ff","#34d399","#f0b429","#a78bfa","#f87171","#34d399","#e879f9","#22d3ee"];
+          function badgeColor(src) {
+            var h = 0; for (var i=0; i<(src||"").length; i++) h = (h*31+src.charCodeAt(i))&0xff;
+            return BADGE_COLORS[h%BADGE_COLORS.length];
+          }
+
+          return (
+            <div style={{background:"#080b18",border:"1px solid #1a2035",borderRadius:14,
+              marginBottom:14,overflow:"hidden"}}>
+
+              {/* Header */}
+              <div style={{padding:"14px 18px 0",borderBottom:"1px solid #1a2035"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>📡 News Feed</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:8,fontWeight:700,padding:"2px 7px",borderRadius:6,
+                      background:activeStatus==="live"?"#071a0f":activeStatus==="loading"?"#1a1500":"#2a0a0a",
+                      color:activeStatus==="live"?"#10b981":activeStatus==="loading"?"#f0b429":"#f87171"}}>
+                      {activeStatus==="live"?"● LIVE":activeStatus==="loading"?"⟳ FETCHING":"● OFFLINE"}
+                    </span>
+                    <button onClick={onRefresh}
+                      style={{background:"none",border:"1px solid #1a2035",color:"#3a4a6a",borderRadius:6,
+                        padding:"3px 10px",fontSize:9,cursor:"pointer",fontWeight:600}}>
+                      ↻ Refresh
+                    </button>
+                  </div>
+                </div>
+                {/* Tabs */}
+                <div style={{display:"flex",gap:0}}>
+                  {[["market","📈 Market"],["portfolio","📰 Portfolio"]].map(function(t){
+                    var active = _newsTab===t[0];
+                    return (
+                      <button key={t[0]} onClick={function(){_setNewsTab(t[0]);}}
+                        style={{padding:"7px 18px",fontSize:11,fontWeight:700,cursor:"pointer",border:"none",
+                          borderBottom:active?"2px solid #7eb8ff":"2px solid transparent",
+                          background:"transparent",
+                          color:active?"#7eb8ff":"#3a4a6a",
+                          transition:"all 0.15s"}}>
+                        {t[1]}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div style={{fontSize:11,color:"#3a4a6a",marginTop:3}}>
-                Latest headlines for your top {top40StockNames.length} holdings · refreshes every 15 min{newsLastUpdate?" · last "+newsLastUpdate:""}
+
+              {/* Feed */}
+              <div style={{maxHeight:420,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:2}}>
+                {activeItems.length===0?(
+                  <div style={{textAlign:"center",padding:"28px 0",color:"#3a4a6a",fontSize:11}}>
+                    {activeStatus==="loading"?"Fetching headlines…":activeStatus==="error"?"Feed unavailable":"No news yet"}
+                  </div>
+                ):activeItems.slice(0,30).map(function(item,i){
+                  var ago = timeAgo(item.pubDate);
+                  var src = item.source||"";
+                  var bc  = badgeColor(src);
+                  var badge = srcBadge(src);
+                  return (
+                    <div key={i}
+                      onClick={function(){
+                        if(item.link) {
+                          try { window.open(item.link,"_blank","noopener,noreferrer"); }
+                          catch(e2) { window.location.href = item.link; }
+                        }
+                      }}
+                      style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 8px",
+                        borderRadius:8,cursor:"pointer",transition:"background 0.1s",userSelect:"none"}}
+                      onMouseEnter={function(e){e.currentTarget.style.background="#0d1228";}}
+                      onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+
+                      {/* Source badge circle */}
+                      <div style={{width:28,height:28,borderRadius:"50%",flexShrink:0,
+                        background:bc+"22",border:"1px solid "+bc+"55",
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        fontSize:9,fontWeight:800,color:bc,marginTop:1}}>
+                        {badge}
+                      </div>
+
+                      {/* Content */}
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,color:"#c8d0e8",lineHeight:1.45,fontWeight:500,
+                          overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>
+                          {item.title}
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
+                          {item.stock&&(
+                            <span style={{fontSize:8,fontWeight:700,color:bc,background:bc+"18",
+                              padding:"1px 6px",borderRadius:4}}>{item.stock}</span>
+                          )}
+                          <span style={{fontSize:9,color:"#2a3a5a"}}>{src}</span>
+                          {ago&&<span style={{fontSize:9,color:"#2a3a5a"}}>· {ago}</span>}
+                          <span style={{fontSize:9,color:"#1e2848",marginLeft:"auto"}}>↗</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            <button onClick={refreshNews} disabled={newsStatus==="loading"}
-              className="btn-press"
-              style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:newsStatus==="loading"?"default":"pointer",fontSize:11,opacity:newsStatus==="loading"?0.5:1}}>
-              ↻ Refresh
-            </button>
-          </div>
-          <div style={{maxHeight:340,overflowY:"auto",display:"flex",flexDirection:"column",gap:6}}>
-            {(()=>{
-              var allItems = [];
-              Object.entries(stockNews).forEach(function(entry){
-                var stock = entry[0], items = entry[1];
-                (items||[]).forEach(function(item){
-                  allItems.push({...item, stock: stock});
-                });
-              });
-              /* Sort by recency where parseable, otherwise keep insertion order */
-              allItems.sort(function(a,b){
-                var ta = Date.parse(a.pubDate) || 0;
-                var tb = Date.parse(b.pubDate) || 0;
-                return tb - ta;
-              });
-              if (allItems.length === 0) {
-                return (
-                  <div style={{textAlign:"center",padding:24,fontSize:11,color:"#3a4a6a"}}>
-                    {newsStatus==="loading"?"Fetching latest headlines…":newsStatus==="error"?"Couldn't reach the news feed — check the Worker is deployed with the /news endpoint.":"No news yet."}
-                  </div>
-                );
-              }
-              return allItems.slice(0,25).map(function(item,i){
-                var timeAgo = "";
-                var pubMs = Date.parse(item.pubDate);
-                if (pubMs) {
-                  var diffH = Math.round((Date.now()-pubMs)/3600000);
-                  timeAgo = diffH < 1 ? "just now" : diffH < 24 ? diffH+"h ago" : Math.round(diffH/24)+"d ago";
-                }
-                return (
-                  <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
-                    className="clickable-row"
-                    style={{display:"flex",alignItems:"flex-start",gap:10,padding:"8px 10px",borderRadius:8,
-                      textDecoration:"none",background:"#0a0e1a"}}
-                    onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
-                    onMouseLeave={function(e){e.currentTarget.style.background="#0a0e1a";}}>
-                    <span style={{fontSize:9,fontWeight:700,color:"#7eb8ff",background:"#0f1a2e",padding:"3px 8px",borderRadius:6,flexShrink:0,marginTop:1}}>{item.stock}</span>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:11,color:"#c8d0e8",lineHeight:1.4}}>{item.title}</div>
-                      <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>{item.source}{timeAgo?" · "+timeAgo:""}</div>
-                    </div>
-                  </a>
-                );
-              });
-            })()}
-          </div>
-        </div>
+          );
+        })()}
       </div>}
 
       {/* - TREND - */}
