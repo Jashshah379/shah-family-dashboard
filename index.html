@@ -6331,12 +6331,15 @@ function AdvisorTrackerTab() {
       /* Merge in any DEFAULT_ADVISORS entries missing from stale localStorage
          (e.g. Hiren/Mitul added after the browser already cached an older list),
          and drop generic placeholders if a real-named one with the same id exists. */
-      var storedIds = stored.map(function(a){return a.id;});
-      var merged = stored.slice();
-      DEFAULT_ADVISORS.forEach(function(def){
-        if(storedIds.indexOf(def.id)===-1) merged.push(def);
+      /* Rebuild cleanly: start from DEFAULT_ADVISORS, overlay any customisations
+         from localStorage (name/color edits), drop blanks and duplicates */
+      var defById = {};
+      DEFAULT_ADVISORS.filter(function(a){return a&&a.id&&a.name;}).forEach(function(a){ defById[a.id]=a; });
+      /* Apply any user edits from localStorage on top of defaults */
+      (stored||[]).filter(function(a){return a&&a.id&&a.name;}).forEach(function(a){
+        defById[a.id] = Object.assign({}, defById[a.id]||{}, a);
       });
-      return merged;
+      return Object.values(defById);
     }catch{ return DEFAULT_ADVISORS; }
   });
   const [tags, setTags] = React.useState(()=>{
