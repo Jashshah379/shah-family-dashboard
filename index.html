@@ -5064,7 +5064,20 @@ const LEDGER_SEED_DATA = [
   {id:"asha_505",person:"Asha Shah",custodian:"Sushil Financial",type:"dividend",date:"2026-06-09",amount:2400.0,note:"DIVIDEND RECD:  @ ₹1.00/share"},
   {id:"asha_506",person:"Asha Shah",custodian:"Sushil Financial",type:"dividend",date:"2026-06-12",amount:4.0,note:"DIVIDEND RECD:  @ ₹4.00/share"},
   {id:"asha_507",person:"Asha Shah",custodian:"Sushil Financial",type:"dividend",date:"2026-06-19",amount:2626.0,note:"DIVIDEND RECD:  @ ₹13.00/share"},
-  {id:"asha_508",person:"Asha Shah",custodian:"Sushil Financial",type:"dividend",date:"2026-06-19",amount:3.0,note:"DIVIDEND RECD:  @ ₹3.00/share"}
+  {id:"asha_508",person:"Asha Shah",custodian:"Sushil Financial",type:"dividend",date:"2026-06-19",amount:3.0,note:"DIVIDEND RECD:  @ ₹3.00/share"},
+  {id:"c31_360one_1",person:"Chetan Shah HUF",custodian:"360 ONE Asset Management",type:"STCG",date:"2026-03-31",amount:75545,note:"360 ONE Special Opportunities Fund Series 13 — STCG pass-through (Code 9)"},
+  {id:"c31_360one_2",person:"Chetan Shah HUF",custodian:"360 ONE Asset Management",type:"dividend",date:"2026-03-31",amount:30630,note:"360 ONE Special Opportunities Fund Series 13 — Dividend distribution FY25-26"},
+  {id:"c31_360one_3",person:"Chetan Shah HUF",custodian:"360 ONE Asset Management",type:"other",date:"2026-03-31",amount:746,note:"360 ONE Special Opportunities Fund Series 13 — Other income FY25-26"},
+  {id:"c31_360one_4",person:"Chetan Shah HUF",custodian:"360 ONE Asset Management",type:"LTCG",date:"2026-03-31",amount:-26525,note:"360 ONE Special Opportunities Fund Series 13 — LTCL pass-through (loss, Code 1)"},
+  {id:"c31_360one_5",person:"Chetan Shah HUF",custodian:"360 ONE Asset Management",type:"STCG",date:"2026-03-31",amount:-1392,note:"360 ONE Special Opportunities Fund Series 13 — STCL pass-through (loss, Code 6)"},
+  {id:"p_huf_incred_1",person:"Praful Shah HUF",custodian:"InCred PMS",type:"fund_in",date:"2022-01-07",amount:5000000,note:"InCred Multicap Portfolio — initial capital"},
+  {id:"p_huf_incred_2",person:"Praful Shah HUF",custodian:"InCred PMS",type:"fund_in",date:"2024-12-27",amount:500000,note:"InCred Multicap Portfolio — additional capital"},
+  {id:"p_huf_incred_3",person:"Praful Shah HUF",custodian:"InCred PMS",type:"fund_in",date:"2025-01-02",amount:2000000,note:"InCred Multicap Portfolio — additional capital"},
+  {id:"p_huf_incred_4",person:"Praful Shah HUF",custodian:"InCred PMS",type:"other",date:"2026-05-31",amount:5252.66,note:"InCred PMS Management Fee May 2026 (0.5% p.a.)"},
+  {id:"p_huf_incred_5",person:"Praful Shah HUF",custodian:"InCred PMS",type:"stt",date:"2026-05-31",amount:5045.83,note:"InCred Multicap Portfolio STT May 2026"},
+  {id:"p_huf_incred_6",person:"Praful Shah HUF",custodian:"InCred PMS",type:"dividend",date:"2026-05-22",amount:2322,note:"DIVIDEND RECD: Havells India @ ₹6/share (387 shares)"},
+  {id:"p_huf_incred_7",person:"Praful Shah HUF",custodian:"InCred PMS",type:"dividend",date:"2026-05-29",amount:1348.5,note:"DIVIDEND RECD: JB Chemicals @ ₹9.30/share (145 shares)"},
+  {id:"p_huf_incred_8",person:"Praful Shah HUF",custodian:"InCred PMS",type:"dividend",date:"2026-05-25",amount:971.5,note:"DIVIDEND RECD: Sundram Fasteners @ ₹4.25/share (254 shares) net after TDS ₹108"}
 ];
 
 function LedgerTab() {
@@ -10401,7 +10414,7 @@ const MEMBERS = [
    cas:"Chetan Shah HUF",broker:null,icici:null,holdingsRef:"HUF",
    custodian:["Sushil Financial (JD0C31)"],casApr26:67948572,
    casTrend:[{m:"May'25",v:60000000},{m:"Oct'25",v:65000000},{m:"Apr'26",v:67948572}]},
-  {n:"Praful Shah HUF",i:"PH",c:"#ba7517",stocks:37315676,  mf:1099002,  bank:32939,
+  {n:"Praful Shah HUF",i:"PH",c:"#ba7517",stocks:47402829,  mf:1099002,  bank:32939,
    cas:"Praful Shah HUF",broker:"JD0P71",icici:null,holdingsRef:"PRAFUL_HUF",
    custodian:["Sushil Financial (JD0P71)","ICICI Direct"],casApr26:49248406,
    casTrend:[{m:"May'25",v:46000000},{m:"Oct'25",v:48000000},{m:"Apr'26",v:49248406}]},
@@ -13054,6 +13067,11 @@ const COIN_MF_ADDITIONAL = {
     {scheme:"ICICI Prudential Energy Opportunities Fund - Regular Plan - Growth",units:49997.5,nav:11.79,value:589471,inv:499975,member:"Vasumati Shah",custodian:"ICICI Direct"},
     {scheme:"ICICI Prudential Equity Minimum Variance Fund - Regular Plan - Growth",units:49997.5,nav:10.51,value:525474,inv:499975,member:"Vasumati Shah",custodian:"ICICI Direct"}
   ],
+  "CHETAN_HUF": [
+    {scheme:"360 ONE Special Opportunities Fund - Series 13",units:0,nav:0,value:0,inv:0,
+     member:"Chetan Shah HUF",custodian:"360 ONE Asset Management",
+     note:"AIF Form 64C — FY25-26 net distribution ₹1,06,921 (incl STCG ₹75,545 + Div ₹30,630). PAN: AACTI1540H"}
+  ],
 };
 
 const RAKESH_HUF_HOLDINGS = []; /* Rakesh Bhansali HUF — JD0R292 — data pending */
@@ -13436,6 +13454,39 @@ const DHARMESH_HOLDINGS = [
   {s:"SPARC",qty:4500,avg:221.7,cmp:0,val:0,inv:997650}
 ];
 
+/* Praful Shah HUF — InCred Multicap PMS — as of 31/05/2026 */
+const PRAFUL_HUF_INCRED_HOLDINGS = [
+  {s:"Affle India Ltd",qty:217,avg:1443.05,cmp:1463.0,val:317471.0,inv:313141.7},
+  {s:"Bajaj Finserv Ltd",qty:277,avg:1734.58,cmp:1783.6,val:494057.2,inv:480479.99},
+  {s:"Bharti Airtel Ltd",qty:262,avg:1861.97,cmp:1829.0,val:479198.0,inv:487836.28},
+  {s:"Bharti Hexacom Ltd",qty:333,avg:1542.86,cmp:1495.5,val:498001.5,inv:513773.9},
+  {s:"Canara Robeco Asset Management Company Ltd",qty:1167,avg:243.47,cmp:245.8,val:286848.6,inv:284134.99},
+  {s:"Chalet Hotels Ltd",qty:408,avg:774.32,cmp:784.6,val:320116.8,inv:315923.0},
+  {s:"Cholamandalam Investment and Finance",qty:344,avg:1533.78,cmp:1537.7,val:528968.8,inv:527619.88},
+  {s:"Coforge Ltd",qty:419,avg:1303.52,cmp:1421.8,val:595734.2,inv:546175.48},
+  {s:"Computer Age Management Services",qty:139,avg:730.05,cmp:791.5,val:110018.5,inv:101476.85},
+  {s:"Eternal Limited",qty:1721,avg:254.99,cmp:250.58,val:431248.18,inv:438840.37},
+  {s:"Havells India Ltd",qty:387,avg:1309.95,cmp:1176.8,val:455421.6,inv:506952.43},
+  {s:"HDFC Bank Ltd",qty:609,avg:809.07,cmp:744.55,val:453430.95,inv:492726.39},
+  {s:"Healthcare Global Enterprises",qty:282,avg:599.08,cmp:637.25,val:179704.5,inv:168939.55},
+  {s:"ICRA Ltd",qty:57,avg:5410.24,cmp:5375.0,val:306375.0,inv:308383.43},
+  {s:"Info Edge India Ltd",qty:512,avg:1054.14,cmp:995.0,val:509440.0,inv:539721.2},
+  {s:"JB Chemicals and Pharmaceuticals",qty:145,avg:2016.39,cmp:2167.4,val:314273.0,inv:292376.6},
+  {s:"JK Cement Ltd",qty:97,avg:5630.83,cmp:5171.0,val:501587.0,inv:546190.94},
+  {s:"KPR Mill Ltd",qty:347,avg:922.2,cmp:966.5,val:335375.5,inv:320003.89},
+  {s:"Karur Vysya Bank Ltd",qty:1068,avg:281.23,cmp:288.75,val:308385.0,inv:300351.57},
+  {s:"Krsnaa Diagnostics Ltd",qty:258,avg:621.74,cmp:549.45,val:141758.1,inv:160407.92},
+  {s:"Lenskart Solutions Ltd",qty:657,avg:469.27,cmp:523.85,val:344169.45,inv:308313.09},
+  {s:"LT Foods Ltd",qty:777,avg:412.58,cmp:392.1,val:304661.7,inv:320572.91},
+  {s:"Mahindra and Mahindra Ltd",qty:100,avg:3067.07,cmp:3045.6,val:304560.0,inv:306706.86},
+  {s:"Max Healthcare Institute Ltd",qty:374,avg:1004.75,cmp:965.1,val:360947.4,inv:375776.35},
+  {s:"Schaeffler India Ltd",qty:66,avg:4109.99,cmp:4128.7,val:272494.2,inv:271259.52},
+  {s:"Sri Lotus Developers and Realty",qty:841,avg:141.9,cmp:137.88,val:115957.08,inv:119338.13},
+  {s:"Sundram Fasteners Limited",qty:254,avg:830.66,cmp:860.45,val:218554.3,inv:210988.66},
+  {s:"TBO Tek Ltd",qty:205,avg:1290.85,cmp:1229.4,val:252027.0,inv:264623.39},
+  {s:"Trent Ltd",qty:82,avg:3987.86,cmp:4224.0,val:346368.0,inv:327004.83}
+];
+
 const MEMBER_HOLDINGS = {
   "V129": [
     ..._tag(typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[],       "Vasumati Shah", "Sushil Financial"),
@@ -13451,7 +13502,10 @@ const MEMBER_HOLDINGS = {
     ..._tag(RM_ICICI_HOLDINGS,        "Rasiklal Shah", "ICICI Direct"),
   ],
   "HUF":       _tag(typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[], "Chetan Shah HUF", "Sushil Financial"),
-  "PRAFUL_HUF":_tag(PRAFUL_HUF_SUSHIL,          "Praful Shah HUF", "Sushil Financial"),
+  "PRAFUL_HUF": [
+    ..._tag(typeof PRAFUL_HUF_SUSHIL!=="undefined"?PRAFUL_HUF_SUSHIL:[], "Praful Shah HUF", "Sushil Financial"),
+    ..._tag(PRAFUL_HUF_INCRED_HOLDINGS, "Praful Shah HUF", "InCred PMS"),
+  ],
   "A46":       _tag(ASHA_SUSHIL_HOLDINGS,        "Asha Shah",       "Sushil Financial"),
   "MAYA_SUSHIL":_tag(typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
   "CHETAN": [
