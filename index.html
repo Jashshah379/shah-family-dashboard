@@ -23048,7 +23048,7 @@ function MTFTab() {
     <div style={{paddingBottom:24}}>
       {/* Sub-nav */}
       <div style={{display:"flex",gap:7,marginBottom:16,flexWrap:"wrap"}}>
-        {[{k:"overview",l:"📊 Overview"},{k:"interest",l:"💸 Interest Cost"},{k:"roi",l:"📈 ROI Analysis"},{k:"accounts",l:"🏦 By Account"},{k:"positions",l:"📋 Positions"}].map(b=>(
+        {[{k:"overview",l:"📊 Overview"},{k:"interest",l:"💸 Interest Cost"},{k:"roi",l:"📈 ROI Analysis"},{k:"accounts",l:"🏦 By Account"},{k:"positions",l:"📋 Positions"},{k:"networth",l:"🔎 Net of MTF"}].map(b=>(
           <button key={b.k} onClick={()=>setView(b.k)} style={{padding:"5px 14px",borderRadius:7,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:view===b.k?"#1e3a5f":"#111827",color:view===b.k?"#7eb8ff":"#3a4a6a"}}>{b.l}</button>
         ))}
       </div>
@@ -23329,6 +23329,67 @@ function MTFTab() {
           </div>
         </div>
       )}
+
+      {/* ── NET OF MTF VIEW ── */}
+      {view==="networth"&&(function(){
+        var cr2=function(v){if(!v&&v!==0)return"--";var a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN");};
+        var mNet=(typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;}).map(function(m){
+          var eq=m.stocks||0,mf=m.mf||0,bank=m.bank||0,gross=eq+mf+bank,mtfOut=0;
+          if(typeof MTF_SUMMARY!=="undefined")Object.values(MTF_SUMMARY).forEach(function(v){if(v&&v.member===m.n)mtfOut+=(v.outstanding||0);});
+          return {name:m.n,color:m.c,eq:eq,mfbank:mf+bank,gross:gross,mtf:mtfOut,net:gross-mtfOut};
+        }).filter(function(x){return x.gross>0;}).sort(function(a,b){return b.net-a.net;});
+        var tG=mNet.reduce(function(s,x){return s+x.gross;},0);
+        var tM=mNet.reduce(function(s,x){return s+x.mtf;},0);
+        var tN=mNet.reduce(function(s,x){return s+x.net;},0);
+        return (
+          <div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
+              {[{l:"Gross Portfolio",v:tG,c:"#7eb8ff"},{l:"MTF Outstanding",v:tM,c:"#f87171"},{l:"Net Family Wealth",v:tN,c:"#10b981"}].map(function(k){return(
+                <div key={k.l} style={{background:"#080b18",border:"1px solid #1a2035",borderRadius:12,padding:"14px 16px"}}>
+                  <div style={{fontSize:9,color:"#3a4a6a",fontWeight:700,textTransform:"uppercase",marginBottom:6}}>{k.l}</div>
+                  <div style={{fontSize:18,fontWeight:900,fontFamily:"monospace",color:k.c}}>{cr2(k.v)}</div>
+                  {k.l==="MTF Outstanding"&&tG>0&&<div style={{fontSize:9,color:"#3a4a6a",marginTop:3}}>{(tM/tG*100).toFixed(1)}% of gross</div>}
+                </div>
+              );})}
+            </div>
+            <div style={{background:"#080b18",border:"1px solid #1a2035",borderRadius:12,overflow:"hidden"}}>
+              <table style={{width:"100%",borderCollapse:"collapse"}}>
+                <thead>
+                  <tr style={{borderBottom:"1px solid #1a2035"}}>
+                    {["Member","Equity","MF+Bank","Gross","MTF","Net Position","MTF%"].map(function(h){return(
+                      <th key={h} style={{padding:"9px 10px",textAlign:h==="Member"?"left":"right",fontSize:9,color:"#3a4a6a",fontWeight:700}}>{h}</th>
+                    );})}
+                  </tr>
+                </thead>
+                <tbody>
+                  {mNet.map(function(m,i){
+                    var pct=m.gross>0?(m.mtf/m.gross*100):0;
+                    return (
+                      <tr key={m.name} style={{borderBottom:i<mNet.length-1?"1px solid #0d1428":"none",background:m.mtf>0?"#0d0a08":"transparent"}}>
+                        <td style={{padding:"9px 10px"}}><div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:7,height:7,borderRadius:"50%",background:m.color,flexShrink:0}}/><span style={{fontSize:11,fontWeight:600,color:"#e8eaf0"}}>{m.name}</span></div></td>
+                        <td style={{padding:"9px 10px",textAlign:"right",fontFamily:"monospace",fontSize:11,color:"#c8d0e8"}}>{cr2(m.eq)}</td>
+                        <td style={{padding:"9px 10px",textAlign:"right",fontFamily:"monospace",fontSize:11,color:"#c8d0e8"}}>{cr2(m.mfbank)}</td>
+                        <td style={{padding:"9px 10px",textAlign:"right",fontFamily:"monospace",fontSize:11,fontWeight:700,color:"#7eb8ff"}}>{cr2(m.gross)}</td>
+                        <td style={{padding:"9px 10px",textAlign:"right",fontFamily:"monospace",fontSize:11,color:m.mtf>0?"#f87171":"#2a3a5a"}}>{m.mtf>0?("-"+cr2(m.mtf)):"—"}</td>
+                        <td style={{padding:"9px 10px",textAlign:"right",fontFamily:"monospace",fontSize:12,fontWeight:800,color:m.net>=0?"#10b981":"#f87171"}}>{cr2(m.net)}</td>
+                        <td style={{padding:"9px 10px",textAlign:"right"}}>{m.mtf>0?(<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:5,background:pct>30?"#2a0d0d":pct>15?"#1a1200":"#0a1a10",color:pct>30?"#f87171":pct>15?"#f0b429":"#34d399"}}>{pct.toFixed(1)}%</span>):"—"}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{borderTop:"2px solid #1a2035",background:"#0a0d1c"}}>
+                    <td style={{padding:"10px",fontWeight:800,color:"#e8eaf0",fontSize:12}}>TOTAL</td>
+                    <td colSpan={2}/>
+                    <td style={{padding:"10px",textAlign:"right",fontFamily:"monospace",fontSize:13,fontWeight:800,color:"#7eb8ff"}}>{cr2(tG)}</td>
+                    <td style={{padding:"10px",textAlign:"right",fontFamily:"monospace",fontSize:13,fontWeight:800,color:"#f87171"}}>-{cr2(tM)}</td>
+                    <td style={{padding:"10px",textAlign:"right",fontFamily:"monospace",fontSize:14,fontWeight:900,color:"#10b981"}}>{cr2(tN)}</td>
+                    <td style={{padding:"10px",textAlign:"right",fontSize:10,color:"#3a4a6a"}}>{tG>0?(tM/tG*100).toFixed(1):0}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
 
 
           </div>
