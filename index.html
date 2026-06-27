@@ -13510,7 +13510,7 @@ const MEMBER_HOLDINGS = {
   "MAYA_SUSHIL":_tag(typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
   "CHETAN": [
     ..._tag(CHETAN_HOLDINGS,            "Chetan Shah", "Zerodha"),
-    ..._tag(CHETAN_V60_SUSHIL_HOLDINGS, "Chetan Shah", "Sushil Financial"),
+    ..._tag(typeof CHETAN_V60_SUSHIL_HOLDINGS!=="undefined"?CHETAN_V60_SUSHIL_HOLDINGS:[], "Chetan Shah", "Sushil Financial"),
   ],
   "JASH":  _tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah",      "Zerodha"),
   "RIYA": [
