@@ -12090,16 +12090,24 @@ function FamilyApp() {
             try { return new URL(url).hostname.replace("www.",""); } catch(e2) { return ""; }
           }
           function realUrl(url) {
-            /* Strip Bing redirect wrapper — extract actual article URL */
+            /* Strip Bing/MSN redirect wrapper — extract actual article URL */
             if (!url) return "#";
+            /* Decode HTML entities that RSS may have left in (e.g. &amp; → &) */
+            var clean = url.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
             try {
-              if (url.includes("bing.com")) {
-                var u = new URL(url);
-                var inner = u.searchParams.get("url");
+              if (clean.includes("bing.com") || clean.includes("msn.com")) {
+                var u = new URL(clean);
+                var inner = u.searchParams.get("url") || u.searchParams.get("r");
                 if (inner) return decodeURIComponent(inner);
               }
+              /* Google News redirect */
+              if (clean.includes("news.google.com")) {
+                var u2 = new URL(clean);
+                var inner2 = u2.searchParams.get("url");
+                if (inner2) return decodeURIComponent(inner2);
+              }
             } catch(e2) {}
-            return url;
+            return clean;
           }
           function faviconUrl(url) {
             try { var d = new URL(url).origin; return "https://www.google.com/s2/favicons?sz=32&domain_url="+encodeURIComponent(d); }
@@ -13205,7 +13213,7 @@ const MEMBERS = [
    cas:"Rasiklal HUF", broker:null,icici:null,holdingsRef:"RASIKLAL_HUF",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:116548032,
    casTrend:[{m:"May'25",v:168000000},{m:"Oct'25",v:172000000},{m:"Apr'26",v:174525606},{m:"Jun'26",v:116548032}]},
-  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:244044220, mf:6209170,  bank:4176956,
+  {n:"Rasiklal Shah",  i:"RS",c:"#22a093",stocks:175486621, mf:6209170,  bank:4176956,
    cas:"Rasiklal Shah",broker:null,icici:null,holdingsRef:"RM",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:159326952,
    casTrend:[{m:"May'25",v:150000000},{m:"Oct'25",v:155000000},{m:"Apr'26",v:159326952}]},
@@ -16128,8 +16136,10 @@ var FAMILY_TOP = (function() {
     {arr: typeof HONEY_ZERODHA_HOLDINGS!=="undefined"?HONEY_ZERODHA_HOLDINGS:[],m:"Honey Chetan Shah",c:"Zerodha"},
     /* ── Vasumati Shah ── */
     
+        {arr: typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[],     m:"Vasumati Shah", c:"Sushil Financial"},
     {arr: typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[],m:"Vasumati Shah", c:"ICICI Direct"},
     
+        {arr: typeof VASUMATI_ICICI2_HOLDINGS!=="undefined"?VASUMATI_ICICI2_HOLDINGS:[],  m:"Vasumati Shah", c:"ICICI Direct (Demat 2)"},
     {arr: typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[],m:"Vasumati Shah",c:"Zerodha"},
     {arr: typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[],  m:"Rasiklal Shah",    c:"Sushil Financial"},
     /* ── Rasiklal HUF ── */
@@ -16138,7 +16148,6 @@ var FAMILY_TOP = (function() {
     {arr: typeof R75_BOND_HOLDINGS!=="undefined"?R75_BOND_HOLDINGS:[],        m:"Rasiklal HUF",     c:"Sushil Financial"},
     /* ── Rasiklal Shah ── */
     {arr: typeof R124_RASIKLAL_SUSHIL_HOLDINGS!=="undefined"?R124_RASIKLAL_SUSHIL_HOLDINGS:[],m:"Rasiklal Shah",c:"Sushil Financial"},
-    {arr: typeof RM_ICICI_HOLDINGS!=="undefined"?RM_ICICI_HOLDINGS:[],        m:"Rasiklal Shah",    c:"ICICI Direct"},
     {arr: typeof RASIKLAL_ICICI_NEW_HOLDINGS!=="undefined"?RASIKLAL_ICICI_NEW_HOLDINGS:[],m:"Rasiklal Shah",c:"ICICI Direct (2)"},
     {arr: typeof P151_SUSHIL_HOLDINGS!=="undefined"?P151_SUSHIL_HOLDINGS:[],  m:"Rasiklal Shah",    c:"Sushil Financial"},
     /* ── Chetan Shah HUF ── */
@@ -16159,6 +16168,7 @@ var FAMILY_TOP = (function() {
     {arr: typeof PRAFUL_HUF_SUSHIL!=="undefined"?PRAFUL_HUF_SUSHIL:[],       m:"Praful Shah HUF",  c:"Sushil Financial"},
     {arr: typeof P71_BOND_HOLDINGS!=="undefined"?P71_BOND_HOLDINGS:[],        m:"Praful Shah HUF",  c:"Sushil Financial"},
     /* ── InCred PMS ── */
+        {arr: typeof PRAFUL_HUF_INCRED_HOLDINGS!=="undefined"?PRAFUL_HUF_INCRED_HOLDINGS:[], m:"Praful Shah HUF", c:"InCred PMS"},
     {arr: typeof INCRED_HOLDINGS!=="undefined"?INCRED_HOLDINGS:[],            m:"Praful Shah HUF",  c:"InCred PMS"},
     /* ── Jash Shah ── */
     {arr: typeof JASH_PORTFOLIO_HOLDINGS!=="undefined"?JASH_PORTFOLIO_HOLDINGS:[],m:"Jash Shah",    c:"Zerodha"},
@@ -16175,6 +16185,129 @@ var FAMILY_TOP = (function() {
   });
   return all;
 })();
+
+/* ════════════════════════════════════════════════════════════
+   DATA INTEGRITY ENGINE — runs on every page load
+   Catches: double-counts, missing wiring, value discrepancies
+   ════════════════════════════════════════════════════════════ */
+var INTEGRITY_REPORT = (function() {
+  var errors = [], warnings = [], info = [];
+  var add = function(list, code, msg, detail) {
+    list.push({ code: code, msg: msg, detail: detail || "" });
+  };
+
+  try {
+    var ft = typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : [];
+    var mh = typeof MEMBER_HOLDINGS !== "undefined" ? MEMBER_HOLDINGS : {};
+    var members = typeof MEMBERS !== "undefined" ? MEMBERS : [];
+
+    /* ── CHECK 1: Duplicate holdings in FAMILY_TOP ──
+       Same stock + same member + same custodian = double-counted */
+    var ftKey = {};
+    ft.forEach(function(h) {
+      if (!h || !h.s || !h._member) return;
+      var key = h.s + "|" + h._member + "|" + (h._custodian || "");
+      if (ftKey[key]) {
+        add(errors, "FT_DUP",
+          h._member + " — " + h.s + " appears twice in FAMILY_TOP",
+          "Custodian: " + (h._custodian || "unknown") + " | val: ₹" + Math.round((h.val||0)/1000) + "K each");
+      }
+      ftKey[key] = (ftKey[key] || 0) + 1;
+    });
+
+    /* ── CHECK 2: FAMILY_TOP member total vs m.stocks ──
+       If drift > 15% → likely stale m.stocks or new account not wired */
+    var ftByMember = {};
+    ft.forEach(function(h) {
+      if (!h || !h._member) return;
+      ftByMember[h._member] = (ftByMember[h._member] || 0) + (h.val || 0);
+    });
+    members.filter(function(m) { return m && m.n && !m._isFamily; }).forEach(function(m) {
+      var ftVal = ftByMember[m.n] || 0;
+      var staticVal = m.stocks || 0;
+      if (staticVal === 0 && ftVal === 0) return;
+      if (staticVal > 0 && ftVal === 0) {
+        add(warnings, "MH_MISSING",
+          m.n + " has m.stocks ₹" + (staticVal/1e7).toFixed(1) + "Cr but NOTHING in FAMILY_TOP",
+          "Check holdingsRef and FAMILY_TOP sources");
+      } else if (ftVal > 0 && staticVal > 0) {
+        var drift = Math.abs(ftVal - staticVal) / Math.max(ftVal, staticVal);
+        if (drift > 0.15) {
+          add(warnings, "VAL_DRIFT",
+            m.n + " — m.stocks ₹" + (staticVal/1e7).toFixed(2) + "Cr vs FAMILY_TOP ₹" + (ftVal/1e7).toFixed(2) + "Cr (" + Math.round(drift*100) + "% drift)",
+            "m.stocks may be stale or a new account was added without updating it");
+        }
+      }
+    });
+
+    /* ── CHECK 3: MTF sanity — outstanding > portfolio ──
+       If someone owes more than their portfolio is worth → alert */
+    var mtfOverride = typeof MTF_OUTSTANDING_OVERRIDE !== "undefined" ? MTF_OUTSTANDING_OVERRIDE : {};
+    Object.keys(mtfOverride).forEach(function(memberName) {
+      var owed = mtfOverride[memberName] || 0;
+      var portfolioVal = ftByMember[memberName] || 0;
+      if (owed > portfolioVal && portfolioVal > 0) {
+        add(errors, "MTF_EXCEED",
+          memberName + " MTF ₹" + (owed/1e7).toFixed(2) + "Cr exceeds portfolio ₹" + (portfolioVal/1e7).toFixed(2) + "Cr",
+          "Margin call risk — check MTF outstanding data");
+      }
+      if (owed > portfolioVal * 0.5) {
+        add(warnings, "MTF_HIGH",
+          memberName + " MTF is " + Math.round(owed/portfolioVal*100) + "% of portfolio — high leverage",
+          "₹" + (owed/1e5).toFixed(1) + "L outstanding on ₹" + (portfolioVal/1e7).toFixed(2) + "Cr portfolio");
+      }
+    });
+
+    /* ── CHECK 4: Holdings in MEMBER_HOLDINGS not in FAMILY_TOP ──
+       A member's holdings won't appear in family totals/movers */
+    var ftConsts = new Set();
+    /* We can't easily reverse-engineer which consts are in FAMILY_TOP from runtime data
+       But we can check: any member in MEMBER_HOLDINGS with val > ₹1Cr 
+       not showing up in FAMILY_TOP per-member totals */
+    Object.keys(mh).forEach(function(key) {
+      var arr = Array.isArray(mh[key]) ? mh[key] : [mh[key]];
+      var memberName = arr.length > 0 && arr[0] ? arr[0]._member : null;
+      if (!memberName) return;
+      var mhVal = arr.reduce(function(s,h){return s+(h&&h.val?h.val:0);}, 0);
+      var ftVal2 = ftByMember[memberName] || 0;
+      var missing = mhVal - ftVal2;
+      if (missing > 5000000) { /* >₹50L gap */
+        add(warnings, "FT_MISSING",
+          memberName + " has ₹" + (mhVal/1e7).toFixed(2) + "Cr in MEMBER_HOLDINGS but only ₹" + (ftVal2/1e7).toFixed(2) + "Cr in FAMILY_TOP",
+          "₹" + (missing/1e7).toFixed(2) + "Cr not counted in family totals — check FAMILY_TOP sources");
+      }
+    });
+
+    /* ── CHECK 5: Total sanity ──
+       Grand total cross-check */
+    var ftTotal = ft.reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
+    var mhTotal = Object.keys(mh).reduce(function(s,key){
+      var arr=Array.isArray(mh[key])?mh[key]:[mh[key]];
+      return s+arr.reduce(function(s2,h){return s2+(h&&h.val?h.val:0);},0);
+    },0);
+    var totalDrift = mhTotal > 0 ? Math.abs(ftTotal - mhTotal) / mhTotal : 0;
+    if (totalDrift > 0.05) {
+      add(warnings, "TOTAL_DRIFT",
+        "FAMILY_TOP ₹" + (ftTotal/1e7).toFixed(2) + "Cr vs MEMBER_HOLDINGS ₹" + (mhTotal/1e7).toFixed(2) + "Cr (" + Math.round(totalDrift*100) + "% drift)",
+        "Some holdings may not be counted in the family total");
+    } else {
+      add(info, "TOTAL_OK",
+        "Family total consistent: ₹" + (ftTotal/1e7).toFixed(2) + "Cr across both computations",
+        "Drift: " + (totalDrift*100).toFixed(1) + "%");
+    }
+
+  } catch(e) {
+    add(errors, "ENGINE_ERR", "Integrity engine error: " + e.message, "");
+  }
+
+  return {
+    errors: errors, warnings: warnings, info: info,
+    hasIssues: errors.length > 0 || warnings.length > 0,
+    summary: errors.length + " errors, " + warnings.length + " warnings"
+  };
+})();
+
+
 
 /* MTF_SUMMARY — computed LIVE from holdings flagged mtf:true across FAMILY_TOP.
    "Funding" = cost basis of MTF-held shares (the ICICI-funded portion).
@@ -16273,7 +16406,6 @@ const MEMBER_HOLDINGS = {
   ],
   "RM": [
     ..._tag(typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[], "Rasiklal Shah", "Sushil Financial"),
-    ..._tag(typeof RM_ICICI_HOLDINGS!=="undefined"?RM_ICICI_HOLDINGS:[], "Rasiklal Shah", "ICICI Direct"),
     ..._tag(typeof RASIKLAL_ICICI_NEW_HOLDINGS!=="undefined"?RASIKLAL_ICICI_NEW_HOLDINGS:[], "Rasiklal Shah", "ICICI Direct"),
   ],
   "HUF":       _tag(typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[], "Chetan Shah HUF", "Sushil Financial"),
