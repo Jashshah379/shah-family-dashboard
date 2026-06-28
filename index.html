@@ -10187,37 +10187,107 @@ function MembersTab() {
                       No equity holdings data available
                     </div>
                   ) : (
-                    <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
-                      <div style={{overflowX:"auto"}}>
-                        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-                          <thead><tr style={{background:"#0a0e1e"}}>
-                            {["Stock","Qty","Avg","CMP","Value","P&L","Return %"].map(function(h){return(
-                              <th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>
-                            );})}
-                          </tr></thead>
-                          <tbody>
-                            {[...holdings].sort(function(a,b){return (b.val||0)-(a.val||0);}).map(function(h,i){
-                              var ret = h.inv>0?((h.val-h.inv)/h.inv*100):null;
-                              var isGain = ret==null||ret>=0;
-                              return (
-                                <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
-                                  <td style={{padding:"7px 12px",fontWeight:600,color:"#c8d0e8"}}>
-                                    {h.s}
-                                    {h._custodian&&<div style={{fontSize:8,color:"#3a4a6a"}}>{h._custodian}</div>}
+(function(){
+                      /* ── Sortable holdings table ── */
+                      var [mSort, setMSort] = React.useState({col:"val",dir:-1});
+                      var cols = [
+                        {k:"stock", l:"Stock",    align:"left"},
+                        {k:"qty",   l:"Qty",      align:"right"},
+                        {k:"avg",   l:"Avg Cost", align:"right"},
+                        {k:"cmp",   l:"CMP",      align:"right"},
+                        {k:"val",   l:"Value",    align:"right"},
+                        {k:"pl",    l:"P&L",      align:"right"},
+                        {k:"ret",   l:"Return %", align:"right"},
+                      ];
+                      var sortedH = [...holdings].map(function(h){
+                        return Object.assign({},h,{
+                          _pl: h.inv>0?h.val-h.inv:0,
+                          _ret: h.inv>0?(h.val-h.inv)/h.inv*100:null
+                        });
+                      }).sort(function(a,b){
+                        var av,bv;
+                        if(mSort.col==="stock"){ av=a.s||""; bv=b.s||""; return mSort.dir*(av<bv?-1:av>bv?1:0); }
+                        if(mSort.col==="qty"){ av=a.qty||0; bv=b.qty||0; }
+                        else if(mSort.col==="avg"){ av=a.avg||0; bv=b.avg||0; }
+                        else if(mSort.col==="cmp"){ av=a.cmp||0; bv=b.cmp||0; }
+                        else if(mSort.col==="val"){ av=a.val||0; bv=b.val||0; }
+                        else if(mSort.col==="pl"){ av=a._pl||0; bv=b._pl||0; }
+                        else if(mSort.col==="ret"){ av=a._ret!=null?a._ret:-999; bv=b._ret!=null?b._ret:-999; }
+                        else { av=a.val||0; bv=b.val||0; }
+                        return mSort.dir*(av-bv);
+                      });
+                      var arrow = function(k){ return mSort.col===k?(mSort.dir===-1?"↓":"↑"):"↕"; };
+                      var onSort = function(k){
+                        setMSort(function(prev){ return {col:k, dir:prev.col===k?-prev.dir:-1}; });
+                      };
+                      return (
+                        <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+                          <div style={{overflowX:"auto"}}>
+                            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                              <thead><tr style={{background:"#0a0e1e"}}>
+                                {cols.map(function(col){
+                                  var active = mSort.col===col.k;
+                                  return (
+                                    <th key={col.k} onClick={function(){onSort(col.k);}}
+                                      style={{padding:"9px 12px",textAlign:col.align,fontSize:9,
+                                        color:active?"#7eb8ff":"#3a4a6a",fontWeight:700,
+                                        borderBottom:"1px solid #1d2545",textTransform:"uppercase",
+                                        whiteSpace:"nowrap",cursor:"pointer",userSelect:"none",
+                                        background:active?"#0d1a30":"transparent",
+                                        transition:"background 0.15s"}}>
+                                      {col.l} <span style={{opacity:0.6,fontSize:8}}>{arrow(col.k)}</span>
+                                    </th>
+                                  );
+                                })}
+                              </tr></thead>
+                              <tbody>
+                                {sortedH.map(function(h,i){
+                                  var ret = h._ret;
+                                  var isGain = ret==null||ret>=0;
+                                  return (
+                                    <tr key={i} style={{borderBottom:"1px solid #0d1020",
+                                      background:i%2===0?"transparent":"#080a12",
+                                      transition:"background 0.1s"}}
+                                      onMouseEnter={function(e){e.currentTarget.style.background="#0d1428";}}
+                                      onMouseLeave={function(e){e.currentTarget.style.background=i%2===0?"transparent":"#080a12";}}>
+                                      <td style={{padding:"7px 12px",fontWeight:600,color:"#c8d0e8"}}>
+                                        {h.s}
+                                        {h._custodian&&<div style={{fontSize:8,color:"#3a4a6a"}}>{h._custodian}</div>}
+                                      </td>
+                                      <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{h.qty||"—"}</td>
+                                      <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontSize:10}}>{h.avg>0?"₹"+h.avg.toFixed(2):"—"}</td>
+                                      <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#e8eaf0",fontSize:10}}>{h.cmp>0?"₹"+h.cmp.toFixed(2):"—"}</td>
+                                      <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(h.val)}</td>
+                                      <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:isGain?"#34d399":"#f87171",fontWeight:600}}>
+                                        {h.inv>0?(isGain?"+":"")+cr(h._pl):"—"}
+                                      </td>
+                                      <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",
+                                        color:isGain?"#34d399":"#f87171",fontWeight:700}}>
+                                        {ret!=null?(isGain?"+":"")+ret.toFixed(1)+"%":"—"}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                                {/* Total row */}
+                                <tr style={{borderTop:"2px solid #1d2545",background:"#0a0e1e"}}>
+                                  <td style={{padding:"8px 12px",fontWeight:800,color:"#e8eaf0",fontSize:11}}>{sortedH.length} stocks</td>
+                                  <td colSpan={3}/>
+                                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(sortedH.reduce(function(s,h){return s+(h.val||0);},0))}</td>
+                                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,
+                                    color:sortedH.reduce(function(s,h){return s+h._pl;},0)>=0?"#34d399":"#f87171"}}>
+                                    {(function(){var pl=sortedH.reduce(function(s,h){return s+h._pl;},0);return (pl>=0?"+":"")+cr(pl);})()}
                                   </td>
-                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{h.qty||"—"}</td>
-                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontSize:10}}>{h.avg>0?"₹"+h.avg.toFixed(2):"—"}</td>
-                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#e8eaf0",fontSize:10}}>{h.cmp>0?"₹"+h.cmp.toFixed(2):"—"}</td>
-                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(h.val)}</td>
-                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:isGain?"#34d399":"#f87171",fontWeight:600}}>{h.inv>0?(isGain?"+":"")+cr(h.val-h.inv):"—"}</td>
-                                  <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:isGain?"#34d399":"#f87171",fontWeight:700}}>{ret!=null?(isGain?"+":"")+ret.toFixed(1)+"%":"—"}</td>
+                                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,
+                                    color:(function(){var inv=sortedH.reduce(function(s,h){return s+(h.inv||0);},0);var val=sortedH.reduce(function(s,h){return s+(h.val||0);},0);return (val-inv)>=0?"#34d399":"#f87171";})()}}>
+                                    {(function(){var inv=sortedH.reduce(function(s,h){return s+(h.inv||0);},0);var val=sortedH.reduce(function(s,h){return s+(h.val||0);},0);var ret=inv>0?(val-inv)/inv*100:0;return (ret>=0?"+":"")+ret.toFixed(1)+"%";})()}
+                                  </td>
                                 </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })()
                   )}
                 </div>
               )}
