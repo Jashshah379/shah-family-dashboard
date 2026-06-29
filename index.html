@@ -1377,8 +1377,8 @@ function FamilyMeetingTab() {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
-  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0)).sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
-  const totalEquity = realMembers.reduce((s,m)=>s+(m.stocks||0),0);
+  const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(m=>!m._isFamily&&(_eq(m)>0||m.mf>0)).sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
+  const totalEquity = realMembers.reduce(function(s,m){return s+_eq(m);},0);
   const totalMF = realMembers.reduce((s,m)=>s+(m.mf||0),0);
   const totalBank = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0),0);
   const grandTotal = totalEquity+totalMF+totalBank;
@@ -1410,7 +1410,7 @@ function FamilyMeetingTab() {
       content:()=>(
         <div style={{width:"100%"}}>
           {realMembers.slice(0,8).map((m,i)=>{
-            const w=(m.stocks||0)+(m.mf||0);
+            const w=_eq(m)+(m.mf||0);
             const pct=grandTotal>0?(w/grandTotal*100):0;
             return (
               <div key={m.n} style={{marginBottom:12}}>
@@ -1945,7 +1945,7 @@ function GlobalSearchTab() {
         <div style={{marginBottom:16}}>
           <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Members ({results.members.length})</div>
           {results.members.map(m=>{
-            const w=(m.stocks||0)+(m.mf||0);
+            const w=_eq(m)+(m.mf||0);
             return (
               <div key={m.n} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:10,padding:"12px 14px",marginBottom:7,display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:36,height:36,borderRadius:"50%",background:m.c||"#7eb8ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
@@ -2145,7 +2145,7 @@ function EstatePlanningTab() {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const profiles = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES:{};
-  const grandTotal = realMembers.reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
+  const grandTotal = realMembers.reduce((s,m)=>s+_eq(m)+(m.mf||0),0);
 
   const seniorGen = ["Vasumati Shah","Rasiklal Shah","Rasiklal HUF","Asha Shah","Maya Shah","Praful Shah HUF","Praful Shah"];
   const nextGen = ["Jash Shah","Karishma Shah","Aarya Shah","Riya Shah","Chetan Shah","Chetan Shah HUF","Amit Gandhi HUF","Honey Chetan Shah"];
@@ -2798,7 +2798,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
           return s+arr.reduce(function(ss,h){return ss+(h&&h.val?h.val:0);},0);
         },0)
     : 0;
-  const _staticEq = mems.reduce((s,m)=>s+(m.stocks||0),0);
+  const _staticEq = mems.reduce(function(s,m){return s+_eq(m);},0);
   const totalEq   = _mhLiveEq > _staticEq * 0.5 ? _mhLiveEq : _staticEq;
   /* MTF borrowing — subtract broker loan to get real net wealth */
   const _mtfFunding = (typeof MTF_SUMMARY !== "undefined" && MTF_SUMMARY.total_funding) ? MTF_SUMMARY.total_funding : 0;
@@ -7855,7 +7855,7 @@ const LEDGER_SEED_DATA = [
   {id:"ag_mtf_1071",person:"Amit Gandhi HUF",custodian:"ICICI Direct",type:"mtf_interest",date:"2024-07-26",amount:51.12,note:"MTF daily interest — Interest on MTF"},
   {id:"ag_mtf_1072",person:"Amit Gandhi HUF",custodian:"ICICI Direct",type:"mtf_interest",date:"2024-07-25",amount:79.95,note:"MTF daily interest — Interest on MTF(SAM)"},
   {id:"jash_icici_q1",person:"Jash Shah",custodian:"ICICI Direct",type:"other",date:"2025-10-04",amount:36991.12,note:"PAYBNK Quarterly Settlement payout — NSE Capital segment"},
-  {id:"vasu_mtf_adj",person:"Vasumati Shah",custodian:"ICICI Direct",type:"mtf_interest",date:"2026-06-26",amount:5460000,note:"MTF interest adjustment - gap to reach stated total of Rs75L"}
+  {id:"vasu_mtf_adj",person:"Vasumati Shah",custodian:"ICICI Direct",type:"mtf_interest",date:"2026-06-26",amount:5128.36,note:"MTF interest adjustment - exact total Rs.75,03,908.84 per statement"}
 ];
 
 function LedgerTab() {
@@ -10136,7 +10136,14 @@ function MembersTab() {
         </div>
         {realMembers.map(function(m) {
           var holdings = getMemberHoldings(m);
-          var total = (m.stocks||0) + (m.mf||0) + (m.bank||0);
+          var _liveHoldings = (function(){
+            if(!m.holdingsRef||m.holdingsRef==="ALL_FAMILY"||typeof MEMBER_HOLDINGS==="undefined") return null;
+            var ref = MEMBER_HOLDINGS[m.holdingsRef];
+            var arr = ref?(Array.isArray(ref)?ref:[ref]):[];
+            return arr;
+          })();
+          var _liveVal = _liveHoldings ? _liveHoldings.reduce(function(s,h){return s+(h&&h.val?h.val:0);},0) : 0;
+          var total = (_liveVal>0?_liveVal:(m.stocks||0)) + (m.mf||0) + (m.bank||0);
           return (
             <div key={m.n} onClick={function(){setSelMem(m.n);setSubTab("equity");}}
               className="interactive-card"
@@ -10152,7 +10159,7 @@ function MembersTab() {
                 </div>
               </div>
               <div style={{fontSize:10,fontWeight:700,color:"#e8eaf0",fontFamily:"monospace"}}>{cr(total)}</div>
-              {m.stocks>0&&<div style={{fontSize:8,color:"#6366f1"}}>Eq {cr(m.stocks)}</div>}
+              {m.stocks>0&&<div style={{fontSize:8,color:"#6366f1"}}>Eq {cr(_liveEqMap[m.n]||m.stocks||0)}</div>}
               {m.mf>0&&<div style={{fontSize:8,color:"#10b981"}}>MF {cr(m.mf)}</div>}
             </div>
           );
@@ -10173,7 +10180,8 @@ function MembersTab() {
           var mfData   = getMemberMF(m);
           var bankData = getMemberBank(m);
           var ppfData  = getMemberPPF(m);
-          var total    = (m.stocks||0)+(m.mf||0)+(m.bank||0);
+          var liveEqForMember = totalVal||(typeof _liveEqMap!=="undefined"?(_liveEqMap[m.n]||0):0)||(m.stocks||0);
+          var total    = liveEqForMember+(m.mf||0)+(m.bank||0);
           var totalInv = holdings.reduce(function(s,h){return s+(h.inv||0);},0);
           var totalVal = holdings.reduce(function(s,h){return s+(h.val||0);},0);
           var pl       = totalVal - totalInv;
@@ -10191,8 +10199,8 @@ function MembersTab() {
                   </div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:22,fontWeight:900,color:"#a5b4fc",fontFamily:"monospace"}}>{cr(total)}</div>
-                  <div style={{fontSize:9,color:"#3a4a6a"}}>total wealth</div>
+                  <div style={{fontSize:22,fontWeight:900,color:"#a5b4fc",fontFamily:"monospace"}}>{cr(totalVal>0?totalVal+(m.mf||0)+(m.bank||0):total)}</div>
+                  <div style={{fontSize:9,color:"#3a4a6a"}}>current value</div>
                 </div>
               </div>
 
@@ -10425,7 +10433,7 @@ function MembersTab() {
                     <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>💰 Wealth Summary</div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                       {[
-                        {l:"Equity",v:cr(m.stocks||0),c:"#6366f1"},
+                        {l:"Equity",v:cr(totalVal||m.stocks||0),c:"#6366f1"},
                         {l:"Mutual Funds",v:cr(m.mf||0),c:"#10b981"},
                         {l:"Bank",v:cr(m.bank||0),c:"#f0b429"},
                         {l:"PPF",v:ppfData.length>0?cr(ppfData.reduce(function(s,p){return s+p.bal;},0)):"—",c:"#3b82f6"},
@@ -11260,7 +11268,7 @@ function FamilyApp() {
                 if(typeof MEMBER_MF_FOLIOS!=="undefined"){Object.entries(MEMBER_MF_FOLIOS).forEach(function(e2){var mem=e2[0],fls=e2[1];fls.forEach(function(f){if((f.scheme||"").toLowerCase().includes(q))_s.push({member:mem,scheme:f.scheme,value:f.value||0,gain:(f.value||0)-(f.invested||0)});});});}
                 if(typeof COIN_MF_ADDITIONAL!=="undefined"){Object.entries(COIN_MF_ADDITIONAL).forEach(function(e3){var mem2=e3[0],schemes2=e3[1];(schemes2||[]).forEach(function(f){if((f.scheme||"").toLowerCase().includes(q))_s.push({member:mem2,scheme:f.scheme,value:f.value||0,gain:f.gain!=null?f.gain:(f.value||0)-(f.invested||0)});});});}
                 mfHits=_s.slice(0,5);}
-              var memberHits=[]; if(q.length>1){(typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).forEach(function(m){if(!m.n||m._isFamily)return;if((m.n||"").toLowerCase().includes(q))memberHits.push({name:m.n,color:m.c,initial:m.i,total:m.total||0,stocks:m.stocks||0,mf:m.mf||0,bank:m.bank||0});});}
+              var memberHits=[]; if(q.length>1){(typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).forEach(function(m){if(!m.n||m._isFamily)return;if((m.n||"").toLowerCase().includes(q))memberHits.push({name:m.n,color:m.c,initial:m.i,total:m.total||0,stocks:_eq(m),mf:m.mf||0,bank:m.bank||0});});}
               var bankHits=[]; if(q.length>1){(typeof BANK!=="undefined"?BANK:[]).forEach(function(b){if((b.n||"").toLowerCase().includes(q)||(b.acc||"").toLowerCase().includes(q))bankHits.push({name:b.n,acc:b.acc,bal:b.b||0});});}
               if(!hits.length&&!mfHits.length&&!memberHits.length&&!bankHits.length) return null;
               return (
@@ -11383,7 +11391,7 @@ function FamilyApp() {
                       style={{borderBottom:"1px solid #0d1020",padding:"10px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
                       onMouseEnter={function(e){e.currentTarget.style.background="#111827";}} onMouseLeave={function(e){e.currentTarget.style.background="";}}>
                       <div style={{width:28,height:28,borderRadius:"50%",background:m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:"#fff",flexShrink:0}}>{m.initial}</div>
-                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:"#e8eaf0"}}>{m.name}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Stocks {cr(m.stocks)} · MF {cr(m.mf)} · Bank {cr(m.bank)}</div></div>
+                      <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:"#e8eaf0"}}>{m.name}</div><div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Stocks {cr(_eq(m))} · MF {cr(m.mf)} · Bank {cr(m.bank)}</div></div>
                       <div style={{textAlign:"right"}}><div style={{fontFamily:"monospace",fontWeight:700,color:"#7eb8ff",fontSize:13}}>{cr(m.total)}</div><div style={{fontSize:9,color:"#3a4a6a"}}>→ Members</div></div>
                     </div>
                   );})}
@@ -11920,8 +11928,8 @@ function FamilyApp() {
         {/* ── Data Completeness Strip ── */}
         {(function(){
           var members = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
-          var withData = members.filter(function(m){return m.stocks>0||m.mf>0||m.bank>0;});
-          var noData   = members.filter(function(m){return !m.stocks&&!m.mf&&!m.bank;});
+          var withData = members.filter(function(m){return _eq(m)>0||m.mf>0||m.bank>0;});
+          var noData   = members.filter(function(m){return !_eq(m)&&!m.mf&&!m.bank;});
           var mtfMembers = typeof MTF_OUTSTANDING_OVERRIDE!=="undefined" ? Object.keys(MTF_OUTSTANDING_OVERRIDE) : [];
           if(noData.length===0) return null;
           return (
@@ -12274,7 +12282,7 @@ function FamilyApp() {
         const grandTrend = (allFamilyMember||{}).casTrend||[];
 
         // Current values
-        const curStocks = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0),0);
+        const curStocks = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+_eq(m);},0);
         const curMF     = Object.values(MF_REGISTRY).reduce((s,r)=>s+(r.valJun26||r.valApr26||0),0);
         const curBank   = BANK.reduce((s,r)=>s+(r.b||0),0);
         const grandNow  = curStocks + curMF + curBank;
@@ -14272,7 +14280,7 @@ const VS_TXN_YEARLY = [
 ];
 
 const HTML_MEMBER_SUMMARY = MEMBERS.filter(m=>!m._isFamily&&m.n).map(m=>({
-  n:m.n, stocks:m.stocks, mf:m.mf, bank:m.bank, total:(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0), c:m.c, i:m.i,
+  n:m.n, stocks:_eq(m), mf:m.mf, bank:m.bank, total:_eq(m)+(m.mf||0)+(m.bank||0)+(m.ppf||0), c:m.c, i:m.i,
 }));
 
 const JASH_SUMMARY = {
@@ -16157,6 +16165,22 @@ var FAMILY_TOP = (function() {
   });
   return all;
 })();
+
+/* ── Live equity map — module scope, available to all components ──
+   Keyed by member name, value = sum of h.val from MEMBER_HOLDINGS (CMP-based) */
+var _liveEqMap = (function(){
+  var map = {};
+  if(typeof MEMBERS==="undefined"||typeof MEMBER_HOLDINGS==="undefined") return map;
+  MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY";}).forEach(function(m){
+    var ref = MEMBER_HOLDINGS[m.holdingsRef];
+    var arr = ref?(Array.isArray(ref)?ref:[ref]):[];
+    var live = arr.reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
+    map[m.n] = live > 0 ? live : (m.stocks||0);
+  });
+  return map;
+})();
+/* Helper: get live equity for a member object */
+var _eq = function(m){ return (m&&m.n&&_liveEqMap[m.n]) ? _liveEqMap[m.n] : (m&&m.stocks||0); };
 
 /* ════════════════════════════════════════════════════════════
    DATA INTEGRITY ENGINE — runs on every page load
@@ -21370,7 +21394,7 @@ function PortfolioDetailTab() {
           {PERSONS.map(p=>{
             const mem = MEMBERS.filter(Boolean).find(function(m){return m.n===p.id;});
             if(!mem) return null;
-            const dashTotal = mem.stocks + mem.mf;
+            const dashTotal = _eq(mem) + (mem.mf||0);
             const htmlTotal = p.summary.equity + p.summary.mf;
             const diff = dashTotal - htmlTotal;
             const diffPct = (diff/htmlTotal*100).toFixed(1);
@@ -23690,7 +23714,7 @@ function InsightsTab() {
   const [iView, setIView] = React.useState("health");
   const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; if(a>=1e7) return s+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return s+"₹"+(a/1e5).toFixed(1)+" L"; return s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const fPct = (v) => v==null?"--":(v>=0?"+":"")+v.toFixed(1)+"%";
-  const realMembers = MEMBERS.filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0));
+  const realMembers = MEMBERS.filter(m=>!m._isFamily&&(_eq(m)>0||m.mf>0));
 
   /* ── Aggregate all holdings into stock-level map ── */
   const stockMap = React.useMemo(()=>{
@@ -23771,7 +23795,7 @@ function InsightsTab() {
     if(totalEquity>0&&h.val/totalEquity>0.07) alerts.push({type:"conc",msg:`${h.s} is ${(h.val/totalEquity*100).toFixed(1)}% of family equity — concentration risk`,val:h.val,stock:h.s});
   });
   realMembers.forEach(m=>{
-    const mTotal=(m.stocks||0)+(m.mf||0);
+    const mTotal=_eq(m)+(m.mf||0);
     if(totalWealth>0&&mTotal/totalWealth>0.35) alerts.push({type:"member",msg:`${m.n} holds ${(mTotal/totalWealth*100).toFixed(0)}% of family wealth`,val:mTotal,stock:m.n});
   });
   alerts.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
@@ -23987,7 +24011,7 @@ function InsightsTab() {
                 <div style={{fontSize:22,fontWeight:800,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace",marginBottom:8}}>{cr(val)}</div>
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:10}}>{((val/(seniorWealth+nextWealth||1))*100).toFixed(0)}% of family portfolio</div>
                 {realMembers.filter(function(m){return m&&m.n&&members.includes(m.n);}).map(m=>{
-                  const mv=(m.stocks||0)+(m.mf||0);
+                  const mv=_eq(m)+(m.mf||0);
                   const pct=val>0?(mv/val*100):0;
                   return (
                     <div key={m.n} style={{marginBottom:7}}>
@@ -24012,7 +24036,7 @@ function InsightsTab() {
               <thead><tr style={{background:"#0a0e1e"}}>{["#","Member","Equity","MF","Total","% of Family"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {[...realMembers].sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0))).map((m,i)=>{
-                  const mv=(m.stocks||0)+(m.mf||0);
+                  const mv=_eq(m)+(m.mf||0);
                   const pct=totalWealth>0?(mv/totalWealth*100):0;
                   const isNext=nextGen.includes(m.n);
                   return (
@@ -24432,10 +24456,10 @@ function OverlapHeatmap() {
 function RebalancingPlanner() {
   const [targets, setTargets] = React.useState({equity:70,mf:25,cash:5});
   const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
-  const realMembers = MEMBERS.filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0));
+  const realMembers = MEMBERS.filter(m=>!m._isFamily&&(_eq(m)>0||m.mf>0));
 
   const memberPlans = realMembers.map(m=>{
-    const equity = m.stocks||0, mf = m.mf||0;
+    const equity = _eq(m), mf = m.mf||0;
     const bank = BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0);
     const total = equity+mf+bank;
     if(total===0) return null;
@@ -24683,7 +24707,7 @@ function ProfilesTab() {
   const TYPE_C = {"Equity":"#34d399","PMS":"#a78bfa","NRE Equity":"#f0b429"};
 
   // Total wealth per member
-  const memberWealth = (m) => (m.stocks||0)+(m.mf||0)+(BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0));
+  const memberWealth = function(m){ return _eq(m)+(m.mf||0); }+(BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0));
 
   return (
     <div style={{display:"flex",gap:14,height:"auto"}}>
@@ -24899,7 +24923,7 @@ function NetWorthReportTab() {
   const trend = (familyM||{}).casTrend||[];
 
   /* Build FY snapshots from CAS trend data + MEMBERS stocks/mf */
-  const totalEquity = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.stocks||0),0);
+  const totalEquity = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce(function(s,m){return s+_eq(m);},0);
   const totalMF = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0),0);
   const totalBank = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0),0);
   const totalRealised = (typeof R75_PNL!=="undefined"?R75_PNL.reduce((s,p)=>s+(p.pl||0),0):0)
@@ -24913,7 +24937,7 @@ function NetWorthReportTab() {
   const maxV = Math.max(...snaps.map(s=>s.v),1);
 
   /* Per-member current breakdown */
-  const memberData = MEMBERS.filter(m=>!m._isFamily&&(m.stocks>0||m.mf>0))
+  const memberData = MEMBERS.filter(m=>!m._isFamily&&(_eq(m)>0||m.mf>0))
     .sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
 
   return (
@@ -24985,7 +25009,7 @@ function NetWorthReportTab() {
                       <span style={{color:"#c8d0e8",fontWeight:600}}>{m.n}</span>
                     </div>
                   </td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10}}>{m.stocks>0?cr(m.stocks):"—"}</td>
+                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10}}>{_eq(m)>0?cr(_eq(m)):"—"}</td>
                   <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#34d399",fontSize:10}}>{m.mf>0?cr(m.mf):"—"}</td>
                   <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#f0b429",fontSize:10}}>{bank>0?cr(bank):"—"}</td>
                   <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(total)}</td>
@@ -25002,16 +25026,16 @@ function NetWorthReportTab() {
         <div style={{fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Wealth Concentration (Lorenz Curve)</div>
         {(()=>{
           const sorted=[...memberData].sort((a,b)=>((a.stocks||0)+(a.mf||0))-((b.stocks||0)+(b.mf||0)));
-          const total=sorted.reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
+          const total=sorted.reduce((s,m)=>s+_eq(m)+(m.mf||0),0);
           let cumPpl=0,cumWealth=0;
           const points=[{x:0,y:0}];
           sorted.forEach((m,i)=>{
             cumPpl+=(1/sorted.length)*100;
-            cumWealth+=((m.stocks||0)+(m.mf||0))/total*100;
+            cumWealth+=(_eq(m)+(m.mf||0))/total*100;
             points.push({x:Math.round(cumPpl),y:Math.round(cumWealth)});
           });
           const gini = 1-2*(points.reduce((s,p,i)=>i>0?s+(p.y+points[i-1].y)/2*(p.x-points[i-1].x)/100:s,0)/100);
-          const top2Pct=(([...memberData].slice(0,2).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)/total*100)||0).toFixed(0);
+          const top2Pct=(([...memberData].slice(0,2).reduce((s,m)=>s+_eq(m)+(m.mf||0),0)/total*100)||0).toFixed(0);
           const w=280,h=180,pad=30;
           const toX=x=>pad+x*(w-pad*2)/100;
           const toY=y=>h-pad-y*(h-pad*2)/100;
