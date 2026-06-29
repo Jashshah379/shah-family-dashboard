@@ -100,6 +100,23 @@ window.onload = function() {
 };
 </script>
 <script type="text/plain" id="jsx">
+/* ── _eq: live equity helper — defined first so all components can use it ──
+   Computes CMP-based value from MEMBER_HOLDINGS on each call.
+   Falls back to m.stocks if MEMBER_HOLDINGS not yet loaded. */
+var _liveEqMap = {};
+var _eq = function(m) {
+  if(!m||!m.n) return 0;
+  try {
+    if(typeof MEMBER_HOLDINGS!=="undefined"&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY"){
+      var ref = MEMBER_HOLDINGS[m.holdingsRef];
+      var arr = Array.isArray(ref)?ref:(ref?[ref]:[]);
+      var live = arr.reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
+      if(live>0) return live;
+    }
+  } catch(e) {}
+  return m.stocks||0;
+};
+
 /*
 const JASH_ICICI_HOLDINGS = [
   {s:"Sansera Engineering",qty:10,avg:1595.89,cmp:2945.8,val:29458,inv:15959,unreal:13499},
@@ -16166,22 +16183,6 @@ var FAMILY_TOP = (function() {
   return all;
 })();
 
-/* ── Live equity map — module scope, available to all components ──
-   Keyed by member name, value = sum of h.val from MEMBER_HOLDINGS (CMP-based) */
-var _liveEqMap = (function(){
-  var map = {};
-  if(typeof MEMBERS==="undefined"||typeof MEMBER_HOLDINGS==="undefined") return map;
-  MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily&&m.holdingsRef&&m.holdingsRef!=="ALL_FAMILY";}).forEach(function(m){
-    var ref = MEMBER_HOLDINGS[m.holdingsRef];
-    var arr = ref?(Array.isArray(ref)?ref:[ref]):[];
-    var live = arr.reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
-    map[m.n] = live > 0 ? live : (m.stocks||0);
-  });
-  return map;
-})();
-/* Helper: get live equity for a member object */
-var _eq = function(m){ return (m&&m.n&&_liveEqMap[m.n]) ? _liveEqMap[m.n] : (m&&m.stocks||0); };
-
 /* ════════════════════════════════════════════════════════════
    DATA INTEGRITY ENGINE — runs on every page load
    Catches: double-counts, missing wiring, value discrepancies
@@ -16435,6 +16436,7 @@ const MEMBER_HOLDINGS = {
     ..._tag(typeof PRAFUL_NRE_ICICI_HOLDINGS!=="undefined"?PRAFUL_NRE_ICICI_HOLDINGS:[], "Praful Shah", "ICICI Direct"),
   ]
 };
+
 
 /* ALL_FAMILY — flattened view sharing the SAME object references as MEMBER_HOLDINGS,
    so live price patching (which mutates objects in place) stays in sync everywhere */
@@ -24707,7 +24709,7 @@ function ProfilesTab() {
   const TYPE_C = {"Equity":"#34d399","PMS":"#a78bfa","NRE Equity":"#f0b429"};
 
   // Total wealth per member
-  const memberWealth = function(m){ return _eq(m)+(m.mf||0); }+(BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0));
+  const memberWealth = function(m){ return _eq(m)+(m.mf||0)+(BANK.filter(function(b){return b.n===m.n;}).reduce(function(s,b){return s+(b.b||0);},0)); };
 
   return (
     <div style={{display:"flex",gap:14,height:"auto"}}>
