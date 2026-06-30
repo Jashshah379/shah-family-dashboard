@@ -118,6 +118,21 @@ var _eq = function(m) {
   return m.stocks||0;
 };
 
+/* ── Case-insensitive STOCK_MASTER_DB lookup — prevents silent grouping splits ── */
+var _stockDbCI = null;
+var _normStock = function(raw) {
+  if (!raw) return raw;
+  if (_stockDbCI === null) {
+    _stockDbCI = {};
+    if (typeof STOCK_MASTER_DB !== "undefined") {
+      Object.keys(STOCK_MASTER_DB).forEach(function(k){
+        _stockDbCI[k.toUpperCase().trim()] = STOCK_MASTER_DB[k];
+      });
+    }
+  }
+  return _stockDbCI[raw.toUpperCase().trim()] || raw;
+};
+
 /*
 const JASH_ICICI_HOLDINGS = [
   {s:"Sansera Engineering",qty:10,avg:1595.89,cmp:2945.8,val:29458,inv:15959,unreal:13499},
@@ -11885,7 +11900,7 @@ function FamilyApp() {
               const totalFamilyVal = top30.reduce((s,h)=>s+h.val,0);
 
               const renderCard = (h, keyPrefix) => {
-                const pl=h.val-h.inv; const _normH = (typeof STOCK_MASTER_DB!=="undefined" && (STOCK_MASTER_DB[(h.s||"").toUpperCase()]||STOCK_MASTER_DB[h.s])) || h.s;
+                const pl=h.val-h.inv; const _normH = _normStock(h.s);
                 const nseSym = (typeof SYMBOL_MAP!=="undefined"?(SYMBOL_MAP[h.sym]||SYMBOL_MAP[_normH]||SYMBOL_MAP[h.s]):null)||(h.sym)||(h.s&&h.s.match(/^[A-Z0-9&-]{2,15}$/)?h.s:null);
                 const liveCmp = nseSym&&livePrices[nseSym] ? livePrices[nseSym].p : null;
                 const effectiveCmp = liveCmp || h.cmp || 0;
@@ -13775,9 +13790,9 @@ const VASUMATI_ICICI_HOLDINGS = [
   {s:"Sudarshan Colorants India",sym:"CLACHE",qty:1800,avg:454.46,cmp:364.15,val:655470.0,inv:818028.0},
   {s:"Control Print",sym:"CONPRI",qty:3592,avg:827.84,cmp:640.05,val:2299059.6,inv:2973601.28},
   {s:"DANLAW TECHNOLOGIES INDIA LTD.",sym:"DANTEC",qty:1306,avg:1639.81,cmp:1008.7,val:1317362.2,inv:2141591.86},
-  {s:"DCX SYSTEMS LIMITED",sym:"DCXSYS",qty:5400,avg:180.65,cmp:191.3,val:1033020.0,inv:975510.0},
+  {s:"DCX Systems",sym:"DCXSYS",qty:5400,avg:180.65,cmp:191.3,val:1033020.0,inv:975510.0},
   {s:"Dredging Corporation of India",sym:"DRECOR",qty:4100,avg:970.17,cmp:1067.4,val:4376340.0,inv:3977697.0},
-  {s:"E2E NETWORKS LIMITED",sym:"E2ENET",qty:1500,avg:351.82,cmp:412.3,val:618450.0,inv:527730.0},
+  {s:"E2E Networks",sym:"E2ENET",qty:1500,avg:351.82,cmp:412.3,val:618450.0,inv:527730.0},
   {s:"ECOS IND MOBandHOSPITALITY LTD",sym:"ECOMOB",qty:1754,avg:241.76,cmp:133.59,val:234316.86,inv:424047.04},
   {s:"Epack Prefab Technologies",sym:"EPAPRE",qty:3690,avg:207.19,cmp:239.96,val:885452.4,inv:764531.1},
   {s:"Force Motors",sym:"FORMOT",qty:904,avg:20479.18,cmp:18391.0,val:16625464.0,inv:18513178.72},
@@ -22274,7 +22289,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
         const pl = h.unreal != null ? h.unreal : (h.inv > 0 ? h.val - h.inv : null);
         const plPct = h.inv > 0 ? ((h.val - h.inv) / h.inv * 100) :
                       (h.avg > 0 && h.cmp > 0 ? (h.cmp - h.avg) / h.avg * 100 : null);
-        var _normName = (typeof STOCK_MASTER_DB !== "undefined" && (STOCK_MASTER_DB[h.s.toUpperCase()] || STOCK_MASTER_DB[h.s])) || h.s;
+        var _normName = _normStock(h.s);
         var _nseSym = (typeof SYMBOL_MAP !== "undefined" && (SYMBOL_MAP[_normName] || SYMBOL_MAP[h.s])) ? (SYMBOL_MAP[_normName] || SYMBOL_MAP[h.s]) : _normName;
         rows.push({
           sym:       _nseSym,
