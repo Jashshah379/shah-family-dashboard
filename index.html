@@ -23020,7 +23020,10 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                                       <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
                                         <div style={{width:7,height:7,borderRadius:"50%",background:r.memberCol,flexShrink:0}}/>
                                         <span style={{color:"#c8d0e8",fontWeight:600}}>{r.member}</span>
-                                        {r.mtf&&<span title={"MTF funded: "+(r.mtfQty||r.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px",flexShrink:0}}>MTF</span>}
+                                        {r.mtf&&<span style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px",flexShrink:0,display:"inline-flex",gap:3,alignItems:"center"}}>
+                                          <span>MTF</span>
+                                          <span style={{color:"#ffd980",fontFamily:"monospace"}}>{(r.mtfQty||r.qty||0).toLocaleString("en-IN")}</span>
+                                        </span>}
                                         {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym&&t.member===r.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
                                           return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:4,padding:"1px 5px",flexShrink:0}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
                                         })}
