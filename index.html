@@ -13329,7 +13329,7 @@ const MEMBERS = [
    cas:"Karishma Shah",broker:null,icici:null,holdingsRef:"KARI",
    custodian:["Zerodha (DWL506)"],casApr26:1898102,
    casTrend:[{m:"Apr'26",v:1898102}]},
-  {n:"Praful Shah",    i:"PS",c:"#84cc16",stocks:963163,    mf:1978808,  bank:4760114,
+  {n:"Praful Shah",    i:"PS",c:"#84cc16",stocks:963163,    mf:1821489,  bank:4760114,
    cas:"Praful Shah", broker:"JD0P151",icici:"8511065502",holdingsRef:"P151",
    custodian:["Sushil Financial","ICICI Direct"],casApr26:3421347,
    casTrend:[{m:"Apr'26",v:3421347}]},
@@ -15960,6 +15960,13 @@ const COIN_MF_ADDITIONAL = {
      member:"Chetan Shah HUF",custodian:"360 ONE Asset Management",
      note:"AIF Form 64C — FY25-26 net distribution ₹1,06,921 (incl STCG ₹75,545 + Div ₹30,630). PAN: AACTI1540H"}
   ],
+
+  "Praful Shah": [
+    {scheme:"Invesco India Midcap Fund - Direct Plan",              folio:"31044357506",    cat:"Equity - Mid Cap",     platform:"Zerodha Coin", invested:499974.96,  value:559160.42,  gain:59185.46,  units:2335.967,   nav:239.37,  xirr:11.84},
+    {scheme:"HDFC Mid Cap Fund - Direct Plan",                      folio:"36558949/83",    cat:"Equity - Mid Cap",     platform:"Zerodha Coin", invested:509974.65,  value:543483.05,  gain:33508.39,  units:2392.312,   nav:227.179, xirr:6.57},
+    {scheme:"Mirae Asset Small Cap Fund - Direct Plan",             folio:"78888434574",    cat:"Equity - Small Cap",   platform:"Zerodha Coin", invested:199990.01,  value:220619.80,  gain:20629.79,  units:17768.992,  nav:12.416,  xirr:10.32},
+    {scheme:"ICICI Prudential Multi Sector Passive FOF - Direct",   folio:"43190384/90",    cat:"Others - Fund of Funds",platform:"Zerodha Coin",invested:499974.88,  value:507595.75,  gain:7620.86,   units:2888.881,   nav:175.707, xirr:1.52},
+  ],
 };
 
 const RAKESH_HUF_HOLDINGS = []; /* Rakesh Bhansali HUF — no data yet */
@@ -16142,6 +16149,7 @@ const DATA_FRESHNESS = {
   "M34_SUSHIL":         { member:"Maya Shah",           custodian:"Sushil Financial",       lastUpdated:"2026-06-19", source:"Sushil ConsolidatedHolding" },
   "MAYA_SUSHIL":        { member:"Maya Shah",           custodian:"Sushil Financial (supp)",lastUpdated:"2026-06-27", source:"Sushil StockHolding CSV" },
   "PRAFUL_HUF_INCRED":  { member:"Praful Shah HUF",     custodian:"InCred PMS",             lastUpdated:"2026-05-31", source:"InCred Monthly Report" },
+  "PRAFUL_ZERODHA_MF":  { member:"Praful Shah",         custodian:"Zerodha Coin MF",        lastUpdated:"2026-07-02", source:"Zerodha XLSX + Coin app" },
   "P71_SUSHIL":         { member:"Praful Shah HUF",     custodian:"Sushil Financial",       lastUpdated:"2026-06-19", source:"Sushil ConsolidatedHolding" },
   "AMIT_HUF_ICICI":     { member:"Amit Gandhi HUF",    custodian:"ICICI Direct",           lastUpdated:"2026-06-27", source:"ICICI Portfolio Summary" },
   "MTF_RASIKLAL_HUF":   { member:"Rasiklal HUF",       custodian:"ICICI MTF",              lastUpdated:"2026-06-26", source:"Daily interest statement" },
@@ -16420,6 +16428,14 @@ var PRAFUL_HUF_INCRED_HOLDINGS = [
   {s:"Sundram Fasteners Limited",qty:254,avg:830.66,cmp:860.45,val:218554.3,inv:210988.66},
   {s:"TBO Tek Ltd",qty:205,avg:1290.85,cmp:1229.4,val:252027.0,inv:264623.39},
   {s:"Trent",qty:82,avg:3987.86,cmp:4224.0,val:346368.0,inv:327004.83}
+];
+
+/* Praful Shah — Zerodha Mutual Funds (Jul 2026) */
+var PRAFUL_ZERODHA_MF = [
+  {name:"Invesco India Midcap Fund - Growth",folio:"31044357506",units:2335.967,nav:239.37,navBuy:214.03,val:559160.42,inv:499974.96,pl:59185.46,plPct:11.84,cat:"Equity - Mid Cap",txns:[{date:"2026-05-12",amount:299985.07,nav:218.21,units:1374.754},{date:"2026-04-13",amount:199989.98,nav:208.06,units:961.213}]},
+  {name:"HDFC Mid Cap Fund - Growth",folio:"36558949/83",units:2392.312,nav:227.179,navBuy:213.17,val:543483.05,inv:509974.65,pl:33508.39,plPct:6.57,cat:"Equity - Mid Cap",txns:[{date:"2025-07-28",amount:499975.09,nav:213.152,units:2345.627},{date:"2025-07-25",amount:9999.55,nav:214.192,units:46.685}]},
+  {name:"Mirae Asset Small Cap Fund - Growth",folio:"78888434574",units:17768.992,nav:12.416,navBuy:11.26,val:220619.8,inv:199990.01,pl:20629.79,plPct:10.32,cat:"Equity - Small Cap",txns:[{date:"2026-04-13",amount:199990.0,nav:11.255,units:17768.992}]},
+  {name:"ICICI Prudential Multi Sector Passive FOF - Growth",folio:"43190384/90",units:2888.881,nav:175.7067,navBuy:173.07,val:507595.75,inv:499974.88,pl:7620.86,plPct:1.52,cat:"Others - Fund of Funds",txns:[{date:"2026-05-12",amount:199989.92,nav:170.4569,units:1173.258},{date:"2026-04-22",amount:99995.01,nav:174.9593,units:571.533},{date:"2026-03-09",amount:49997.47,nav:168.7422,units:296.295},{date:"2026-02-19",amount:149992.48,nav:176.9207,units:847.795}]}
 ];
 
 const MEMBER_HOLDINGS = {
