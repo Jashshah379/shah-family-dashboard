@@ -69,20 +69,20 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
   glow.id = 'cursor-glow';
   glow.style.cssText = [
     'position:fixed','pointer-events:none','z-index:9999',
-    'width:380px','height:380px','border-radius:50%',
-    'background:radial-gradient(circle,rgba(99,102,241,0.10) 0%,rgba(79,135,255,0.05) 35%,transparent 70%)',
+    'width:260px','height:260px','border-radius:50%',
+    'background:radial-gradient(circle,rgba(99,102,241,0.055) 0%,rgba(79,135,255,0.02) 40%,transparent 70%)',
     'transform:translate(-50%,-50%)',
-    'transition:opacity 0.3s ease',
+    'transition:opacity 0.4s ease',
     'opacity:0','top:0','left:0',
-    'will-change:transform',
+    'will-change:transform','contain:strict',
   ].join(';');
   document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(glow);
     var mx=0, my=0, glowX=0, glowY=0, visible=false, raf=null;
     function lerp(a,b,t){return a+(b-a)*t;}
     function tick() {
-      glowX = lerp(glowX, mx, 0.12);
-      glowY = lerp(glowY, my, 0.12);
+      glowX = lerp(glowX, mx, 0.18);
+      glowY = lerp(glowY, my, 0.18);
       glow.style.left = glowX+'px';
       glow.style.top  = glowY+'px';
       raf = requestAnimationFrame(tick);
@@ -96,13 +96,7 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
     });
     tick();
 
-    /* Click ripple */
-    document.addEventListener('click', function(e) {
-      var r = document.createElement('div');
-      r.style.cssText = 'position:fixed;pointer-events:none;z-index:99999;width:56px;height:56px;border-radius:50%;border:1px solid rgba(99,102,241,0.45);left:'+(e.clientX-28)+'px;top:'+(e.clientY-28)+'px;animation:ripple-out 0.45s ease forwards;';
-      document.body.appendChild(r);
-      setTimeout(function(){if(r.parentNode)r.remove();},500);
-    });
+
   });
 })();
 
