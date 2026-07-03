@@ -64,42 +64,6 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
 <script>
 
 /* ── Cursor glow effect ── */
-(function() {
-  var glow = document.createElement('div');
-  glow.id = 'cursor-glow';
-  glow.style.cssText = [
-    'position:fixed','pointer-events:none','z-index:9999',
-    'width:260px','height:260px','border-radius:50%',
-    'background:radial-gradient(circle,rgba(99,102,241,0.055) 0%,rgba(79,135,255,0.02) 40%,transparent 70%)',
-    'transform:translate(-50%,-50%)',
-    'transition:opacity 0.4s ease',
-    'opacity:0','top:0','left:0',
-    'will-change:transform','contain:strict',
-  ].join(';');
-  document.addEventListener('DOMContentLoaded', function() {
-    document.body.appendChild(glow);
-    var mx=0, my=0, glowX=0, glowY=0, visible=false, raf=null;
-    function lerp(a,b,t){return a+(b-a)*t;}
-    function tick() {
-      glowX = lerp(glowX, mx, 0.18);
-      glowY = lerp(glowY, my, 0.18);
-      glow.style.left = glowX+'px';
-      glow.style.top  = glowY+'px';
-      raf = requestAnimationFrame(tick);
-    }
-    document.addEventListener('mousemove', function(e) {
-      mx = e.clientX; my = e.clientY;
-      if(!visible) { glow.style.opacity='1'; visible=true; }
-    });
-    document.addEventListener('mouseleave', function() {
-      glow.style.opacity='0'; visible=false;
-    });
-    tick();
-
-
-  });
-})();
-
 
 </script>
 </head>
@@ -612,10 +576,10 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh, cou
         .reveal{animation:fadeUp 0.22s ease both}
 
         .tb{padding:7px 16px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .18s cubic-bezier(.4,0,.2,1);letter-spacing:0.01em;white-space:nowrap;flex-shrink:0;font-family:'Inter',sans-serif}
-        .tb:active{transform:scale(0.95)}
+        .tb:active{transform:scale(0.93);transition:transform 0.08s ease}
         .tb.off{background:transparent;color:#3d4f78}
-        .tb.off:hover{background:rgba(13,18,40,0.8);color:#8a9bc4;border-color:#1a2242}
-        .tb.on{background:linear-gradient(135deg,#1a2a5a,#0f1e48);color:#6499ff;border-color:#2a4090;box-shadow:0 2px 12px rgba(79,135,255,0.2)}
+        .tb.off:hover{background:rgba(13,18,40,0.9);color:#8a9bc4;border-color:#1a2242;transform:translateY(-1px)}
+        .tb.on{background:linear-gradient(135deg,#1e3268,#0f1e48);color:#6499ff;border-color:#2a4090;box-shadow:0 2px 14px rgba(79,135,255,0.22),inset 0 1px 0 rgba(255,255,255,0.06)}
 
         .mc{background:linear-gradient(155deg,#0d1228,#090c1a);border:1px solid #1a2242;border-radius:14px;padding:16px;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
         .mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--mc-color,#6366f1);opacity:0;transition:opacity .2s;border-radius:2px 2px 0 0}
