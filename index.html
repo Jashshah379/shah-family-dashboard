@@ -2998,16 +2998,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
           <DonutChart/>
         </div>
 
-        {/* Asset pills */}
-        <div style={{display:"flex",gap:7,marginTop:14,flexWrap:"wrap"}}>
-          {assets.map(a=>(
-            <div key={a.l} style={{background:"rgba(255,255,255,0.05)",borderRadius:16,padding:"4px 10px",display:"flex",alignItems:"center",gap:5,border:`1px solid ${a.c}33`}}>
-              <div style={{width:5,height:5,borderRadius:"50%",background:a.c}}/>
-              <span style={{fontSize:8,color:"#8899bb"}}>{a.l}</span>
-              <span style={{fontSize:9,fontWeight:700,color:"#c8d0e8",fontFamily:"monospace"}}>{cr(a.v)}</span>
-            </div>
-          ))}
-        </div>
+
       </div>
 
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
