@@ -2934,80 +2934,26 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const [shown,setShown]=React.useState(false);
   React.useEffect(()=>{ const t=setTimeout(()=>setShown(true),100); return()=>clearTimeout(t); },[]);
 
-  /* Enhanced asset chart — donut + member bars */
+  /* Thin stacked asset bar */
   const DonutChart = function() {
-    var cx=90,cy=90,R=78,ri=52; var angle=-Math.PI/2;
-    var slices = assets.map(function(a,i) {
-      var sw=(a.v/assetTotal)*2*Math.PI;
-      var x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle); angle+=sw;
-      var x2=cx+R*Math.cos(angle),y2=cy+R*Math.sin(angle);
-      var ix1=cx+ri*Math.cos(angle-sw),iy1=cy+ri*Math.sin(angle-sw);
-      var ix2=cx+ri*Math.cos(angle),iy2=cy+ri*Math.sin(angle);
-      var lg=sw>Math.PI?1:0;
-      return {a:a,d:"M"+x1+","+y1+" A"+R+","+R+" 0 "+lg+",1 "+x2+","+y2+" L"+ix2+","+iy2+" A"+ri+","+ri+" 0 "+lg+",0 "+ix1+","+iy1+" Z",sw:sw};
-    });
-    /* Top members for bar chart */
-    var topM = (typeof MEMBERS!=="undefined"?MEMBERS:[])
-      .filter(function(m){return m&&!m._isFamily&&((m.stocks||0)+(m.mf||0))>0;})
-      .map(function(m){return {n:m.n,v:(m.stocks||0)+(m.mf||0)+(m.bank||0)};})
-      .sort(function(a,b){return b.v-a.v;}).slice(0,8);
-    var maxM = topM.length>0?topM[0].v:1;
-    var memberColors=["#6366f1","#10b981","#f0b429","#f87171","#a78bfa","#34d399","#fb923c","#60a5fa"];
     return (
-      <div style={{display:"flex",flexDirection:"column",gap:16,alignItems:"center"}}>
-        {/* Donut */}
-        <div style={{position:"relative"}}>
-          <svg width={180} height={180} viewBox="0 0 180 180" style={{filter:"drop-shadow(0 8px 24px rgba(99,102,241,0.25))"}}>
-            {/* Background ring */}
-            <circle cx={cx} cy={cy} r={R} fill="none" stroke="#1a1f3a" strokeWidth={R-ri}/>
-            {/* Slices */}
-            {slices.map(function(s,i){return(
-              <path key={i} d={s.d} fill={s.a.c} stroke="#070a16" strokeWidth={2}
-                opacity={0.92}/>
-            );})}
-            {/* Glow ring */}
-            <circle cx={cx} cy={cy} r={ri-4} fill="#070a16"/>
-            <circle cx={cx} cy={cy} r={ri-4} fill="url(#cg)" opacity={0.3}/>
-            <defs>
-              <radialGradient id="cg" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4"/>
-                <stop offset="100%" stopColor="#070a16" stopOpacity="0"/>
-              </radialGradient>
-            </defs>
-            {/* Center text */}
-            <text x={cx} y={cy-8} textAnchor="middle" fill="#edeef5" fontSize={13} fontWeight={900} fontFamily="'JetBrains Mono',monospace">
-              {cr(totalWealth).replace("₹","")}
-            </text>
-            <text x={cx} y={cy+7} textAnchor="middle" fill="#3a4a6a" fontSize={7} fontWeight={700} letterSpacing={2}>TOTAL</text>
-            <text x={cx} y={cy+18} textAnchor="middle" fill="#3a4a6a" fontSize={6}>NET WEALTH</text>
-          </svg>
+      <div style={{width:"100%"}}>
+        {/* Stacked bar */}
+        <div style={{height:8,borderRadius:4,overflow:"hidden",display:"flex",gap:1,marginBottom:10}}>
+          {assets.map(function(a,i){
+            var pct=a.v/assetTotal*100;
+            return <div key={i} style={{width:pct+"%",background:a.c,transition:"width 0.6s ease"}}/>;
+          })}
         </div>
-        {/* Asset legend pills */}
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+        {/* Legend */}
+        <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
           {assets.map(function(a,i){return(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 10px",
-              background:"rgba(255,255,255,0.04)",borderRadius:20,border:"1px solid #1a2242"}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:a.c}}/>
+            <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
+              <div style={{width:7,height:7,borderRadius:2,background:a.c,flexShrink:0}}/>
               <span style={{fontSize:9,color:"#6a7a9a"}}>{a.l}</span>
               <span style={{fontSize:9,fontWeight:700,color:"#c8d0e8",fontFamily:"monospace"}}>{cr(a.v)}</span>
             </div>
           );})}
-        </div>
-        {/* Member wealth bars */}
-        <div style={{width:"100%",display:"flex",flexDirection:"column",gap:5}}>
-          <div style={{fontSize:9,fontWeight:700,color:"#3a4a6a",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:2}}>By Member</div>
-          {topM.map(function(m,i){
-            var pct=m.v/maxM*100;
-            return(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8}}>
-                <div style={{fontSize:9,color:"#6a7a9a",width:90,textAlign:"right",flexShrink:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.n}</div>
-                <div style={{flex:1,height:5,background:"#111828",borderRadius:3,overflow:"hidden"}}>
-                  <div style={{height:"100%",width:pct+"%",background:memberColors[i%memberColors.length],borderRadius:3,transition:"width 0.6s cubic-bezier(.4,0,.2,1)"}}/>
-                </div>
-                <div style={{fontSize:9,fontFamily:"monospace",color:"#c8d0e8",width:56,flexShrink:0}}>{cr(m.v)}</div>
-              </div>
-            );
-          })}
         </div>
       </div>
     );
@@ -3044,10 +2990,12 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
               )}
             </div>
           </div>
-          <div style={{display:"flex",gap:16,alignItems:"center"}}>
-            <DonutChart/>
-            
-          </div>
+
+        </div>
+
+        {/* Thin allocation bar */}
+        <div style={{marginTop:14}}>
+          <DonutChart/>
         </div>
 
         {/* Asset pills */}
