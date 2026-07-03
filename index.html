@@ -2834,7 +2834,12 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const _staticEq = mems.reduce(function(s,m){return s+_eq(m);},0);
   const totalEq   = _mhLiveEq > _staticEq * 0.5 ? _mhLiveEq : _staticEq;
   /* MTF borrowing — subtract broker loan to get real net wealth */
-  const _mtfFunding = (typeof MTF_SUMMARY !== "undefined" && MTF_SUMMARY.total_funding) ? MTF_SUMMARY.total_funding : 0;
+  const _mtfFunding = (function(){
+    if(typeof MTF_OUTSTANDING_OVERRIDE!=="undefined"){
+      return Object.values(MTF_OUTSTANDING_OVERRIDE).reduce(function(s,v){return s+(v||0);},0);
+    }
+    return (typeof MTF_SUMMARY!=="undefined"&&MTF_SUMMARY.total_funding)?MTF_SUMMARY.total_funding:0;
+  })();
   const totalWealth = (totalEq - _mtfFunding) + totalMF + totalBank + totalPPF;
   const grossWealth = totalEq + totalMF + totalBank + totalPPF;
   const totalPL   = totalVal-totalInv;
@@ -2945,12 +2950,15 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
             return <div key={i} style={{width:pct+"%",background:a.c,transition:"width 0.6s ease"}}/>;
           })}
         </div>
-        {/* Legend */}
-        <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+        {/* Legend pills */}
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
           {assets.map(function(a,i){return(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
-              <div style={{width:7,height:7,borderRadius:2,background:a.c,flexShrink:0}}/>
-              <span style={{fontSize:9,color:"#6a7a9a"}}>{a.l}</span>
+            <div key={i} style={{display:"flex",alignItems:"center",gap:5,
+              padding:"4px 10px",borderRadius:20,
+              background:"rgba(255,255,255,0.04)",
+              border:"1px solid "+a.c+"44"}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:a.c,flexShrink:0}}/>
+              <span style={{fontSize:9,color:"#8899bb"}}>{a.l}</span>
               <span style={{fontSize:9,fontWeight:700,color:"#c8d0e8",fontFamily:"monospace"}}>{cr(a.v)}</span>
             </div>
           );})}
