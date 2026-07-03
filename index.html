@@ -23213,15 +23213,20 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
               </tbody>
               <tfoot>
                 <tr style={{background:"#0a0d1c",borderTop:"2px solid #1e2540"}}>
-                  <td colSpan={6} style={{padding:"7px 9px",color:"#4d5f87",fontSize:10,fontWeight:600}}>
-                    TOTAL · {sorted.length} positions
+                  <td style={{padding:"7px 9px",color:"#4d5f87",fontSize:10,fontWeight:600}}>
+                    TOTAL · {sorted.length}
                   </td>
+                  <td style={{padding:"7px 9px"}}/>
+                  <td style={{padding:"7px 9px"}}/>
+                  <td style={{padding:"7px 9px"}}/>
+                  <td style={{padding:"7px 9px"}}/>
+                  <td style={{padding:"7px 9px"}}/>
                   <td style={{padding:"7px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#6499ff"}}>{fC(grandTotalVal)}</td>
                   <td style={{padding:"7px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
                     color:grandTotalPL>=0?"#34d399":"#f87171"}}>
                     {grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}
                   </td>
-                  <td style={{padding:"7px 9px",textAlign:"right",fontWeight:700,
+                  <td style={{padding:"7px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
                     color:grandTotalPL>=0?"#34d399":"#f87171"}}>
                     {grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}
                   </td>
