@@ -22616,18 +22616,29 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                 ref={srchRef}
                 value={_inputVal}
                 onChange={function(e){
-                  /* Only use the portion before any selection — that's what user typed */
                   var el = e.target;
                   var newVal = el.value;
-                  /* If selection was present and user typed a char, newVal replaced the suffix */
-                  /* Just use full newVal as the new typed text */
-                  setSrchTyped(newVal);
-                  setFilterStock(newVal);
+                  /* Use selectionStart to get only what user has actually typed,
+                     discarding the autocomplete suffix which was in the selection */
+                  var typed = newVal.slice(0, el.selectionStart);
+                  /* If nothing selected (user cleared fully), use full newVal */
+                  if(el.selectionStart === el.selectionEnd) typed = newVal;
+                  setSrchTyped(typed);
+                  setFilterStock(typed);
                   setSrchHi(0);
                   setSrchOpen(true);
                 }}
                 onKeyDown={function(e){
                   var matched = srchTyped.length > 0 ? srchMatch(srchTyped).slice(0,8) : [];
+                  if(e.key==="Backspace"||e.key==="Delete"){
+                    /* Clear autocomplete suffix before backspace acts */
+                    e.preventDefault();
+                    var newTyped = srchTyped.slice(0, Math.max(0, srchTyped.length - (e.key==="Backspace"?1:0)));
+                    setSrchTyped(newTyped);
+                    setFilterStock(newTyped);
+                    setSrchOpen(newTyped.length > 0);
+                    return;
+                  }
                   if(e.key==="Enter"){
                     e.preventDefault();
                     accept();
