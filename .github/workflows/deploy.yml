@@ -9,7 +9,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  deployments: write
 
 concurrency:
   group: pages
@@ -25,15 +24,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare site folder
+        run: |
+          mkdir _site
+          cp index.html _site/
+          cp .nojekyll _site/
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        timeout-minutes: 5
