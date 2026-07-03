@@ -23402,6 +23402,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
   const grandTotalVal = filtered.reduce((s,r) => s+r.val, 0);
   const grandTotalInv = filtered.reduce((s,r) => s+(r.inv||0), 0);
   const grandTotalPL  = filtered.reduce((s,r) => s+(r.pl||0), 0);
+  const grandTotalQty = filtered.reduce((s,r) => s+(r.qty||0), 0);
 
   const SH = ({col, label, right=true}) => {
     const isStr = col==="sym"||col==="member"||col==="custodian"||col==="sector"||col==="s";
@@ -24069,24 +24070,41 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                 })}
               </tbody>
               <tfoot>
-                <tr style={{background:"#0a0d1c",borderTop:"2px solid #1e2540"}}>
-                  <td style={{padding:"7px 9px",color:"#4d5f87",fontSize:10,fontWeight:600}}>
-                    TOTAL · {sorted.length}
+                <tr style={{background:"rgba(10,13,28,0.95)",borderTop:"2px solid #233066"}}>
+                  {/* Cell 1 — checkbox col */}
+                  <td style={{padding:"8px 9px"}}/>
+                  {/* Cell 2 — stock name col */}
+                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700,letterSpacing:"0.05em"}}>
+                    TOTAL &middot; {sorted.length} stocks
                   </td>
-                  <td style={{padding:"7px 9px"}}/>
-                  <td style={{padding:"7px 9px"}}/>
-                  <td style={{padding:"7px 9px"}}/>
-                  <td style={{padding:"7px 9px"}}/>
-                  <td style={{padding:"7px 9px"}}/>
-                  <td style={{padding:"7px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#6499ff"}}>{fC(grandTotalVal)}</td>
-                  <td style={{padding:"7px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
+                  {/* Cell 3 — qty */}
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4",fontSize:11}}>
+                    {grandTotalQty.toLocaleString("en-IN")}
+                  </td>
+                  {/* Cell 4 — avg (empty) */}
+                  <td style={{padding:"8px 9px"}}/>
+                  {/* Cell 5 — invested */}
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4",fontSize:11}}>
+                    {fC(grandTotalInv)}
+                  </td>
+                  {/* Cell 6 — value */}
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>
+                    {fC(grandTotalVal)}
+                  </td>
+                  {/* Cell 7 — day P/L (empty) */}
+                  <td style={{padding:"8px 9px"}}/>
+                  {/* Cell 8 — total P/L */}
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:11,
                     color:grandTotalPL>=0?"#34d399":"#f87171"}}>
                     {grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}
                   </td>
-                  <td style={{padding:"7px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
+                  {/* Cell 9 — return % */}
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:11,
                     color:grandTotalPL>=0?"#34d399":"#f87171"}}>
                     {grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}
                   </td>
+                  {/* Cell 10 — members (empty) */}
+                  <td style={{padding:"8px 9px"}}/>
                 </tr>
               </tfoot>
             </table>
