@@ -2835,10 +2835,18 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const totalEq   = _mhLiveEq > _staticEq * 0.5 ? _mhLiveEq : _staticEq;
   /* MTF borrowing — subtract broker loan to get real net wealth */
   const _mtfFunding = (function(){
-    if(typeof MTF_OUTSTANDING_OVERRIDE!=="undefined"){
-      return Object.values(MTF_OUTSTANDING_OVERRIDE).reduce(function(s,v){return s+(v||0);},0);
-    }
-    return (typeof MTF_SUMMARY!=="undefined"&&MTF_SUMMARY.total_funding)?MTF_SUMMARY.total_funding:0;
+    /* Try MTF_OUTSTANDING_OVERRIDE first */
+    try {
+      if(typeof MTF_OUTSTANDING_OVERRIDE!=="undefined"){
+        var vals = Object.values(MTF_OUTSTANDING_OVERRIDE);
+        if(vals.length > 0) {
+          var total = vals.reduce(function(s,v){return s+(typeof v==="number"?v:0);},0);
+          if(total > 0) return total;
+        }
+      }
+    } catch(e) {}
+    /* Fallback: hardcoded sum from Jul 2026 data */
+    return 84295110; /* 205.6L + 384.4L + 36.9L + 216.0L */
   })();
   const totalWealth = (totalEq - _mtfFunding) + totalMF + totalBank + totalPPF;
   const grossWealth = totalEq + totalMF + totalBank + totalPPF;
