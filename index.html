@@ -25905,11 +25905,18 @@ function MTFTab() {
     var override = typeof MTF_OUTSTANDING_OVERRIDE!=="undefined" ? MTF_OUTSTANDING_OVERRIDE : {};
     var mh = typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS : {};
 
-    var members = [
-      {name:"Rasiklal HUF",   color:"#f0b429", holdingsRef:"RASIKLAL_HUF"},
-      {name:"Vasumati Shah",  color:"#a78bfa", holdingsRef:"V129"},
-      {name:"Amit Gandhi HUF",color:"#34d399", holdingsRef:"AMIT_HUF"},
-    ];
+    /* Build members dynamically from MTF_OUTSTANDING_OVERRIDE — no hardcoding */
+    var memberColors = {
+      "Vasumati Shah":"#a78bfa","Rasiklal HUF":"#f0b429",
+      "Rasiklal Shah":"#60a5fa","Amit Gandhi HUF":"#34d399",
+    };
+    var memberRefs = {
+      "Vasumati Shah":"V129","Rasiklal HUF":"RASIKLAL_HUF",
+      "Rasiklal Shah":"RM","Amit Gandhi HUF":"AMIT_HUF",
+    };
+    var members = Object.keys(override).map(function(name){
+      return {name:name, color:memberColors[name]||"#8899bb", holdingsRef:memberRefs[name]||""};
+    });
 
     return members.map(function(mem) {
       var outstanding = override[mem.name] || 0;
