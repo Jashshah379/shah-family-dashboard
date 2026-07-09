@@ -5993,7 +5993,7 @@ const PRAFUL_HUF_SUSHIL = [
   {s:"PFC NCD 7.15% (Bond)",qty:1000, avg:1000.00, cmp:986.00,  val:986000,  inv:1000000, unreal:-14000,  sector:"BOND"},
 ].map(h=>({...h, _custodian:"Sushil Financial (JD0P71)"}));
 
-const CHETAN_HUF_SUSHIL_HOLDINGS = [
+var CHETAN_HUF_SUSHIL_HOLDINGS = [
   {s:"360 ONE",qty:200,avg:547.92,cmp:1073.90,val:214780,inv:109584,unreal:105196,sector:"BFSI"},
   {s:"Aadhar Hsg. Fin.",qty:2004,avg:354.29,cmp:468.15,val:939577,inv:711060,unreal:228517,sector:"BFSI"},
   {s:"Adani Total Gas",qty:1000,avg:526.53,cmp:762.25,val:762250,inv:526530,unreal:235720,sector:"PTRO"},
@@ -6050,7 +6050,7 @@ const CHETAN_HUF_SUSHIL_HOLDINGS = [
   {s:"PFC NCD 7.15% (Bond)",qty:1000,avg:1000.00,cmp:986.00,val:986000,inv:1000000,unreal:-14000,sector:"BOND"},
 ].map(h=>({...h,_custodian:"Sushil Financial (JD0C31)"}));
 
-const VASUMATI_SUSHIL_HOLDINGS = [
+var VASUMATI_SUSHIL_HOLDINGS = [
   {s:"360 ONE",qty:70,avg:635.99,cmp:1073.90,val:75173,inv:44519,unreal:30654,sector:"BFSI"},
   {s:"Aadhar Hsg. Fin.",qty:47,avg:315.00,cmp:468.15,val:22003,inv:14805,unreal:7198,sector:"BFSI"},
   {s:"Aditya Birla RE",qty:300,avg:801.28,cmp:1237.80,val:371340,inv:240384,unreal:130956,sector:"CONS"},
@@ -6099,7 +6099,7 @@ const VASUMATI_SUSHIL_HOLDINGS = [
   {s:"Zee Learn",qty:22500,avg:11.90,cmp:7.79,val:175275,inv:267750,unreal:-92475,sector:"OTHERS"},
 ].map(h=>({...h,_custodian:"Sushil Financial (JD0V129)"}));
 
-const RASIKLAL_SUSHIL_HOLDINGS = [
+var RASIKLAL_SUSHIL_HOLDINGS = [
   {s:"3M India",qty:90,avg:30172.62,cmp:31995.00,val:2879550,inv:2715536,unreal:164014,sector:"TRAD"},
   {s:"Adani Total Gas",qty:800,avg:716.49,cmp:762.25,val:609800,inv:573192,unreal:36608,sector:"PTRO"},
   {s:"Aditya Birla Sun AMC",qty:400,avg:1006.48,cmp:1048.80,val:419520,inv:402592,unreal:16928,sector:"BFSI"},
@@ -6159,7 +6159,7 @@ const RASIKLAL_SUSHIL_HOLDINGS = [
   {s:"Yes Bank",qty:4813,avg:14.33,cmp:23.30,val:112143,inv:68970,unreal:43173,sector:"BFSI"},
 ].map(h=>({...h,_custodian:"Sushil Financial (JD0R124)"}));
 
-const RASIKLAL_HUF_SUSHIL_HOLDINGS = [
+var RASIKLAL_HUF_SUSHIL_HOLDINGS = [
   {s:"360 ONE",qty:109,avg:886.73,cmp:1052.0,val:114668,inv:96654,unreal:18014,sector:"BFSI"},
   {s:"Aadhar Hsg. Fin.",qty:2008,avg:352.39,cmp:469.85,val:943459,inv:707608,unreal:235851,sector:"BFSI"},
   {s:"Accentia Tech.",qty:200,avg:281.61,cmp:0.0,val:0,inv:56323,unreal:-56323,sector:"IT"},
@@ -6529,7 +6529,7 @@ const V129_PNL = [
   {s:"Zee Learn",sell_qty:10000,sell_val:172654,buy_val:134865,pl:37789,avg_sell:17.27,avg_buy:13.49},
 ];
 
-const RM_ICICI_HOLDINGS = [
+var RM_ICICI_HOLDINGS = [
   {sym:"3MIND",   name:"3M India",          qty:90, avg:30172,cmp:31995,cost:2715480,mkt:2879550,unreal:164070},
   {sym:"ABBPOW",  name:"ABB Power",         qty:218,avg:37114,cmp:36870,cost:8090826,mkt:8037660,unreal:-53166},
   {sym:"HONAUT",  name:"Honeywell Auto",    qty:60, avg:36209,cmp:34700,cost:2172540,mkt:2082000,unreal:-90540},
@@ -6876,7 +6876,7 @@ const CT5294_PNL = [
   {s:"ZYDUSLIFE",qty:5,bv:2883.25,sv:2890.0,pl:6.75,pp:0.2341},
 ];
 
-const MAYA_SUSHIL_HOLDINGS = [
+var MAYA_SUSHIL_HOLDINGS = [
   {s:"CDSL",qty:810,avg:508.49,cmp:1217.50,val:986175,inv:411877,unreal:574298,sector:"BFSI"},
   {s:"Heritage Foods",qty:2205,avg:53.20,cmp:320.15,val:705931,inv:117306,unreal:588625,sector:"FMCG"},
   {s:"HFCL",qty:3000,avg:78.34,cmp:187.23,val:561690,inv:235020,unreal:326670,sector:"TELE"},
@@ -6892,7 +6892,7 @@ const MAYA_SUSHIL_HOLDINGS = [
   {s:"PFC NCD 7.15% (Bond)",qty:1000,avg:1000.00,cmp:986.00,val:986000,inv:1000000,unreal:-14000,sector:"BOND"},
 ].map(h=>({...h,_custodian:"Sushil Financial (JD0M34)"}));
 
-const CHETAN_V60_SUSHIL_HOLDINGS = [
+var CHETAN_V60_SUSHIL_HOLDINGS = [
   {s:"Galaxy Medicare",qty:8000,avg:54.00,cmp:19.25,val:154000,inv:432000,unreal:-278000,sector:"OTHERS"},
   {s:"Hindustan Construction",qty:2012,avg:35.75,cmp:24.02,val:48328,inv:71930,unreal:-23601,sector:"CONS"},
   {s:"Premium Plast",qty:3000,avg:49.00,cmp:36.55,val:109650,inv:147000,unreal:-37350,sector:"OTHERS"},
@@ -6971,7 +6971,7 @@ const JASH_SUMMARY = {
   netPL:14281424,xirr:18.4,
 };
 
-const VASUMATI_ZERODHA_HOLDINGS = [
+var VASUMATI_ZERODHA_HOLDINGS = [
   {s:"DCX Systems",qty:2500,avg:171.89,cmp:194.05,val:485125,inv:429731,unreal:55393},
   {s:"GPPL",qty:1530,avg:155.06,cmp:155.74,val:238282,inv:237246,unreal:1035},
   {s:"HONAUT",qty:3,avg:35105.0,cmp:34700.0,val:104100,inv:105315,unreal:-1215},
@@ -7069,7 +7069,7 @@ var VASUMATI_ICICI_HOLDINGS = [
 ];
 
 
-const INCRED_HOLDINGS = [
+var INCRED_HOLDINGS = [
   {name:"HDFC Bank",    val:2800000,pct:6.5,sector:"Banking"},
   {name:"Infosys",      val:2400000,pct:5.5,sector:"IT"},
   {name:"Reliance Ind", val:3200000,pct:7.3,sector:"Conglomerate"},
@@ -7079,7 +7079,7 @@ const INCRED_HOLDINGS = [
   {name:"Dividend / Interest receivable",val:100000,pct:0.2,sector:"Dividend / Interest receivable"},
 ];
 
-const ASHA_SUSHIL_HOLDINGS = [
+var ASHA_SUSHIL_HOLDINGS = [
   {s:"360 ONE",qty:170,avg:534.85,cmp:1073.90,val:182563,inv:90925,unreal:91638,sector:"BFSI"},
   {s:"Aegis Logistics",qty:900,avg:789.21,cmp:770.40,val:693360,inv:710289,unreal:-16929,sector:"TRAD"},
   {s:"AJMERA",qty:9000,avg:211.55,cmp:121.67,val:1095030,inv:1903950,unreal:-808920,sector:"CONS"},
@@ -7144,7 +7144,7 @@ const ASHA_SUSHIL_HOLDINGS = [
   {s:"PFC NCD 7.15% (Bond)",qty:1000,avg:1000.00,cmp:986.00,val:986000,inv:1000000,unreal:-14000,sector:"BOND"},
 ].map(h=>({...h,_custodian:"Sushil Financial (JD0A46)"}));
 
-const KARI_HOLDINGS = [
+var KARI_HOLDINGS = [
   {s:"ACUTAAS",   qty:274, avg:620.54,cmp:3316.00,val:908584, inv:170027, pl:738557,  ltp:3316.00},
   {s:"AJMERA",    qty:750, avg:226.00, cmp:121.20, val:90900,  inv:169500, pl:-78600,  ltp:121.20},
   {s:"Ambuja Cements", qty:1101,avg:381.14, cmp:417.55, val:459723, inv:419630, pl:40093,   ltp:417.55},
@@ -7154,7 +7154,7 @@ const KARI_HOLDINGS = [
   {s:"Waaree Energies",qty:135, avg:1503.00,cmp:3050.00, val:411750, inv:203175, pl:208845,  ltp:3050.00},
 ];
 
-const CHETAN_HOLDINGS = [
+var CHETAN_HOLDINGS = [
   {s:"Genesys International", qty:3222,avg:550.00,cmp:274.85,val:885245,inv:1771000,unreal:-885755},
   {s:"DCX Systems",           qty:1200,avg:236.00,cmp:193.85,val:232620,inv:283200,unreal:-50580},
   {s:"Tata Power",            qty:500, avg:60.00, cmp:409.20,val:204600,inv:30000, unreal:174600},
@@ -7166,7 +7166,7 @@ const CHETAN_HOLDINGS = [
   {s:"Trent",             qty:30,  avg:800.00,cmp:2774.20,val:83226,inv:24000, unreal:59226},
 ];
 
-const AARYA_HOLDINGS = [
+var AARYA_HOLDINGS = [
   {s:"ADAWIL",   qty:4250,avg:201.21,cmp:188.88,val:802740, inv:854634, unreal:-51894},
   {s:"AJMREA",   qty:2905,avg:163.27,cmp:121.67,val:353451, inv:474298, unreal:-120847},
   {s:"Canara Bank",    qty:500, avg:128.00, cmp:104.00,val:52000,  inv:64000,  unreal:-12000},
@@ -7417,7 +7417,7 @@ var MTF_OUTSTANDING_OVERRIDE = {
 };
 
 
-const JASH_PORTFOLIO_HOLDINGS = [
+var JASH_PORTFOLIO_HOLDINGS = [
   {sym:"BORORENEW",qty:4260,avg:664.84,cmp:516.7,cost:2832207,mkt:2201142,val:2201142,inv:2832207,unreal:-631065,sector:"ENGG"},
   {sym:"COALINDIA",qty:9000,avg:484.0,cmp:446.2,cost:4356000,mkt:4015800,val:4015800,inv:4356000,unreal:-340200,sector:"METL"},
   {sym:"GOKEX",qty:1563,avg:885.67,cmp:655.9,cost:1384299,mkt:1025172,val:1025172,inv:1384299,unreal:-359128,sector:"TEXT"},
@@ -7430,7 +7430,7 @@ const JASH_PORTFOLIO_HOLDINGS = [
 ];
 
 
-const MEMBER_HOLDINGS = {
+var MEMBER_HOLDINGS = {
   "V129": [
     ..._tag(VASUMATI_SUSHIL_HOLDINGS,    "Vasumati Shah", "Sushil Financial"),
     ..._tag(VASUMATI_ICICI_HOLDINGS,     "Vasumati Shah", "ICICI Direct"),
