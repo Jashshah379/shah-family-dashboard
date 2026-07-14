@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>e-Invoice JSON Generator</title>
+<style>
+  :root{
+    --primary:#6366f1; --primary-dark:#818cf8; --primary-light:rgba(99,102,241,.18);
+    --cyan:#22d3ee; --teal:#2dd4bf; --amber:#fbbf24; --violet:#a78bfa;
+    --bg:#0d0f14; --surface:#171a21; --surface-2:#1f232c; --border:#2b303c;
+    --text:#e7e9ee; --muted:#8b93a5; --success:#34d399; --danger:#f87171;
+    --radius:12px; --radius-sm:8px;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.45);
+    --shadow-md:0 10px 30px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;-webkit-font-smoothing:antialiased;color-scheme:dark;}
+
+  header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 14px rgba(0,0,0,.45);}
+  .header-spacer{width:40px;flex:none;}
+  .header-clock{flex:none;font-size:11px;line-height:1.35;color:rgba(255,255,255,.85);min-width:150px;white-space:nowrap;}
+  .header-clock .hc-time{font-weight:700;font-size:14px;color:#fff;letter-spacing:.02em;}
+  .header-clock .hc-date{font-weight:500;}
+  .company-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;justify-content:center;}
+  .company-toggle{display:flex;gap:10px;flex-wrap:wrap;}
+  .profile-icon{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .profile-icon:hover{background:rgba(255,255,255,.24);}
+  .company-toggle-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#fff;padding:11px 24px;font-size:14.5px;font-weight:700;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s,transform .05s;}
+  .company-toggle-btn:hover{background:rgba(255,255,255,.16);}
+  .company-toggle-btn:active{transform:scale(.98);}
+  .company-toggle-btn.active{background:#fff;color:var(--primary-dark);border-color:#fff;}
+
+  select, input, textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text);transition:border-color .12s,box-shadow .12s;}
+  select:focus, input:focus, textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.25);}
+  button{font-family:inherit;font-size:13px;padding:8px 15px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:background .12s,box-shadow .12s,transform .05s;}
+  button:hover{background:#262b36;}
+  button:active{transform:scale(.98);}
+  button.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
+  button.primary:hover{background:var(--primary-dark);}
+  button.success{background:var(--success);border-color:var(--success);color:#052e21;font-weight:600;}
+  button.success:hover{background:#10b981;}
+  button.danger{background:var(--surface-2);border-color:var(--danger);color:var(--danger);}
+  button.danger:hover{background:rgba(248,113,113,.14);}
+  button.small{padding:5px 10px;font-size:12px;}
+
+  .app-shell{max-width:900px;margin:0 auto;padding:22px 20px 90px;}
+  .content{width:100%;min-width:0;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow);scroll-margin-top:80px;}
+  .card-head{padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .card-head h2{font-size:14px;margin:0;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
+  .card-head .chevron{color:var(--muted);font-size:11px;transition:transform .15s;}
+  .card.collapsed .chevron{transform:rotate(-90deg);}
+  .card-body{padding:18px;}
+  .card.collapsed .card-body{display:none;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  details.more-options{margin-top:14px;}
+  details.more-options summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--primary-dark);list-style:none;user-select:none;}
+  details.more-options summary::-webkit-details-marker{display:none;}
+  details.more-options summary::before{content:"▸ ";}
+  details.more-options[open] summary::before{content:"▾ ";}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:12px;font-weight:600;color:var(--muted);}
+  .field label .req{color:var(--danger);}
+  .field input, .field select{width:100%;}
+  .field .err{font-size:11px;color:var(--danger);min-height:14px;}
+  .muted-note{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.5;}
+
+  /* toggle switches for the 10 invoice settings */
+  .toggle-list{display:flex;flex-direction:column;gap:2px;}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 12px;border-radius:8px;}
+  .toggle-row:nth-child(even){background:rgba(255,255,255,.03);}
+  .toggle-row .q{font-size:13px;color:var(--text);}
+  .switch{position:relative;display:inline-block;width:42px;height:24px;flex:none;}
+  .switch input{opacity:0;width:0;height:0;position:absolute;}
+  .switch .track{position:absolute;inset:0;background:#3a3f4c;border-radius:999px;transition:.2s;cursor:pointer;}
+  .switch .track:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#e7e9ee;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+  .switch input:checked + .track{background:var(--primary);}
+  .switch input:checked + .track:before{transform:translateX(18px);background:#fff;}
+  .switch input:focus-visible + .track{outline:2px solid var(--primary);outline-offset:2px;}
+
+  /* items table */
+  .table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-sm);}
+  table.items{width:100%;border-collapse:collapse;font-size:12px;min-width:1900px;}
+  table.items th{background:var(--primary-light);padding:8px 7px;text-align:left;font-weight:700;color:var(--primary-dark);white-space:nowrap;border-bottom:2px solid rgba(99,102,241,.35);position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.02em;z-index:1;}
+  table.items td{padding:3px;border-bottom:1px solid var(--border);vertical-align:top;}
+  table.items tbody tr:nth-child(even){background:rgba(255,255,255,.02);}
+  table.items tbody tr:hover{background:rgba(99,102,241,.1);}
+  table.items input, table.items select{width:100%;min-width:70px;padding:5px 6px;font-size:12px;border-color:transparent;background:transparent;color:var(--text);border-radius:6px;}
+  table.items input:hover, table.items select:hover{border-color:var(--border);background:var(--surface-2);}
+  table.items input:focus, table.items select:focus{border-color:var(--primary);background:var(--surface-2);}
+  table.items.hide-isserv .col-isserv{display:none;}
+  table.items.hide-bar .col-bar{display:none;}
+  table.items.hide-freeqty .col-freeqty{display:none;}
+  table.items.hide-batch .col-batch{display:none;}
+  table.items.hide-cess .col-cess{display:none;}
+
+  /* click-to-fill suggestion dropdown, used for HSN + Description fields
+     instead of native <datalist> (unreliable across browsers) */
+  .suggest-box{position:absolute;z-index:200;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:280px;overflow-y:auto;overscroll-behavior:contain;font-size:12.5px;}
+  .suggest-box.hidden{display:none;}
+  .suggest-item{padding:7px 10px;cursor:pointer;color:var(--text);white-space:nowrap;}
+  .suggest-item:hover{background:var(--primary-light);}
+  #buyerSearch::selection{background:rgba(255,255,255,.14);color:var(--muted);}
+  #buyerSearch::-moz-selection{background:rgba(255,255,255,.14);color:var(--muted);}
+  .item-remove{background:var(--surface-2);border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;line-height:1;}
+  .item-remove:hover{background:rgba(248,113,113,.14);}
+
+  /* totals */
+  .totals{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px;}
+  .totals .box{background:var(--surface-2);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;min-width:150px;flex:1 1 150px;}
+  .totals .box.b-taxable{border-left-color:var(--muted);}
+  .totals .box.b-sgst{border-left-color:var(--cyan);}
+  .totals .box.b-cgst{border-left-color:var(--teal);}
+  .totals .box.b-igst{border-left-color:var(--violet);}
+  .totals .box.b-cess{border-left-color:var(--amber);}
+  .totals .box.b-total{border-left-color:var(--primary);background:var(--primary-light);flex:1 1 220px;}
+  .totals .box .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .totals .box .val{font-size:17px;font-weight:700;margin-top:3px;color:var(--text);}
+  .totals .box.b-total .val{color:var(--primary-dark);font-size:19px;}
+  .totals .box input{width:100px;margin-top:5px;}
+
+  .actions-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);position:sticky;bottom:12px;box-shadow:var(--shadow-md);}
+  #errorBox{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:var(--danger);padding:12px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;}
+  #errorBox ul{margin:6px 0 0 18px;padding:0;}
+  #successBox{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--success);padding:11px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;font-weight:600;}
+
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .modal-overlay.hidden{display:none;}
+
+  .pw-gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 32%, #1c2030 0%, var(--bg) 68%);}
+  .pw-gate.hidden{display:none;}
+  .pw-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px 34px 30px;
+    box-shadow:var(--shadow-md);width:min(300px,88vw);text-align:center;animation:pwIn .3s ease-out;}
+  @keyframes pwIn{from{opacity:0;transform:translateY(10px) scale(.96);}to{opacity:1;transform:none;}}
+  .pw-card.shake{animation:pwShake .32s;}
+  @keyframes pwShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(3px);}}
+  .pw-badge{width:54px;height:54px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);
+    display:flex;align-items:center;justify-content:center;font-size:23px;margin:0 auto 16px;}
+  .pw-title{font-size:19px;font-weight:800;color:var(--text);letter-spacing:.06em;margin-bottom:4px;}
+  .pw-sub{font-size:12.5px;color:var(--muted);margin-bottom:22px;}
+  .pw-card input{width:100%;box-sizing:border-box;margin-bottom:14px;padding:12px 14px;border-radius:11px;
+    border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:15px;text-align:center;
+    letter-spacing:.12em;transition:border-color .15s,box-shadow .15s;}
+  .pw-card input::placeholder{letter-spacing:normal;color:var(--muted);}
+  .pw-card input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+  .pw-card button{width:100%;justify-content:center;padding:11px 15px;font-size:14px;border-radius:11px;}
+  .pw-err{color:var(--danger);font-size:12.5px;margin-top:14px;}
+  .modal{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);width:min(640px,92vw);max-height:88vh;overflow:auto;padding:22px;box-shadow:var(--shadow-md);animation:modalIn .15s ease-out;}
+  @keyframes modalIn{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
+  .modal h3{margin-top:0;}
+  .company-list-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:7px;}
+  .company-list-item .name{font-weight:700;font-size:13px;}
+  .company-list-item .gstin{font-size:11.5px;color:var(--muted);margin-top:1px;}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.02em;}
+  .pill.on{background:rgba(52,211,153,.16);color:var(--success);}
+  .pill.off{background:rgba(255,255,255,.08);color:var(--muted);}
+  footer{text-align:center;font-size:12px;color:var(--muted);padding:22px;}
+  .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  .hint{font-size:11.5px;color:var(--muted);}
+
+  @media (max-width:900px){
+    .app-shell{padding:16px 12px 80px;}
+  }
+  @media (max-width:700px){ .header-clock{display:none;} header{justify-content:space-between;} }
+</style>
+</head>
+<body>
+
+<div class="pw-gate" id="pwGate">
+  <div class="pw-card" id="pwCard">
+    <div class="pw-badge">🔒</div>
+    <div class="pw-title">eINV</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <button class="primary" id="pwSubmit">Unlock</button>
+    <div class="pw-err" id="pwErr" style="display:none;">Incorrect password — try again.</div>
+  </div>
+</div>
+
+<header>
+  <div class="header-clock" id="headerClock"></div>
+  <div class="company-bar">
+    <div class="company-toggle" id="companyToggle"></div>
+  </div>
+  <button class="profile-icon" id="btnSellerProfile" title="Seller details" aria-label="Seller details">🏢</button>
+</header>
+
+<div class="app-shell">
+
+<main class="content">
+
+<div id="errorBox"></div>
+<div id="successBox"></div>
+
+<!-- BUYER -->
+<div class="card" id="cardBuyer">
+  <div class="card-head" data-toggle="cardBuyer"><h2>Buyer — select or add</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="flex-between" style="margin-bottom:12px;">
+      <div class="row-inline" style="display:flex;gap:8px;align-items:center;">
+        <input id="buyerSearch" placeholder="Search buyers by name..." style="min-width:240px;" autocomplete="off">
+        <button class="small" id="btnClearBuyer">Clear</button>
+      </div>
+      <div class="hint">Type a couple of letters to find a saved buyer.</div>
+    </div>
+    <div class="grid">
+      <div class="field"><label>Buyer GSTIN <span class="req">*</span></label><input id="BGstin" maxlength="15" placeholder="or URP for unregistered"><div class="err"></div></div>
+      <div class="field"><label>Legal Name <span class="req">*</span></label><input id="BLglNm"><div class="err"></div></div>
+      <div class="field"><label>Trade Name</label><input id="BTrdNm"></div>
+      <div class="field"><label>Place Of Supply (state) <span class="req">*</span></label><select id="BPos"></select><div class="err"></div></div>
+      <div class="field"><label>Address 1 <span class="req">*</span></label><input id="BAddr1"><div class="err"></div></div>
+      <div class="field"><label>Address 2</label><input id="BAddr2"></div>
+      <div class="field"><label>Location <span class="req">*</span></label><input id="BLoc"><div class="err"></div></div>
+      <div class="field"><label>Pin Code</label><input id="BPin" maxlength="6"></div>
+      <div class="field"><label>State <span class="req">*</span></label><select id="BState"></select><div class="err"></div></div>
+      <div class="field"><label>Phone</label><input id="BPh" maxlength="12"></div>
+      <div class="field"><label>Email</label><input id="BEm"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT DETAILS -->
+<div class="card" id="cardDoc">
+  <div class="card-head" data-toggle="cardDoc"><h2>Document Details</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="grid">
+      <div class="field"><label>Document Type <span class="req">*</span></label>
+        <select id="DocTyp"><option value="Tax Invoice">Tax Invoice (INV)</option><option value="Credit Note">Credit Note (CRN)</option><option value="Debit Note">Debit Note (DBN)</option></select><div class="err"></div>
+      </div>
+      <div class="field"><label>Document Number <span class="req">*</span></label><input id="DocNo" maxlength="16" placeholder="e.g. INV/2026/001"><div class="err"></div></div>
+      <div class="field"><label>Document Date (DD/MM/YYYY) <span class="req">*</span></label><input id="DocDt" placeholder="13/07/2026"><div class="err"></div></div>
+      <div class="field" id="fieldRevCharge" style="display:none;"><label>Reverse Charge</label><select id="RegRev"><option value="">Not applicable</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      <div class="field" id="fieldEcomGstin" style="display:none;"><label>E-commerce GSTIN</label><input id="EcmGstin" maxlength="15" placeholder="optional"><div class="err"></div></div>
+    </div>
+    <details class="more-options">
+      <summary>More options (Supply Type, IGST on Intra-state, Terms, Due Date, Delivery)</summary>
+      <div class="grid" style="margin-top:12px;">
+        <div class="field"><label>Supply Type code <span class="req">*</span></label>
+          <select id="SupTyp">
+            <option value="B2B">B2B — Business to Business</option>
+            <option value="SEZWP">SEZWP — SEZ with payment</option>
+            <option value="SEZWOP">SEZWOP — SEZ without payment</option>
+            <option value="EXPWP">EXPWP — Export with payment</option>
+            <option value="EXPWOP">EXPWOP — Export without payment</option>
+            <option value="DEXP">DEXP — Deemed export</option>
+          </select><div class="err"></div>
+        </div>
+        <div class="field"><label>IGST on Intra-state supply</label><select id="IgstOnIntra"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+        <div class="field"><label>Terms</label><input id="pTerms" placeholder="e.g. COD"></div>
+        <div class="field"><label>Due Date (DD/MM/YYYY)</label><input id="pDueDate" placeholder="optional"></div>
+        <div class="field"><label>Delivery</label><input id="pDelivery" placeholder="e.g. Goods sold at Surat"></div>
+      </div>
+      <div class="hint" style="margin-top:8px;">Terms, Due Date, and Delivery are printed on the invoice only — not part of the e-invoice JSON.</div>
+    </details>
+  </div>
+</div>
+
+<!-- INVOICE SETTINGS -->
+<div class="card collapsed" id="cardSettings">
+  <div class="card-head" data-toggle="cardSettings"><h2>What do you need on this invoice?</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <p class="muted-note">Everything defaults to "No" — matching a plain Regular / B2B invoice. Switch anything on only if you actually use it, and the matching fields/columns appear.</p>
+    <div class="toggle-list">
+      <div class="toggle-row"><span class="q">Reverse Charge applicable?</span><label class="switch"><input type="checkbox" id="setRevCharge"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Sold via e-Commerce (GSTIN)?</span><label class="switch"><input type="checkbox" id="setEcomGstin"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Dispatch from a different address?</span><label class="switch"><input type="checkbox" id="setDispatch"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Ship to a different party/address?</span><label class="switch"><input type="checkbox" id="setShipping"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Supply of service (Is_Service)?</span><label class="switch"><input type="checkbox" id="setIsService"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Barcode on items?</span><label class="switch"><input type="checkbox" id="setBarcode"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Free quantity on items?</span><label class="switch"><input type="checkbox" id="setFreeQty"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Batch details on items?</span><label class="switch"><input type="checkbox" id="setBatch"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Export details?</span><label class="switch"><input type="checkbox" id="setExport"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">E-way bill details?</span><label class="switch"><input type="checkbox" id="setEwb"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Cess / State Cess / other charges applicable?</span><label class="switch"><input type="checkbox" id="setCess"><span class="track"></span></label></div>
+    </div>
+  </div>
+</div>
+
+<!-- DISPATCH -->
+<div class="card" id="cardDispatch" style="display:none;">
+  <div class="card-head" data-toggle="cardDispatch"><h2>Dispatch Details</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="grid" id="dispatchFields">
+      <div class="field"><label>Name</label><input id="DName"></div>
+      <div class="field"><label>Address 1</label><input id="DAddr1"></div>
+      <div class="field"><label>Address 2</label><input id="DAddr2"></div>
+      <div class="field"><label>Location</label><input id="DLoc"></div>
+      <div class="field"><label>Pin Code</label><input id="DPin" maxlength="6"></div>
+      <div class="field"><label>State</label><select id="DState"></select></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHIPPING -->
+<div class="card" id="cardShipping" style="display:none;">
+  <div class="card-head" data-toggle="cardShipping"><h2>Shipping Details</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="grid" id="shippingFields">
+      <div class="field"><label>GSTIN</label><input id="ShGstin" maxlength="15"></div>
+      <div class="field"><label>Legal Name</label><input id="ShLglNm"></div>
+      <div class="field"><label>Trade Name</label><input id="ShTrdNm"></div>
+      <div class="field"><label>Address 1</label><input id="ShAddr1"></div>
+      <div class="field"><label>Address 2</label><input id="ShAddr2"></div>
+      <div class="field"><label>Location</label><input id="ShLoc"></div>
+      <div class="field"><label>Pin Code</label><input id="ShPin" maxlength="6"></div>
+      <div class="field"><label>State</label><select id="ShState"></select></div>
+    </div>
+  </div>
+</div>
+
+<!-- ITEMS -->
+<div class="card" id="cardItems">
+  <div class="card-head" data-toggle="cardItems"><h2>Item List</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="flex-between" style="margin-bottom:10px;">
+      <button class="primary small" id="btnAddItem">+ Add item</button>
+      <div class="hint">Taxable value, GST amounts and item total auto-calculate — you can still overwrite any cell.</div>
+    </div>
+    <div class="table-scroll">
+      <table class="items hide-isserv hide-bar hide-freeqty hide-batch hide-cess" id="itemsTable">
+        <thead><tr>
+          <th>Sl.No*</th><th>Description</th><th>HSN*</th><th>Qty*</th><th>Unit*</th><th>Unit Price*</th>
+          <th>Gross Amt*</th><th>Discount</th><th>Pre-Tax Val</th><th>Taxable Val*</th><th>GST Rate %*</th>
+          <th>Sgst Amt</th><th>Cgst Amt</th><th>Igst Amt</th><th>Item Total</th>
+          <th class="col-isserv">Is Service</th><th class="col-bar">Barcode</th><th class="col-freeqty">Free Qty</th>
+          <th class="col-cess">Cess Rate %</th><th class="col-cess">Cess Amt</th><th class="col-cess">Cess Non-Adval</th>
+          <th class="col-cess">StCess Rate %</th><th class="col-cess">StCess Amt</th><th class="col-cess">StCess Non-Adval</th>
+          <th class="col-cess">Other Chrg</th>
+          <th class="col-batch">Batch Name</th><th class="col-batch">Batch Exp Dt</th><th class="col-batch">Warranty Dt</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- VALUE DETAILS -->
+<div class="card" id="cardValue">
+  <div class="card-head" data-toggle="cardValue"><h2>Value Details</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <p class="muted-note">Auto-summed from the item list. Discount / other charges / round-off can be adjusted manually — Total Invoice Value recalculates.</p>
+    <div class="totals">
+      <div class="box b-taxable"><div class="lbl">Taxable Value</div><div class="val" id="valAssVal">0.00</div></div>
+      <div class="box b-sgst"><div class="lbl">SGST</div><div class="val" id="valSgst">0.00</div></div>
+      <div class="box b-cgst"><div class="lbl">CGST</div><div class="val" id="valCgst">0.00</div></div>
+      <div class="box b-igst"><div class="lbl">IGST</div><div class="val" id="valIgst">0.00</div></div>
+      <div class="box b-cess"><div class="lbl">Cess</div><div class="val" id="valCess">0.00</div></div>
+      <div class="box b-cess"><div class="lbl">State Cess</div><div class="val" id="valStCess">0.00</div></div>
+      <div class="box"><div class="lbl">Discount</div><input type="number" step="0.01" id="valDiscount" value="0"></div>
+      <div class="box"><div class="lbl">Other Charges</div><input type="number" step="0.01" id="valOthChrg" value="0"></div>
+      <div class="box"><div class="lbl">Round Off</div><input type="number" step="0.01" id="valRoundOff" value="0"></div>
+      <div class="box b-total"><div class="lbl">Total Invoice Value</div><div class="val" id="valTotInv">0.00</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT DETAILS -->
+<div class="card" id="cardExport" style="display:none;">
+  <div class="card-head" data-toggle="cardExport"><h2>Export Details</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="grid" id="exportFields">
+      <div class="field"><label>Shipping Bill No</label><input id="ShipBNo"></div>
+      <div class="field"><label>Shipping Bill Date</label><input id="ShipBDt" placeholder="DD/MM/YYYY"></div>
+      <div class="field"><label>Port Code</label><input id="Port" list="portList" placeholder="e.g. INNSA1"></div>
+      <div class="field"><label>Refund claimed?</label><select id="RefClm"><option value="">--</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      <div class="field"><label>Foreign Currency</label><select id="ForCur"></select></div>
+      <div class="field"><label>Country Code</label><select id="CntCode"></select></div>
+      <div class="field"><label>Export Duty Amount</label><input id="ExpDuty" type="number" step="0.01" value="0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- E-WAY BILL -->
+<div class="card" id="cardEwb" style="display:none;">
+  <div class="card-head" data-toggle="cardEwb"><h2>E-way Bill Details</h2><span class="chevron">▾</span></div>
+  <div class="card-body">
+    <div class="grid" id="ewbFields">
+      <div class="field"><label>Transporter ID (GSTIN)</label><input id="TransId" maxlength="15"></div>
+      <div class="field"><label>Transporter Name</label><input id="TransName"></div>
+      <div class="field"><label>Transport Mode</label><select id="TransMode"><option value="">--</option><option value="Road">Road</option><option value="Rail">Rail</option><option value="Air">Air</option><option value="Ship/Road cum Ship">Ship / Road cum Ship</option></select></div>
+      <div class="field"><label>Distance (km)</label><input id="TransDistance" type="number"></div>
+      <div class="field"><label>Transporter Doc No</label><input id="TransDocNo"></div>
+      <div class="field"><label>Transporter Doc Date</label><input id="TransDocDt" placeholder="DD/MM/YYYY"></div>
+      <div class="field"><label>Vehicle No</label><input id="VehNo"></div>
+      <div class="field"><label>Vehicle Type</label><select id="VehType"><option value="">--</option><option value="Regular">Regular</option><option value="ODC">ODC (Over Dimensional Cargo)</option></select></div>
+    </div>
+  </div>
+</div>
+
+<div class="actions-bar">
+  <button class="success" id="btnGenerate">Generate JSON</button>
+  <button id="btnPrintInvoice">Print</button>
+  <button id="btnLoadSample">Load sample invoice</button>
+  <button id="btnReset">Reset</button>
+  <span id="statusMsg" style="font-size:13px;color:var(--muted);"></span>
+</div>
+
+</main>
+</div>
+
+<datalist id="portList"></datalist>
+<datalist id="gstRateList">
+  <option value="0"><option value="0.1"><option value="0.25"><option value="0.5"><option value="1.5">
+  <option value="3"><option value="5"><option value="12"><option value="18"><option value="28">
+</datalist>
+<datalist id="cessRateList">
+  <option value="0"><option value="1"><option value="3"><option value="5"><option value="11">
+  <option value="12"><option value="12.5"><option value="15"><option value="17"><option value="20">
+  <option value="21"><option value="22"><option value="36"><option value="49"><option value="60">
+  <option value="61"><option value="65"><option value="71"><option value="72"><option value="89">
+  <option value="96"><option value="142"><option value="160"><option value="204"><option value="290">
+</datalist>
+
+<!-- SELLER PROFILE MODAL -->
+<div class="modal-overlay hidden" id="sellerModalOverlay">
+  <div class="modal">
+    <h3>Seller Details <span class="pill on" id="sellerPill">from company profile</span></h3>
+    <p class="muted-note">Pulled from the company selected up top. Edit here if this invoice needs a one-off change (won't affect the saved profile).</p>
+    <div class="grid">
+      <div class="field"><label>Seller GSTIN <span class="req">*</span></label><input id="SGstin" maxlength="15"><div class="err"></div></div>
+      <div class="field"><label>Legal Name <span class="req">*</span></label><input id="SLglNm"><div class="err"></div></div>
+      <div class="field"><label>Trade Name</label><input id="STrdNm"></div>
+      <div class="field"><label>Address 1 <span class="req">*</span></label><input id="SAddr1"><div class="err"></div></div>
+      <div class="field"><label>Address 2</label><input id="SAddr2"></div>
+      <div class="field"><label>Location <span class="req">*</span></label><input id="SLoc"><div class="err"></div></div>
+      <div class="field"><label>Pin Code <span class="req">*</span></label><input id="SPin" maxlength="6"><div class="err"></div></div>
+      <div class="field"><label>State <span class="req">*</span></label><select id="SState"></select><div class="err"></div></div>
+      <div class="field"><label>Phone</label><input id="SPh" maxlength="12"></div>
+      <div class="field"><label>Email</label><input id="SEm"></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;">
+      <button id="btnCloseSellerModal">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MASTER = {"units":[["BAGS","BAG"],["BALE","BAL"],["BUNDLES","BDL"],["BUCKLES","BKL"],["BILLION OF UNITS","BOU"],["BOX","BOX"],["BOTTLES","BTL"],["BUNCHES","BUN"],["CANS","CAN"],["CUBIC METERS","CBM"],["CUBIC CENTIMETERS","CCM"],["CENTI METERS","CMS"],["CARTONS","CTN"],["DOZENS","DOZ"],["DRUMS","DRM"],["GREAT GROSS","GGK"],["GRAMMES","GMS"],["GROSS","GRS"],["GROSS YARDS","GYD"],["KILOGRAMS","KGS"],["KILOLITRE","KLR"],["KILOMETRE","KME"],["LITRES","LTR"],["MILILITRE","MLT"],["METERS","MTR"],["METRIC TON","MTS"],["NUMBERS","NOS"],["OTHERS","OTH"],["PACKS","PAC"],["PIECES","PCS"],["PAIRS","PRS"],["QUINTAL","QTL"],["ROLLS","ROL"],["SETS","SET"],["SQUARE FEET","SQF"],["SQUARE METERS","SQM"],["SQUARE YARDS","SQY"],["TABLETS","TBS"],["TEN GROSS","TGM"],["THOUSANDS","THD"],["TONNES","TON"],["TUBES","TUB"],["US GALLONS","UGS"],["UNITS","UNT"],["YARDS","YDS"]],"states":[["ANDAMAN AND NICOBAR",35],["ANDHRA PRADESH",37],["ARUNACHAL PRADESH",12],["ASSAM",18],["BIHAR",10],["CHANDIGARH","04"],["CHHATTISGARH",22],["DADRA AND NAGAR HAVELI",26],["DELHI","07"],["GOA",30],["GUJARAT",24],["HARYANA","06"],["HIMACHAL PRADESH","02"],["JAMMU AND KASHMIR","01"],["JHARKHAND",20],["KARNATAKA",29],["KERALA",32],["LADAKH","38"],["LAKSHADWEEP",31],["MADHYA PRADESH",23],["MAHARASHTRA",27],["MANIPUR",14],["MEGHALAYA",17],["MIZORAM",15],["NAGALAND",13],["ORISSA",21],["PONDICHERRY",34],["PUNJAB","03"],["RAJASTHAN","08"],["SIKKIM",11],["TAMIL NADU",33],["TELANGANA",36],["TRIPURA",16],["UTTAR PRADESH","09"],["UTTARAKHAND","05"],["WEST BENGAL",19],["OTHER TERRITORY",97],["OTHER COUNTRIES","96"]],"countries":[["AD","Andorra"],["AE","United Arab Emirates"],["AF","Afghanistan"],["AG","Antigua and Barbuda"],["AI","Anguilla"],["AL","Albania"],["AM","Armenia"],["AO","Angola"],["AQ","Antarctica"],["AR","Argentina"],["AS","American Samoa"],["AT","Austria"],["AU","Australia"],["AW","Aruba"],["AX","\u00c5land Islands"],["AZ","Azerbaijan"],["BA","Bosnia and Herzegovina"],["BB","Barbados"],["BD","Bangladesh"],["BE","Belgium"],["BF","Burkina Faso"],["BG","Bulgaria"],["BH","Bahrain"],["BI","Burundi"],["BJ","Benin"],["BL","Saint Barth\u00e9lemy"],["BM","Bermuda"],["BN","Brunei Darussalam"],["BO","Bolivia (Plurinational State of)"],["BQ","Bonaire, Sint Eustatius and Saba"],["BR","Brazil"],["BS","Bahamas"],["BT","Bhutan"],["BV","Bouvet Island"],["BW","Botswana"],["BY","Belarus"],["BZ","Belize"],["CA","Canada"],["CC","Cocos (Keeling) Islands"],["CD","Congo, Democratic Republic of the"],["CF","Central African Republic"],["CG","Congo"],["CH","Switzerland"],["CI","C\u00f4te dIvoire"],["CK","Cook Islands"],["CL","Chile"],["CM","Cameroon"],["CN","China"],["CO","Colombia"],["CR","Costa Rica"],["CU","Cuba"],["CV","Cabo Verde"],["CW","Cura\u00e7ao"],["CX","Christmas Island"],["CY","Cyprus"],["CZ","Czechia"],["DE","Germany"],["DJ","Djibouti"],["DK","Denmark"],["DM","Dominica"],["DO","Dominican Republic"],["DZ","Algeria"],["EC","Ecuador"],["EE","Estonia"],["EG","Egypt"],["EH","Western Sahara"],["ER","Eritrea"],["ES","Spain"],["ET","Ethiopia"],["FI","Finland"],["FJ","Fiji"],["FK","Falkland Islands (Malvinas)"],["FM","Micronesia (Federated States of)"],["FO","Faroe Islands"],["FR","France"],["GA","Gabon"],["GB","United Kingdom of Great Britain and Northern Ireland"],["GD","Grenada"],["GE","Georgia"],["GF","French Guiana"],["GG","Guernsey"],["GH","Ghana"],["GI","Gibraltar"],["GL","Greenland"],["GM","Gambia"],["GN","Guinea"],["GP","Guadeloupe"],["GQ","Equatorial Guinea"],["GR","Greece"],["GS","South Georgia and the South Sandwich Islands"],["GT","Guatemala"],["GU","Guam"],["GW","Guinea-Bissau"],["GY","Guyana"],["HK","Hong Kong"],["HM","Heard Island and McDonald Islands"],["HN","Honduras"],["HR","Croatia"],["HT","Haiti"],["HU","Hungary"],["ID","Indonesia"],["IE","Ireland"],["IL","Israel"],["IM","Isle of Man"],["IN","India"],["IO","British Indian Ocean Territory"],["IQ","Iraq"],["IR","Iran (Islamic Republic of)"],["IS","Iceland"],["IT","Italy"],["JE","Jersey"],["JM","Jamaica"],["JO","Jordan"],["JP","Japan"],["KE","Kenya"],["KG","Kyrgyzstan"],["KH","Cambodia"],["KI","Kiribati"],["KM","Comoros"],["KN","Saint Kitts and Nevis"],["KP","Korea (Democratic Peoples Republic of)"],["KR","Korea, Republic of"],["KW","Kuwait"],["KY","Cayman Islands"],["KZ","Kazakhstan"],["LA","Lao Peoples Democratic Republic"],["LB","Lebanon"],["LC","Saint Lucia"],["LI","Liechtenstein"],["LK","Sri Lanka"],["LR","Liberia"],["LS","Lesotho"],["LT","Lithuania"],["LU","Luxembourg"],["LV","Latvia"],["LY","Libya"],["MA","Morocco"],["MC","Monaco"],["MD","Moldova, Republic of"],["ME","Montenegro"],["MF","Saint Martin (French part)"],["MG","Madagascar"],["MH","Marshall Islands"],["MK","North Macedonia"],["ML","Mali"],["MM","Myanmar"],["MN","Mongolia"],["MO","Macao"],["MP","Northern Mariana Islands"],["MQ","Martinique"],["MR","Mauritania"],["MS","Montserrat"],["MT","Malta"],["MU","Mauritius"],["MV","Maldives"],["MW","Malawi"],["MX","Mexico"],["MY","Malaysia"],["MZ","Mozambique"],["NA","Namibia"],["NC","New Caledonia"],["NE","Niger"],["NF","Norfolk Island"],["NG","Nigeria"],["NI","Nicaragua"],["NL","Netherlands"],["NO","Norway"],["NP","Nepal"],["NR","Nauru"],["NU","Niue"],["NZ","New Zealand"],["OM","Oman"],["PA","Panama"],["PE","Peru"],["PF","French Polynesia"],["PG","Papua New Guinea"],["PH","Philippines"],["PK","Pakistan"],["PL","Poland"],["PM","Saint Pierre and Miquelon"],["PN","Pitcairn"],["PR","Puerto Rico"],["PS","Palestine, State of"],["PT","Portugal"],["PW","Palau"],["PY","Paraguay"],["QA","Qatar"],["RE","R\u00e9union"],["RO","Romania"],["RS","Serbia"],["RU","Russian Federation"],["RW","Rwanda"],["SA","Saudi Arabia"],["SB","Solomon Islands"],["SC","Seychelles"],["SD","Sudan"],["SE","Sweden"],["SG","Singapore"],["SH","Saint Helena, Ascension and Tristan da Cunha"],["SI","Slovenia"],["SJ","Svalbard and Jan Mayen"],["SK","Slovakia"],["SL","Sierra Leone"],["SM","San Marino"],["SN","Senegal"],["SO","Somalia"],["SR","Suriname"],["SS","South Sudan"],["ST","Sao Tome and Principe"],["SV","El Salvador"],["SX","Sint Maarten (Dutch part)"],["SY","Syrian Arab Republic"],["SZ","Eswatini"],["TC","Turks and Caicos Islands"],["TD","Chad"],["TF","French Southern Territories"],["TG","Togo"],["TH","Thailand"],["TJ","Tajikistan"],["TK","Tokelau"],["TL","Timor-Leste"],["TM","Turkmenistan"],["TN","Tunisia"],["TO","Tonga"],["TR","Turkey"],["TT","Trinidad and Tobago"],["TV","Tuvalu"],["TW","Taiwan, Province of China"],["TZ","Tanzania, United Republic of"],["UA","Ukraine"],["UG","Uganda"],["UM","United States Minor Outlying Islands"],["US","United States of America"],["UY","Uruguay"],["UZ","Uzbekistan"],["VA","Holy See"],["VC","Saint Vincent and the Grenadines"],["VE","Venezuela (Bolivarian Republic of)"],["VG","Virgin Islands (British)"],["VI","Virgin Islands (U.S.)"],["VN","Viet Nam"],["VU","Vanuatu"],["WF","Wallis and Futuna"],["WS","Samoa"],["YE","Yemen"],["YT","Mayotte"],["ZA","South Africa"],["ZM","Zambia"],["ZW","Zimbabwe"]],"currencies":[["AED","United Arab Emirates dirham"],["AFN","Afghan afghani"],["ALL","Albanian lek"],["AMD","Armenian dram"],["ANG","Netherlands Antillean guilder"],["AOA","Angolan kwanza"],["ARS","Argentine peso"],["AUD","Australian dollar"],["AWG","Aruban florin"],["AZN","Azerbaijani manat"],["BAM","Bosnia and Herzegovina convertible mark"],["BBD","Barbados dollar"],["BDT","BANGLADESH TAKA"],["BDT","Bangladeshi taka"],["BGN","Bulgarian lev"],["BHD","Bahraini dinar"],["BIF","Burundian franc"],["BMD","Bermudian dollar"],["BND","Brunei dollar"],["BOB","Boliviano"],["BOV","Bolivian Mvdol (funds code)"],["BRL","Brazilian real"],["BSD","Bahamian dollar"],["BTN","Bhutanese ngultrum"],["BWP","Botswana pula"],["BYN","Belarusian ruble"],["BZD","Belize dollar"],["CAD","Canadian dollar"],["CDF","Congolese franc"],["CHE","WIR\u00a0Euro (complementary currency)"],["CHF","Swiss franc"],["CHW","WIR\u00a0Franc (complementary currency)"],["CLF","Unidad de Fomento\u00a0(funds code)"],["CLP","Chilean peso"],["CNY","Renminbi (Chinese) yuan"],["COP","Colombian peso"],["COU","Unidad de Valor Real (UVR) (funds code)"],["CRC","Costa Rican colon"],["CUC","Cuban convertible peso"],["CUP","Cuban peso"],["CVE","Cape Verdean escudo"],["CZK","Czech koruna"],["DJF","Djiboutian franc"],["DKK","Danish krone"],["DOP","Dominican peso"],["DZD","Algerian dinar"],["EGP","Egyptian pound"],["ERN","Eritrean nakfa"],["ETB","Ethiopian birr"],["EUR","Euro"],["FJD","Fiji dollar"],["FKP","Falkland Islands pound"],["GBP","Pound sterling"],["GEL","Georgian lari"],["GHS","Ghanaian cedi"],["GIP","Gibraltar pound"],["GMD","Gambian dalasi"],["GNF","Guinean franc"],["GTQ","Guatemalan quetzal"],["GYD","Guyanese dollar"],["HKD","Hong Kong dollar"],["HNL","Honduran lempira"],["HRK","Croatian kuna"],["HTG","Haitian gourde"],["HUF","Hungarian forint"],["IDR","Indonesian rupiah"],["ILS","Israeli new shekel"],["INR","Indian rupee"],["IQD","Iraqi dinar"],["IRR","Iranian rial"],["ISK","Icelandic kr\u00f3na"],["JMD","Jamaican dollar"],["JOD","Jordanian dinar"],["JPY","Japanese yen"],["KES","Kenyan shilling"],["KGS","Kyrgyzstani som"],["KHR","Cambodian riel"],["KMF","Comoro franc"],["KPW","North Korean won"],["KRW","South Korean won"],["KWD","Kuwaiti dinar"],["KYD","Cayman Islands dollar"],["KZT","Kazakhstani tenge"],["LAK","Lao kip"],["LBP","Lebanese pound"],["LKR","Sri Lankan rupee"],["LRD","Liberian dollar"],["LSL","Lesotho loti"],["LYD","Libyan dinar"],["MAD","Moroccan dirham"],["MDL","Moldovan leu"],["MGA","Malagasy ariary"],["MKD","Macedonian denar"],["MMK","Myanmar kyat"],["MNT","Mongolian t\u00f6gr\u00f6g"],["MOP","Macanese pataca"],["MRU","Mauritanian ouguiya"],["MUR","Mauritian rupee"],["MVR","Maldivian rufiyaa"],["MWK","Malawian kwacha"],["MXN","Mexican peso"],["MXV","Mexican Unidad de Inversion\u00a0(UDI) (funds code)"],["MYR","Malaysian ringgit"],["MZN","Mozambican metical"],["NAD","Namibian dollar"],["NGN","Nigerian naira"],["NIO","Nicaraguan c\u00f3rdoba"],["NOK","Norwegian krone"],["NPR","Nepalese rupee"],["NZD","New Zealand dollar"],["OMR","Omani rial"],["PAB","Panamanian balboa"],["PEN","Peruvian sol"],["PGK","Papua New Guinean kina"],["PHP","Philippine peso"],["PKR","Pakistani rupee"],["PLN","Polish zloty"],["PYG","Paraguayan guaran\u00ed"],["QAR","Qatari riyal"],["RON","Romanian leu"],["RSD","Serbian dinar"],["RUB","Russian ruble"],["RWF","Rwandan franc"],["SAR","Saudi riyal"],["SBD","Solomon Islands dollar"],["SCR","Seychelles rupee"],["SDG","Sudanese pound"],["SEK","Swedish krona/kronor"],["SGD","Singapore dollar"],["SHP","Saint Helena pound"],["SLL","Sierra Leonean leone"],["SOS","Somali shilling"],["SRD","Surinamese dollar"],["SSP","South Sudanese pound"],["STN","S\u00e3o Tom\u00e9 and Pr\u00edncipe dobra"],["SVC","Salvadoran col\u00f3n"],["SYP","Syrian pound"],["SZL","Swazi lilangeni"],["THB","Thai baht"],["TJS","Tajikistani somoni"],["TMT","Turkmenistan manat"],["TND","Tunisian dinar"],["TOP","Tongan pa?anga"],["TRY","Turkish lira"],["TTD","Trinidad and Tobago dollar"],["TWD","New Taiwan dollar"],["TZS","Tanzanian shilling"],["UAH","Ukrainian hryvnia"],["UGX","Ugandan shilling"],["USD","United States dollar"],["USN","United States dollar (next day) (funds code)"],["UYI","Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code)"],["UYU","Uruguayan peso"],["UYW","Unidad previsional"],["UZS","Uzbekistan som"],["VES","Venezuelan bol\u00edvar soberano"],["VND","Vietnamese d?ng"],["VUV","Vanuatu vatu"],["WST","Samoan tala"],["XAF","CFA franc BEAC"],["XAG","Silver\u00a0(one\u00a0troy ounce)"],["XAU","Gold\u00a0(one\u00a0troy ounce)"],["XBA","European Composite Unit\u00a0(EURCO) (bond market unit)"],["XBB","European Monetary Unit\u00a0(E.M.U.-6) (bond market unit)"],["XBC","European Unit of Account 9\u00a0(E.U.A.-9) (bond market unit)"],["XBD","European Unit of Account 17\u00a0(E.U.A.-17) (bond market unit)"],["XCD","East Caribbean dollar"],["XDR","Special drawing rights"],["XOF","CFA franc BCEAO"],["XPD","Palladium\u00a0(one\u00a0troy ounce)"],["XPF","CFP franc\u00a0(franc Pacifique)"],["XPT","Platinum\u00a0(one\u00a0troy ounce)"],["XSU","SUCRE"],["XTS","Code reserved for testing"],["XUA","ADB Unit of Account"],["XXX","No currency"],["YER","Yemeni rial"],["ZAR","South African rand"],["ZMW","Zambian kwacha"],["ZWL","Zimbabwean dollar"]],"ports":[["INNRP6","AA LTD."],["INAPI6","AAP-SEZ AHMEDABAD"],["INACH1","Achra"],["INQRP6","ADANI ICD KILARAIPUR"],["INJSM6","ADANI POWER SEZ"],["INGGE6","AEPL SEZ GURGAON"],["INBSW6","AFS KAPASHERA"],["INAGTB","Agartala"],["INIXA4","Agartala"],["INAGX4","Agatti Island"],["INAGI1","Agatti Island"],["INAGR4","Agra"],["INAGR6","Agra"],["INBLJ6","Agra"],["INAMD4","Ahmedabad"],["INAMD5","Ahmedabad "],["INAMD6","Ahmedabad"],["INADA6","Ahmedabad Adalaj "],["INPUA6","AIGP SEZ WAGHOLI"],["INAJL4","Aizawl"],["INAKD4","Akola"],["INALA1","ALANG SBY "],["INABG1","Alibag"],["INIXD4","Allahabad"],["INALF1","Allepey"],["INAMG6","Amingaon (Gauhati)"],["INAMI1","Amini Island"],["INASR6","Amritsar"],["INATQ4","Amritsar"],["INATQ6","Amritsar"],["INASR2","Amritsar Railway Stn"],["INNNN6","AMRL SEZ NANGUNERI"],["INBUL6","AN FTWZ BULANDSHAHR"],["INAPT6","Anaparti"],["INADI1","Androth Island"],["INANG1","Anijengo"],["INAKV6","Ankleshwar ICD   "],["INDIT6","ANSAL IT/SEZ/NOIDA"],["INGAS6","ANSAL SEZ GURGAON"],["INSNA6","ANSAL SEZ SONEPAT"],["INVSA6","APIIC (HALL NO.3)"],["INSNN6","APIIC LTD."],["INNYP6","APIIC LTD."],["INGLY6","APIIC MAHABOOBNAGAR"],["INBMA6","APIIC PRAKASHAM"],["INMDE6","APIIC SEZ MEDAK"],["INVSK6","APIIC- (HALL NO. 2)"],["INMEA6","APIIC-SEZ/ViII-LALGA"],["INFMA6","APIICL MEDAK"],["INAKP6","APIICL SEZ"],["INDLH6","APLLP SEZ BENGALURU"],["INGRW6","APM ICD BHAMBOLIKHED"],["INKJA6","APP/SEZ/DODAKANAHALI"],["INGNA6","APPL, SEZ"],["INBPS5","APSO MUMBAI"],["INAJJ6","Arakkonam Melpakkam "],["INSNR6","ARI LTD."],["INANL1","Arnala"],["INARR6","Aroor"],["INDAR6","ARTHA SEZ GR. NOIDA"],["INDEA6","AS PVT. LTD."],["INSPE6","ASDI SEZ NELLORE"],["INGHC6","ASF INSIGNIA  SEZ"],["INATT2","Attari  Railway Stat"],["INATRB","Attari Road"],["INIXU4","AURANGABAD"],["INAZK1","Azhikkal"],["INPNP6","Babarpur"],["INBDG1","Badagara"],["INIXB4","Bagdogra"],["INBGMB","Baghmara"],["INKJB6","BAGMAN/SEZ/BANGALORE"],["INBBP1","Bahabal Pur"],["INBDR1","Baindur"],["INBGUB","Bairgania"],["INBLTB","Balet"],["INRGH4","Balurghat"],["INBSAB","Banbasa"],["INBND1","Bandra"],["INBLR4","Bangalore"],["INBLR5","Bangalore "],["INBLR6","Bangalore"],["INBKT1","Bankot"],["INBEK4","Bareilly"],["INBBM6","Bari Brahamna ICD  "],["INBMR2","Barmer Railway Stati"],["INBRC6","Baroda"],["INBRAB","Barsora"],["INJUX6","Basni Jodhpur ICD "],["INBSN1","Bassein"],["INLPB6","BBLLP NANAKRAMGUDA"],["INKJR6","BBREL KUNDALAHALLI"],["INKJM6","BD SEZ BENGALURU"],["INBED1","Bedi"],["INBLP1","Belapur"],["INBLK1","Belekeri"],["INBKR1","Belekeri"],["INIXG4","Belgaum"],["INDRU6","Belgaum Desur"],["INBEP4","Bellary"],["INBNYB","Berhni"],["INBET1","Betul"],["INBEY1","Beypore"],["INBYT1","Beyt"],["INBGK6","Bhagat ki Kothi Jodh"],["INBGW1","Bhagwa"],["INBUP4","Bhatinda"],["INBUP6","Bhatinda"],["INBTK1","Bhatkal"],["INBHU1","Bhavanagar"],["INBHU4","Bhavanagar"],["INBHM1","Bheemunipatnam"],["INBNP1","Bheemunipatnam"],["INBHL6","Bhilwara"],["INBNRB","Bhimnagar"],["INBTMB","Bhithamore(Sursnad)"],["INBWD6","Bhiwadi"],["INBWN1","Bhiwandi"],["INVGR6","BHOJVA ICD VIRAMGAM"],["INBHO4","Bhopal"],["INBPL5","BHOPAL FPO"],["INBBI4","Bhubaneswar"],["INBHJ4","Bhuj"],["INBSL6","Bhusaval ICD "],["INAKB6","BIACPL SEZ"],["INBKB4","Bikaner"],["INPAB4","Bilaspur"],["INBLM1","Bilimora"],["INSBC6","BIOCON SEZ BANGALORE"],["INDLOB","BIRPARA LCS"],["INBTR1","Bitra Island"],["INKLB6","BLUE/SEZ/ERNAKULAM"],["INBOLB","Bolanganj"],["INBOK6","BORKHEDI ICD NAGPUR"],["INBRM1","Borlai \u00bf Mandla"],["INBRY1","Borya"],["INMAB6","BRIGADE/SEZ/KANNADA"],["INBRH1","Broach"],["INPNB6","BTSL SEZ PUNE"],["INBUD1","Budge-Budge"],["INBSR1","Bulsar"],["INNGB6","BUTIBORI ICD NAGPUR"],["INCCU1","Calcutta"],["INCCU4","Calcutta"],["INCCU5","Calcutta"],["INCAP1","Calingapatam"],["INCAM1","Cambay"],["INCMB1","Cambay"],["INBNX6","CANDOR ONE HTSPL,SEZ"],["INCNN1","Cannanore"],["INCBD4","Car Nicobar"],["INCNB1","Car-Nicobar"],["INKLC6","CARB/SEZ/ERNAKULAM"],["INCAR1","Carijam"],["INTNC6","CCCL SEZ TUTICORIN"],["INSPC6","CCLPIL SEZ VIZAG"],["INBLC6","CESSNA/SEZ/BANGALORE"],["INCHPB","Champai"],["INCHMB","Chamurchi"],["INCBL1","Chandbali"],["INIXC4","Chandigarh"],["INCBDB","Changrabandh"],["INCHR1","Chapora"],["INMAA1","Chennai (Ex Madras)"],["INMAA4","Chennai (Ex Madras)"],["INMAA5","Chennai (Ex Madras)"],["INMAA6","Chennai(EPZ/SEZ)"],["INCTI1","Chetlat Island"],["INKTY6","CHEYYAR POCHAMPALLI"],["INVTC6","CHEYYAR VELLORE"],["INCCH6","Chinchwad ICD "],["INCBC6","CHIPL SEZ/ COIMBATOR"],["INCLX6","Chirala"],["INLPC6","CMC LTD."],["INCOK1","Cochin"],["INCOK4","Cochin"],["INCOK6","Cochin(EPZ/SEZ)"],["INCJB4","Coimbatore"],["INCJB6","Coimbatore"],["INCBE6","COIMBATORE"],["INIGU6","Coimbatore Irugur IC"],["INCHL1","Colachel"],["INCOL1","Colochel"],["INBLE6","CONCOR ICD BALASORE"],["INKPK6","CONCOR ICD MIHAN"],["INRTM6","CONCOR ICD RATLAM"],["INRML6","CONCOR ICDNAYARAIPUR"],["INJSG6","CONCOR JHARSUGUDA"],["INBVC6","CONCR-ICD/BALLABGARH"],["INCOH4","Cooch Behar"],["INCOO1","Coondapur (Ganguly)"],["INCDP1","Coondapur (Ganguly)"],["INCRN1","Cornwallis"],["ININB6","CRYSTAL IT PARK, SEZ"],["INTBC6","CTS PVT. LTD."],["INCDL1","Cuddalore"],["INCDP4","Cuddapah"],["INCUM1","Cutch Mandvi"],["INLPS6","D NSL IP LTD."],["INDHP1","Dabhol Port"],["INDRL1","Dabolim"],["INDER6","Dadri"],["INAPL6","Dadri ACPL CFS"],["INCPL6","Dadri CGML"],["INSTT6","Dadri STTPL CFS  "],["INTTP6","Dadri TTPL"],["INDHU1","Dahanu"],["INDHN1","Dahanu"],["INDAH1","Dahej"],["INBHD6","DAHEZ SEZ"],["INDLUB","Dalu"],["INDAM1","Daman"],["INDAM4","Daman"],["INDTW1","Dantiwara"],["INDAE4","Daparizo"],["INDPR6","DAPPER    "],["INDAI4","Darjeeling"],["INDRGB","Darranga"],["INDWKB","Dawki"],["INDED4","Dehra Dun"],["INKML6","DEIPL KURUBARAPALLI"],["INDEL4","Delhi"],["INDEL5","Delhi"],["INDLI2","Delhi Railway Statio"],["INDMRB","Demagir"],["INDEG1","Deogad"],["INDEP4","Deparizo"],["INDHLB","Dhalaighat"],["INDMA1","DHAMRA"],["INDBD4","Dhanbad"],["INDSK1","Dhanu-shkodi"],["INDHM4","Dharamsala"],["INDMT1","Dharamtar"],["INDLAB","Dharchula"],["INDHR1","Dholera"],["INDHBB","Dhubri Steamerghat"],["INDIB4","Dibrugarh"],["INDIG6","Dighi (Pune)"],["INDIG1","Dighi Port "],["INDMU4","Dimapur"],["INVLD6","DISH/SEZ/KALYANGADH"],["INDIU1","Diu"],["INDIU4","Diu"],["INDIV1","Div"],["INKJD6","DIVYA/SEZ/BANGALORE"],["INGDL6","DLF CYBERCITY SEZ,"],["INCJD6","DLF INFOCITY DEV."],["INGGD6","DLF LTD."],["INBXR6","DLF LTD., SEZ"],["INVZM6","DLL SEZ"],["INDPC4","DPC BKC Mumbai"],["INDWA1","Dwarka"],["INDRK1","Dwarka (Rupen)"],["INKZT6","E PARK-II/SEZ/TPURAM"],["INKZP6","E PARK-III/SEZ/T'RAM"],["INKZE6","E TECH-I/SEZ/THPURAM"],["INJBL6","E-COMPLEX SEZ/Amreli"],["INMAE6","EC OF TAMIL NADU"],["INMEC6","EC OF TAMIL NADU"],["INCJE6","ECTN KANCHEEPURAM"],["INTPJ6","ECTN SEZ TRICHY"],["INPEK6","EKIPL/SEZ/PUNE"],["INSXE6","ELCOT AMMAPALAYAM"],["INESH1","Elphinstone Harbour"],["INPUE6","EON KHARADI SEZ"],["INFBE6","ESPIRE SEZ FARIDABAD"],["INCGE6","ETA TECH. PVT. LTD."],["INCJI6","ETL IS LTD."],["INUKL6","ETLISL SEZ ERODE"],["INBCO6","EURO MULTIVISION SEZ"],["INURF6","FAB CITY SPV-SEZ/SRI"],["INFLT6","Falta(SEZ)"],["INTUI6","FCPL SEZ KESAVARAM"],["INGDP6","FLLPL SEZ THIRUVALUR"],["INAGR5","FPO AGRA"],["INGAU5","FPO GUWAHATI"],["INHYD5","FPO HYDERABAD"],["INKNU5","FPO KANPUR"],["INIXL5","FPO LEH"],["INLUH5","FPO LUDHIANA"],["INSXR5","FPO SRINAGAR"],["INVNS5","FPO VARANASI"],["INVGA5","FPO VIJAYAWADA"],["INFCH5","FPO(SEA) CHENNAI"],["INGGF6","FRESH SEZ GURGAON"],["INCJF6","FTIL SRIPERUMBUDUR"],["INFBRB","Fulbari LCS "],["INGALB","Galgalia"],["INDGI6","GALLANT SEZ NOIDA"],["INGIN6","Gandhidham"],["INGGV1","GANGAVARAM PORT"],["INGHR6","Garhi Harsaru Gurgao"],["INGAU1","Gauhati (Panidi)"],["INGAU2","Gauhati (Panidi)"],["INGAU4","Gauhati (Panidi)"],["INGHWB","Gauhati Steamerghat"],["INGAIB","Gauriphanta"],["INGAY4","Gaya"],["INLPG6","GCPL SEZ KOKAPET"],["INAIG6","GE PVT. LTD."],["INGED2","Gede Railway Station"],["INBAG6","GEM&JEWEL-SEZ/ULWE"],["INJGI6","GENPACT SEZ JAIPUR"],["INGTZB","Getandah"],["INGHPB","Ghasuapara"],["INUDN6","GHB-SEZ SURAT"],["INGGG6","GHI SEZ GURGAON"],["INGHA1","Ghogha"],["INGJXB","Ghojadanga"],["INGNG6","GIDC, SEZ"],["INGNC6","GIFT SEZ LTD"],["INGGI6","GIL SEZ, GURGAON"],["INGTGB","Gitaldah road"],["INKGG6","GLOBAL/SEZ/BANGALORE"],["INURG6","GMR HYDTABAD AVIATIO"],["INGOI4","Goa"],["INHEB6","GOCL SEZ BENGALURU"],["INGGA1","Gogha"],["INGKJB","Golakganj LCS   "],["INGKJ2","Golakganj Railway St"],["INDGT6","GOLDEN SEZ NOIDA"],["INKJG6","GOPALAN/SEZ/BANGALOR"],["INGPR1","Gopalpur"],["INGOP4","Gorakhpur"],["INGRL6","GPRL SEZ GURGAON"],["INGNP6","GPRPL SEZ GURGAON"],["INSGF6","GRFL ICD SAHNEWAL"],["INGUX4","Guna"],["INGJIB","Gunji"],["INGTR2","Guntur"],["INGGN2","Gurgaon"],["INGAW2","Guwahati"],["INGWL4","Gwalior"],["INHAL1","Haldia"],["INHLD2","Haldibari Railway St"],["INHGT1","Hangarkatta"],["INBCH6","HARI SEZ VARANASI"],["INHRN1","Harnai"],["INHAS6","HASSAN ICD"],["INHTSB","Hatisar"],["INHZA6","Hazira SEZ, Surat"],["INHZA1","HAZIRA, SURAT"],["INPAO6","HBS SEZ PANOLI"],["INLCH6","HCL IT SEZ LUCKNOW"],["INDEH6","HCL TECH. LTD. DEV."],["INKJH6","HCL/SEZ/BANGALORE"],["INHND1","HEMNAGAR PORT"],["INTBS6","HEXAWARE TECH. LTD."],["INFMH6","HGSEZL RANGA REDDY"],["INHLIB","Hilli"],["INHAN6","HINDAUN ICD KARAULI"],["INHGLB","Hingalganj"],["INTNI6","HIPL SEZ"],["INVKH6","HIRANANDANI BUIL."],["INHSS4","Hissar"],["INHON1","Honavar"],["INHWR1","Honawar"],["INHBX4","Hubli"],["INTSI6","HVCPL SEZ KADAYAM"],["INHYD4","Hyderabad"],["INHYD6","Hyderabad"],["INAIK6","IBRAHIMPURICD KHURJA"],["INBDI6","ICD BADDI,"],["INBDH6","ICD BADOHI"],["INWFD6","ICD Bangalore"],["INBAW6","ICD BAWAL"],["INCPR6","ICD CHAWAPAYAL"],["INDUR6","ICD Durgapur"],["INFBD6","ICD Faridabad"],["INKBC6","ICD HAZIRA"],["INHSU6","ICD HOSUR"],["INJJK6","ICD JSL JAJPUR"],["INSKD6","ICD KALINGANAGAR"],["INKHD6","ICD Kheda-Dhar"],["INLON6","ICD Loni"],["INMWA6","ICD Maliwada"],["INPKR6","ICD PALI, REWARI"],["INPNV6","ICD Panvel"],["ININD6","ICD Pithampur"],["INPRK6","ICD POWARKHEDA"],["INPNY6","ICD PULICHAPALLAM"],["INSBI6","ICD Sabarmati"],["INDWN6","ICD SAMALKHA PANIPAT"],["INAHD6","ICD SANAND"],["INTRL6","ICD Tiruvallur"],["INTVT6","ICD TONDIARPET CHENN"],["INCJH6","ICD WARDHA"],["INCHJ6","ICD WARDHA"],["INSNF6","ICD, Hyderabad"],["INBDM6","ICD, PANCHI, SONIPAT"],["INTMX6","ICD, THIMMAPUR,"],["INPKD6","IGEL SEZ SETTIPALI"],["ININI6","IMPETUS INFOTECH SEZ"],["INIMF4","Imphal"],["INNKI6","INDIABULLS NASHIK"],["INIDR4","Indore"],["INIDR6","Indore(EPZ/SEZ)"],["INDHA6","Indore-Dhannad"],["INURI6","INDU TECHZONE PVT."],["INKMI6","INFO SEZ ERNAKULAM"],["INWFI6","INFO/SEZ/BANGALORE"],["INKNK6","INFOPARK SEZ KORATTY"],["INKLI6","INFOPARK/SEZ/EKM"],["INDEF6","INFOSYS SEZ DADRI"],["INDWR6","INFOSYS SEZ HUBLI"],["ININN6","INFOSYS SEZ INDORE"],["INSAS6","INFOSYS SEZ MOHALI"],["INGTI6","INFOSYS TECH. LTD."],["INSBL6","INFOSYS/SEZ/BANGLORE"],["INMAI6","INFOSYS/SEZ/MANGALOR"],["INHEI6","INFOSYS/SEZ/MYSORE"],["INHLE6","INFY SEZ BEGURHOBLI"],["INBAU6","IT/ITES-A-SEZ/ULWE"],["INBAI6","IT/ITES-B-SEZ/ULWE"],["INBAT6","IT/ITES-C SEZ/UIWE"],["INKLN6","IT/ITES/SEZ/KALAMBOL"],["INPIT6","ITL/SEZ/PUNE"],["INWFT6","ITPL SEZ II BENGALUR"],["INDEI6","IVR SEZ NOIDA"],["INCJJ6","J M FTZ/SEZ/MANNUR"],["INJLR4","Jabalpur"],["INJBD1","Jafrabad"],["INJGB4","Jagdalpur"],["INJGD1","Jaigad"],["INJIGB","Jaigaon"],["INJAI4","Jaipur"],["INJAI5","Jaipur "],["INJAI6","Jaipur"],["INJSZ6","JAIPUR SEZ"],["INJSA4","Jaisalmer"],["INJTP1","Jaitapur"],["INJAK1","Jakhau"],["INJUC6","Jalandhar"],["INJAL6","Jalgaon"],["INJPGB","Jalpaiguri"],["INIXJ4","Jammu"],["INJGA4","Jamnagar"],["INIXW4","Jamshedpur"],["INIXW6","Jamshedpur ICD "],["INJWAB","Jarwa"],["INNSA1","Jawaharlal Nehru (Nh"],["INJAYB","Jayanagar"],["INPYB4","Jeypore"],["INJHOB","Jhulaghat (Pithoraga"],["INJDH4","Jodhpur"],["INJDH6","Jodhpur"],["INJDA1","Jodia"],["INJBNB","JOGBANI"],["INJRH4","Jorhat"],["INDEJ6","JUBILANT SEZ NOIDA"],["INBHC6","JUBILANT/SEZ/VILAYAT"],["INKDI1","Kadmat Island"],["INIXH4","Kailashahar"],["INKAK1","Kakinada"],["INKAK6","Kakinada"],["INCOA6","KAKINADA SEZ KAKINAD"],["INKWHB","KAKRAHAWA LCS"],["INKAL1","Kallai"],["INKLY1","Kalyan"],["INIXQ4","Kamalpur"],["INENR1","KAMARAJAR PORT LTD"],["INPBLB","KAMARDWISA LCS"],["INKKU6","Kanakpura Jaipur ICD"],["INIXY1","Kandla"],["INIXY4","Kandla"],["INIXY6","Kandla SEZ"],["INKDL6","KANDLA SEZ"],["INSNI6","KANECH, ICD SAHNEWAL"],["INKND1","Kankudy"],["INKNU4","Kanpur"],["INKNU6","Kanpur"],["INCPC6","Kanpur Chakeri  "],["INKAP6","Kapadra (Surat)"],["INKRK1","Karaikal"],["INKRN1","Karanja"],["INKDD6","Karedu"],["INKXJ2","Karimganj Railway St"],["INKGJ1","KARIMGANJ STEAMERGHA"],["INKAR6","Karur ICD"],["INKRW1","Karwar"],["INKSG1","Kasargod"],["INKTGB","Katarniyaghat"],["INKTRB","Kathihar"],["INCML6","KATHUWAS ICD ALWAR"],["INKAT1","KATTUPALLI PORT"],["INKVT1","Kavaratti Island"],["INKVI1","Kavi"],["INBNC6","KBITS SEZ BANGALORE"],["INTGN6","KEIPL/ PUNE"],["INKELB","Kel Sahar Subdivisio"],["INKSH1","Kelshi"],["INKIW1","Kelwa"],["INSMK6","KEONICS/SEZ/SHIMOGA"],["INMDU6","KERN ICD MADURAI"],["INIXK4","Keshod"],["INHJR4","Khajuraho"],["INKBT1","Khambhat"],["INIXN4","Khowai"],["INKWGB","Khowaighat"],["INKWAB","Khunwa"],["INSBK6","KIADB/SEZ/BANGALORE"],["INMQK6","KIADB/SEZ/MANGALORE"],["INHSF6","KIADBFP SEZ HASSAN"],["INHSP6","KIADBP SEZ HASSAN"],["INHST6","KIADBT SEZ HASSAN"],["INKKR1","Kilakari"],["INKTI1","Kiltan Island"],["INKLK6","KINFRA KANAYANNOOR"],["INTVC6","KINFRAA SEZ"],["INCCT6","KINFRAFP SEZ"],["INYNK6","KIP/SEZ/N BANGALORE"],["INPUI6","KIPPLGDPLSEZ KHARADI"],["INKRP1","Kiranpani"],["INPNK6","KLPPL PANKI"],["INKOC5","Kochi"],["INKOD1","Kodinar"],["INKDN1","Kodinar(Muldwarka)"],["INKLH4","Kohlapur"],["INKOI1","Koilthottum"],["INKOK1","Koka"],["INBNK6","KOLKATA IT PARK"],["INKUK1","KOLLAM PORT"],["INKON1","Konarak"],["INKDP1","Kondiapetnam"],["INKTT6","Kota"],["INKTU4","Kota"],["INKTU6","Kota"],["INMHDB","Kotawalighat (Mohedi"],["INKTD1","Kotda"],["INKTW1","Koteshwar"],["INKYM6","KOTTAYAM"],["INKVL1","Kovalam"],["INCCJ1","Kozhikode (ex Calicu"],["INCCJ4","Kozhikode (ex Calicu"],["INKRI1","Krishnapatnam"],["INAMK6","KSITIL/SEZ/ALAPPUZHA"],["INKUK6","KSITIL/SEZ/KOLLAM"],["INCLK6","KSITIL/SEZ/KOZHIKODE"],["INPAK6","KSITIL/SEZ/PAYYANOOR"],["INSRK6","KSITILA/SEZ/PALI/ALZ"],["INKSP1","Kulasekarapatnam"],["INKMAB","KULKULI LCS"],["INKUU4","Kulu"],["INKMB1","Kumbharu"],["INKNLB","Kunauli"],["INNUR6","Kundli"],["INBRL6","L & T/SEZ/VADODARA"],["INMYL6","L AND T/SEZ/MYSORE"],["INCJA6","L&T AE IT SEZ"],["INCEC6","L&T AE IT SEZ PVT."],["INYNT6","L&T CEL SEZ I"],["INYNL6","L&T CEL SEZ II"],["INTLT6","L&T SBL L&T CHENNAI"],["INLGLB","Lalgola Town"],["INLTBB","Latu Bazar"],["INLKQB","LAUKAHA LCS"],["INLPR1","Leapuram"],["INIXL4","Leh"],["INHYB6","LHT PARK PVT. LTD."],["INIXI4","Lilabari"],["INGNR6","LIPL/MARRIPLEMGUNTUR"],["INCRXB","LOKSAN LCS"],["INGNL6","LOMA ITPARK GHANSOLI"],["INRJN6","LS PVT. LTD."],["INLKO4","Lucknow"],["INLUD6","LUDHIANA"],["INLUH4","Ludhiana"],["INLUH6","Ludhiana"],["INLDH6","Ludhiana"],["INGGL6","LUXOR SEZ GURGAON"],["INCDP6","M/S APIIC LTD SEZ."],["INLPD6","M/S DLF, SEZ"],["INVZR6","M/S DR. REDDY SEZ"],["INBFR6","M/S GRFL, ICD, BALLA"],["INTMI6","M/S IFFCO KISAN, SEZ"],["INAII6","M/S IGATE GS LTD."],["INFMJ6","M/S J.T. SEZ, RANGAR"],["INPUN6","M/S KBTV PVT., PUNE"],["INDEN6","M/S NIIT TECH. LTD."],["INCCQ6","M/S QB PARK LTD."],["INHUR6","M/S RASSI, SEZ"],["INDES6","M/S SEAVIEW DEV. LTD"],["INFMS6","M/S STARGAZE, SEZ"],["INLPI6","M/S SUNDEW, SEZ"],["INTCR6","M/S TICS, ICD MATHIL"],["INDEW6","M/S WIPRO LTD."],["INKRM6","MADC LTD."],["INMBS6","Madhosingh ICD"],["INIXM4","Madurai"],["INIXM6","MaduraiICD "],["INMDA1","Magdalla"],["INBNG6","MAHAGAON ICD, THANE"],["INMAH1","Mahe"],["INMHE1","Mahe"],["INMGHB","Mahendraganj"],["INMHN2","Mahisashan Railway S"],["INMHGB","Mahurighat"],["INMHA1","Mahuva"],["INMPR6","Malanpur ICD "],["INGWL6","Malanpuri (Gwalior)"],["INLDA4","Malda"],["INMLP1","Mallipuram"],["INMAL1","Malpe"],["INMLW1","Malwan"],["INMDP1","Mandapam"],["INMDD6","Mandideep ICD"],["INMDV1","Mandvi"],["INMNW1","Mandwa"],["INIXE1","Mangalore"],["INIXE4","Mangalore"],["INMAQ6","MANGALORE SEZ"],["INMGR1","Mangrol"],["INMKCB","Manikarchar"],["INMNR1","Manori"],["INMNUB","Manu "],["INMRG4","Margao"],["INMDG6","Margao"],["INMRM1","Marmagoa"],["INMLI1","Maroli"],["INMAP1","Masulipatnam"],["INMYB1","Mayabandar"],["INLPM6","MDL NANAKRAMGUDA"],["INMDW1","Meadows"],["INHEM6","MEBP/SEZ/BANGALORE"],["INFBM6","METRO SEZ GURGAON"],["INMTW1","Metwad"],["INGDM6","MF PARK PVT. LTD."],["INGID6","MID PLTD SEZ GURGAON"],["INGMI6","MID PVT LTD."],["INSTM6","MIDC PHALTAN SEZ"],["INPUM6","MIDC PUNE"],["INSTU6","MIDC SEZ SATARA"],["INMKD6","MIKADO SEZ GURGAON"],["INYNM6","MILESTONE/SEZ/BLR"],["INMCI1","Minicoi I"],["INGGM6","MIPPL SEZ GURGAON"],["INMRJ6","Miraj "],["INPNI6","MITTAL SEZ PANIPAT"],["INYMA6","MODERN ASSET SEZ II"],["INMUZ6","MODINAGAR ICD"],["INMOH4","Mohanbari"],["INMRA1","Mora"],["INMOR2","Moradabad"],["INMBC6","Moradabad(EPZ/SEZ)"],["INMREB","Moreh"],["INDEM6","MOSERBAER/SEZ/NOIDA"],["INYNA6","MOSERN ASSET SEZ I"],["INPMT6","MTDCCL/SEZ/PUNE"],["INMDK1","Muldwarka"],["INBAM6","MULTISERVCE-SEZ/ULWE"],["INKLM6","MULTISERVCEKALAMBOLI"],["INBAP6","MULTISERVICEDRONAGIR"],["INMUL6","Mulund ICD"],["INBOM1","Mumbai (Ex Bombay)"],["INBOM4","Mumbai (Ex Bombay)"],["INBOM5","Mumbai (Ex Bombay)"],["INGRR6","Mumbai DP-I "],["INGRD6","Mumbai DP-II "],["INBOM6","Mumbai(EPZ/SEZ)"],["INMNB2","Munabao Railway Stat"],["INMUN1","Mundra"],["INAJM6","MUNDRA PORT SEZ"],["INMUR1","Murad"],["INMRD1","Murad"],["INMZA4","Muzaffarnagar"],["INMZU4","Muzaffarpur"],["INJPW6","MWC JAIPUR LTD."],["INCGA6","MWCD APARELS CHENGPA"],["INCGL6","MWCD AUTO ANCILARIES"],["INCGI6","MWCD SEZ CHENGALPATU"],["INMYQ4","Mysore"],["INNPT1","Nagapattinam"],["INNGKB","NAGARKATA LCS"],["INNGP6","Nagpur"],["INNAG4","Nagpur"],["INNAG6","Nagpur"],["INNKNB","Namkhana"],["INNPGB","Nampong"],["INNAN1","Nancowrie"],["INNDC4","Nanded"],["INNDG1","Nandgaon"],["INJNR4","Nashik-Janori ACC"],["INJNR6","Nashik-Janori ICD"],["INISK4","Nasik"],["INISK6","Nasik"],["INNSK6","Nasik"],["INNVB1","Navabunder(with its"],["INNVP1","Navaspur"],["INSAJ6","NAVKAR ICD UMBERGAON"],["INNAV1","Navlakhi"],["INCNC6","NCT PVT. LTD. SEZ"],["INCJC6","NCTL (ENGG.) SEZ/ KA"],["INNMTB","Neamati steamer Ghat"],["INNEE1","Neendakara"],["INNEL1","Nellore"],["INNGRB","Nepalgunj Road"],["INNML1","New Mangalore"],["INNWP1","Newapur"],["INJNJ6","NEWFOUND SEZ THANE"],["INNVY4","Neyveli"],["INVLN6","NG REALTY-SEZ/TALUKA"],["INCJN6","NIPL SEZ SRIPERUMBUD"],["INNVT1","Nivti"],["INSNS6","NLE PVT. LTD."],["INNDA6","Noida(EPZ/SEZ)"],["INKCG6","NSL SEZ PVT. LTD."],["INPSP6","NSPL SEZ HINJEWADI"],["INPNE6","NT PVT. LTD."],["INKUR6","OIIDC SEZ KHURDA"],["INOKH1","Okha"],["INOMU1","Old Mundra Port    "],["INRGBB","Old Raghna Bazar"],["INONJ1","Onjal"],["INGAO6","OPGS POWER GUJARAT"],["INHAO6","OPTOINFRA/SEZ/HASSAN"],["INMYO6","OPTOINFRA/SEZ/MYSORE"],["INGGC6","ORIENT SEZ GURGAON"],["INGGO6","ORIENTCRAFT SEZ GGN"],["INNGO6","OSE SEZ NOIDA"],["INOMN4","Osmanabad"],["INPDD1","Padubidri Minor Port"],["INMBD6","Pakwara (Moradabad)"],["INPSH1","Palshet"],["INPWL6","PALWAL ICD"],["INPMB1","Pamban"],["INPAN1","Panaji Port"],["INPNM1","Panambur"],["INPAP2","Panipat"],["INPNTB","Panitanki(Naxalbari)"],["INPNJ1","Panjim"],["INPGH4","Pantnagar"],["INPVL6","Panvel ICD"],["INPRT1","Paradeep"],["INCOP6","PARRY SEZ KAKINADA"],["INIXT4","Pasighat"],["INIXP4","Pathankot"],["INPTL6","Patli ICD"],["INPAT4","Patna"],["INPNF5","PATNA FPO"],["INPPG6","Patparganj ICD,DELHI"],["INPPJ1","Pellet Plant Jetty a"],["INCCP6","PEPPL SEZ, CHINCHWAD"],["INPSN6","PERFECT SEZ NOIDA"],["INFBP6","PERPETUAL FARIDABAD"],["INPNL6","PERSIPINA SEZ RAIGAD"],["INPTPB","Petrapole LCS"],["INTBM6","PHPL SEZ KANCHEPURAM"],["INPHBB","Phulbari"],["INPMP6","Pimpri"],["INPIN1","Pindhara"],["INPAV1","Pipavav (Victor) Por"],["INPAV2","Pipavav (Victor) Por"],["INKJIB","PIPRAUN LCS"],["INPNY1","Pondicherry"],["INPNY4","Pondicherry"],["INPNN1","Ponnani"],["INPBD1","Porbandar"],["INPBD4","Porbandar"],["INIXZ1","Port Blair"],["INIXZ4","Port Blair"],["INPID1","Port Indai"],["INPTN1","Portonovo"],["INBDB6","PRECIOUSCARGOCUSTOMS"],["INPRD6","PREPL SEZ PERUNGUDI"],["INBCP6","PRITECH/SEZ/BANGLORE"],["INGPB6","PROGRESSIVE GURGAON"],["INDDL6","PSWC ICD DHANDARIKAL"],["INPUL1","Pulicat"],["INPNQ2","Pune"],["INPNQ4","Pune"],["INTLG6","Pune-Talegoan ICD"],["INPRG1","Purangad"],["INPUR1","Puri"],["INERP6","PUTHUVYPEEN SEZ"],["INPUT4","Puttaparthi"],["INCDQ6","QUARKCITY/SEZ/MOHALI"],["INBGQ6","QUEST SEZ BELGAUM"],["INQUI1","Quilon"],["INRPL6","Raddipalam"],["INRDP2","Radhikapur Railway S"],["INGRS6","RAHEJA SEZ GURGAON"],["INRGJ2","RAIGANJ LCS RLY"],["INRRI1","Raili"],["INRPR4","Raipur"],["INRPR6","Raipur"],["INRAI6","Raipur"],["INRPU5","RAIPUR FPO"],["INRJA4","Rajahmundry"],["INRKG1","Rajakkamangalam"],["INRAJ4","Rajkot"],["INRAJ6","Rajkot "],["INRJI4","Rajouri"],["INRJP1","Rajpara"],["INRJR1","Rajpuri"],["INRMD4","Ramagundam"],["INRAM1","Rameshwaram"],["INRWR1","Rameshwaram"],["INRNG2","Ranaghat Railway Sta"],["INIXR4","Ranchi"],["INRNC5","RANCHI FPO"],["INRGT1","Ranghat Bay"],["INRNR1","Ranpar"],["INRTC1","Ratnagiri"],["INRTC4","Ratnagiri"],["INRXLB","Raxaul"],["INDRC6","RCIPL SEZ NOIDA"],["INRED1","Redi"],["INLPJ6","RELIANCE SEZ"],["INGRN6","RELIANCE SEZ GURGAON"],["INMSR6","RENAIS/SEZ/BANGALORE"],["INRVD1","Revdanda"],["INREW4","Rewa"],["INREA6","Rewari"],["INCRL6","RGA SEZ CHIKKANKANNE"],["INCDD6","RGT PARK (PHASE-I)"],["INCDC6","RGT PARK (PHASE-II)"],["INJPI6","RIICO SEZ 1 SITAPUR"],["INBRI6","RNBIPL SEZ BIKANER"],["INRRK4","Rourkela"],["INAKR6","RPCIPL SEZ"],["INRUP4","Rupsi"],["INRGUB","Ryngku"],["INBRS6","S E & C/SEZ/WAGHODIA"],["INSABB","Sabroom"],["INJKA6","SACHANA ICD VIRAMGAM"],["INSAC6","Sachin (Surat)"],["INSRE6","Saharanpur"],["INSAL1","Salaya"],["INSXV4","Salem"],["INSXV6","Salem"],["INSLT6","SALT LAKE (EPZ/SEZ)"],["INHPI6","SANDKHERA ICD KASHIP"],["INDBS6","SANTA-SEZ/ViII-MUPPI"],["INSCH6","SAP-SEZ SURAT"],["INCAS6","SAPL SEZ/ GANJAM"],["INSTP1","Satpati"],["INGGB6","SBPL SEZ GURGAON"],["INMUC6","SCPL/SEZ/MULUND"],["INHBB6","SDPL SEZ BENGALURU"],["INCBS6","SE&C COIMBATORE"],["INFBS6","SELECTOSEZ FARIDABAD"],["INPNQ6","SERUM BIO/SEZ/PUNE"],["INDID6","SEZ, MIDC, NANDED"],["INBBS6","SEZ, OIIDC, BHUBANES"],["INAWM6","SEZ, SHENDRA"],["INKLG6","SGS/SEZ/ERNAKULAM"],["INHIR6","SHB ICD SURAT"],["INSBZ1","SHELLA BAZAR"],["INNTLB","SHERATHANG LCS"],["INSHL4","Shillong"],["INSHI1","Shirola"],["INSSE4","Sholapur"],["INSWD1","Shriwardhan"],["INCSP6","SI PVT. LTD."],["INHDD6","SIDCUL ICD PANTNAGAR"],["INSIK1","Sikka"],["INSTFB","SIKTA LCS"],["INIXS4","Silchar"],["INSLR2","Silcher R.M.S. Offic"],["INSLRB","Silcher Steamerghat"],["INSLV4","Simla"],["INSMR1","Simor"],["INSBH1","Sinbhour"],["INSHP1","Sinbhour Port"],["INSNG2","Singabad Railway Sta"],["INSLL6","Singanallur"],["INTEN6","SIPCOT GANGAKONDAN"],["INVLR6","SIPCOT LTD."],["INCJO6","SIPCOT ORAGADAM SRIP"],["INPYS6","SIPCOT SEZ ERODE"],["INCJS6","SIPCOT SRIPERUMBUDUR"],["INPSI6","SIPL/SEZ/PUNE"],["INSTIB","Sitai"],["INKLS6","SMART CITY SEZ KOCHI"],["INDSM6","SMRTPL SEZ NOIDA"],["INPVS6","SNPIP SEZ TAMBARAM"],["INAWS6","SOMANI SEZ BHIWADI"],["INSNBB","Sonabarsa"],["INSNLB","Sonauli"],["INAIR6","SP PVT. LTD."],["INGTS6","SP PVT. LTD."],["INTBP6","SPIPL SEZ, PERUGULTH"],["INCSV6","SPVL SEZ COIMBATORE"],["INTAS6","SRICITYPVTLTD-SEZ"],["INSMPB","Srimantapur"],["INSXR4","Srinagar"],["INTNS6","SSL SEZ TUTICORIN"],["INBHS6","STERLING BHARUCH"],["INSKPB","Sukhia Pokhari"],["INCDR6","SUN PHARMACEUTICALS"],["INGGS6","SUNCITY SEZ GURGAON"],["INGGP6","SUNWISE SEZ GURGAON"],["INSJR6","Surajpur"],["INSRV1","Surasani-Yanam"],["INSTV1","Surat"],["INSTV4","Surat"],["INSTV6","Surat(EPZ/SEZ)"],["INSTRB","Sutarkandi"],["INUDI6","SYNEFRA-SEZ/UDUPI"],["INTTS1","T.T. SHED (KIDDERPOR"],["INTAD1","Tadri"],["INTJA1","Talaja"],["INTPN1","Talpona"],["INTNK1","Tankari"],["INTRP1","Tarapur"],["INCAG6","TATA STEEL SEZGANJAM"],["INBNT6","TCS"],["INTBT6","TCS LTD."],["INURT6","TCS LTD. ADIBATLA"],["ININT6","TCS SEZ INDORE"],["INGNT6","TCSL, SEZ"],["INTEL1","Tellicherry"],["INMPC1","TEST"],["INTEZ4","Tezpur"],["INTJPB","Tezpur Steamerghat"],["INTEI4","Tezu"],["INTHL1","Thal"],["INTNA1","Thana"],["INTJV4","Thanjavur"],["INSAU6","THAR DRY PORT"],["INTHA6","Thar Dry Port Jodhpu"],["INTRV4","Thiruvananthapuram ("],["INNTVB","THOOTHIBARI LCS"],["INTPH1","Thopputhurai"],["INTKNB","Tikonia"],["INTRZ4","Tiruchirapalli"],["INTYR1","Tirukkadayyur"],["INTIR4","Tirupati"],["INCHE6","Tiruppur-Chettipalay"],["INTHO6","Tiruppur-Thottiplaya"],["INTUP6","Tirupur"],["INILP6","Tiruvallur-ILP ICD"],["INTIV1","Tiviri"],["INPNU6","TMSF PVT. LTD."],["INTND1","Tondi"],["INTRA1","Tranquebar"],["INMAS6","TRIL INFOPARK LTD."],["INTMP1","Trombay"],["INTDE6","Tudiyalur-Coimbatore"],["INTKD2","Tuglakabad"],["INTKD6","Tuglakabad"],["INNDP1","Tuglakabad"],["INTUN1","Tuna"],["INTNGB","Tungi"],["INTUT1","Tuticorin"],["INTUT6","Tuticorin ICD "],["INUDR4","Udaipur"],["INUDR6","Udaipur"],["INUDZ6","Udaipur"],["INCLU6","ULCCS/SEZ/KOZHIKODE"],["INULPB","Ultapani"],["INULW1","Ulwa"],["INUMR1","Umarsadi"],["INUMB1","Umbergoan"],["INDET6","UNITECH HITECH NOIDA"],["INDEU6","UNITECHINFRA NOIDA"],["INGGU6","URP LTD."],["INUTN1","Uttan"],["INVRU1","Vadarevu"],["INVAD1","Vadinar"],["INBDQ1","Vadodara"],["INCHN6","Vadodara Chhani CFS"],["INVKM1","Valinokkam"],["INERV6","VALLARPADOM SEZ"],["INVAL6","Valvada ICD"],["INVSI1","Vansi-Borsi"],["INVPI6","Vapi "],["INVAP1","Vapi"],["INVNS6","Varanasi"],["INVNS4","Varanasi"],["INBSB6","Varanasi"],["INVRD1","Varavda"],["INVSV1","Varsova"],["INJPV6","VATIKA SEZ JAIPUR"],["INVZJ1","Vazhinjam"],["INJHA6","VEDANTA ALU. LTD."],["INJHV6","VEDANTASEZJHARSUGUDA"],["INVNG1","Vengurla"],["INVEN1","Vengurla"],["INVEP1","Veppalodai"],["INVVA1","Veraval"],["INVGA4","Vijayawada"],["INGWM4","VIJAYAWADA AIRPORT"],["INVYD1","Vijaydurg"],["INNGSB","Village Namgaya Ship"],["INVTZ1","Visakhapatnam"],["INVTZ4","Visakhapatnam"],["INVTZ6","Visakhapatnam SEZ"],["INBLV6","VTV/SEZ/BANGALORE"],["INWAL6","Waluj (Aurangabad)"],["INWRR6","WARDHA POWER CO LTD"],["INWGC4","Warrangal"],["INKVR6","WFPML SEZ KOVVUR"],["INAWW6","WIDL AEZ, AURANGABAD"],["INSBW6","WIPRO ELEC/SEZ/BLR"],["INLWG6","WIPRO LTD."],["INCCW6","WIPRO LTD."],["INLPW6","WIPRO LTD. HYDERABAD"],["INBNW6","WIPRO SEZ"],["INCCI6","WIPRO SEZ HINJEWADI"],["INVSP6","WIPRO SEZRESPUVANIPA"],["INCRW6","WIPRO/SEZ/BANGALORE"],["INAJE6","WLSPUN ANJAR SEZ"],["INZIP6","ZIPL-SEZ AHMEDABAD"],["INQRH6","HTPL ICD KILARAIPUR"]]};
+</script>
+<script>
+// ===================== e-Invoice JSON Generator =====================
+// Reimplements the govt "Format B" Excel e-invoice JSON prep tool as a
+// client-side web app. Everything runs locally in the browser; company
+// profiles and validation rules are stored/derived on-device only.
+
+const $ = (id) => document.getElementById(id);
+const DOC_TYPE_CODE = { "Tax Invoice": "INV", "Credit Note": "CRN", "Debit Note": "DBN" };
+const TRANS_MODE_CODE = { "Road": "1", "Rail": "2", "Air": "3", "Ship/Road cum Ship": "4" };
+const VEH_TYPE_CODE = { "Regular": "R", "ODC": "O" };
+const YN_CODE = { "Yes": "Y", "No": "N" };
+const EXPORT_SUPPLY_TYPES = ["EXPWP", "EXPWOP", "DEXP"];
+
+// Diamond-trade HSN codes and common product descriptions, offered as a
+// click-to-fill suggestion list on the HSN and Description item fields.
+// Built as a small custom dropdown (rather than a native <datalist>) because
+// datalist suggestions are unreliable across browsers — Safari in particular
+// does not show them at all.
+const HSN_SUGGESTIONS = [
+  { value: "71023100", label: "71023100 — Natural diamond, rough/unworked" },
+  { value: "71023910", label: "71023910 — Natural diamond, cut & polished" },
+  { value: "71023990", label: "71023990 — Natural diamond, other worked" },
+  { value: "71042010", label: "71042010 — Lab-grown diamond, rough/unworked" },
+  { value: "71049010", label: "71049010 — Lab-grown diamond, cut & polished" }
+];
+const DESC_SUGGESTIONS = [
+  "Cut & Polished Diamonds",
+  "Rough Diamonds",
+  "Polished Diamonds",
+  "Loose Diamonds",
+  "Lab-Grown Cut & Polished Diamonds",
+  "Lab-Grown Rough Diamonds"
+];
+
+// Attaches a small click-to-fill suggestion dropdown to a text input.
+// `items` can be an array of strings/{value,label} objects, OR a function
+// returning such an array (evaluated fresh every time the box renders, so
+// the suggestion list can reflect live data like saved buyers).
+// `onSelect(item)`, if given, fires in addition to filling the input value —
+// used when picking a suggestion should also populate other fields.
+function attachSuggestions(input, items, onSelect) {
+  const getItems = () => (typeof items === "function" ? items() : items);
+  const getValue = (it) => (typeof it === "string" ? it : it.value);
+  const getLabel = (it) => (typeof it === "string" ? it : it.label || it.value);
+  const box = document.createElement("div");
+  box.className = "suggest-box hidden";
+  document.body.appendChild(box);
+
+  function position() {
+    const r = input.getBoundingClientRect();
+    box.style.left = r.left + window.scrollX + "px";
+    box.style.top = r.bottom + window.scrollY + 2 + "px";
+    box.style.width = Math.max(r.width, 220) + "px";
+  }
+  function render() {
+    const list = getItems() || [];
+    const q = input.value.trim().toLowerCase();
+    const matches = list.filter((it) => !q || getLabel(it).toLowerCase().includes(q) || getValue(it).toLowerCase().includes(q));
+    if (matches.length === 0) { box.classList.add("hidden"); return; }
+    box.innerHTML = "";
+    matches.slice(0, 20).forEach((it) => {
+      const row = document.createElement("div");
+      row.className = "suggest-item";
+      row.textContent = getLabel(it);
+      row.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        input.value = getValue(it);
+        box.classList.add("hidden");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        if (onSelect) onSelect(it);
+      });
+      box.appendChild(row);
+    });
+    position();
+    box.classList.remove("hidden");
+  }
+  input.addEventListener("focus", render);
+  input.addEventListener("input", render);
+  input.addEventListener("blur", () => setTimeout(() => box.classList.add("hidden"), 120));
+}
+
+// Search-as-you-type box with inline "ghost" autocomplete (like a browser
+// address bar): as soon as the typed text is a prefix of a known item's
+// name, the rest of that name is appended and highlighted (via ::selection
+// styling) so it reads as a light suggestion. Pressing Enter accepts it;
+// continuing to type simply replaces the highlighted part, same as normal
+// text-selection behavior. A click-to-browse dropdown (matching anywhere in
+// the name, not just a prefix) is still offered underneath for browsing.
+// `getItems` returns an array of {value,label,id} objects, evaluated fresh
+// on every keystroke/focus so it reflects live data.
+function attachAutocomplete(input, getItems, onSelect) {
+  const box = document.createElement("div");
+  box.className = "suggest-box hidden";
+  document.body.appendChild(box);
+  let ghostItem = null; // the item currently ghost-suggested inline, if any
+
+  function position() {
+    const r = input.getBoundingClientRect();
+    box.style.left = r.left + window.scrollX + "px";
+    box.style.top = r.bottom + window.scrollY + 2 + "px";
+    box.style.width = Math.max(r.width, 220) + "px";
+  }
+
+  function renderDropdown(typed) {
+    const list = getItems() || [];
+    const q = typed.trim().toLowerCase();
+    const matches = list.filter((it) => !q || it.label.toLowerCase().includes(q) || it.value.toLowerCase().includes(q));
+    if (matches.length === 0) { box.classList.add("hidden"); return; }
+    box.innerHTML = "";
+    matches.slice(0, 20).forEach((it) => {
+      const row = document.createElement("div");
+      row.className = "suggest-item";
+      row.textContent = it.label;
+      row.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        input.value = it.value;
+        ghostItem = null;
+        box.classList.add("hidden");
+        onSelect(it);
+      });
+      box.appendChild(row);
+    });
+    position();
+    box.classList.remove("hidden");
+  }
+
+  function applyGhost(typed) {
+    ghostItem = null;
+    if (!typed) return;
+    const list = getItems() || [];
+    const match = list.find((it) => it.value.toLowerCase().startsWith(typed.toLowerCase()));
+    if (match && match.value.length > typed.length) {
+      input.value = typed + match.value.slice(typed.length);
+      input.setSelectionRange(typed.length, match.value.length);
+      ghostItem = match;
+    }
+  }
+
+  input.addEventListener("input", () => {
+    // By the time "input" fires, the browser has already applied the
+    // keystroke on top of any prior ghost-selected text, so input.value
+    // here is exactly what the user intends to have typed so far.
+    const typed = input.value;
+    renderDropdown(typed);
+    applyGhost(typed);
+  });
+  input.addEventListener("focus", () => renderDropdown(input.value));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && ghostItem) {
+      e.preventDefault();
+      const it = ghostItem;
+      input.value = it.value;
+      input.setSelectionRange(input.value.length, input.value.length);
+      box.classList.add("hidden");
+      ghostItem = null;
+      onSelect(it);
+    } else if (e.key === "Escape") {
+      ghostItem = null;
+      box.classList.add("hidden");
+    }
+  });
+  input.addEventListener("blur", () => setTimeout(() => box.classList.add("hidden"), 120));
+}
+
+// ---------- regex validators (ported from the workbook's VBA) ----------
+const RX = {
+  gstin: /^[0-9]{2}[0-9A-Z]{13}$/,
+  pin: /^[1-9][0-9]{5}$/,
+  phone: /^[0-9]{6,12}$/,
+  email: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+  docNo: /^[a-zA-Z1-9][a-zA-Z0-9\/-]{0,15}$/,
+  docDt: /^[0-3][0-9]\/[0-1][0-9]\/20[1-9][0-9]$/,
+  hsn: /^(?!0+$)([0-9]{4}|[0-9]{6}|[0-9]{8})$/,
+  desc: /^([^\\"]){1,300}$/,
+  addr: /^([^\\"]){1,100}$/,
+  amount: /^[0-9]{1,12}(\.[0-9]{1,3})?$/,
+  qty: /^[0-9]{1,10}(\.[0-9]{1,3})?$/,
+  rate: /^[0-9]{1,3}(\.[0-9]{1,3})?$/,
+  slno: /^[0-9]{1,6}$/
+};
+
+function fmtDateToday() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+// A GSTIN's characters 3-12 (0-indexed 2-11) are always the holder's 10-digit
+// PAN — so the printable invoice can show "PAN No" without asking for it
+// as a separate field.
+function panFromGstin(gstin) {
+  const g = (gstin || "").trim().toUpperCase();
+  return /^[0-9]{2}[0-9A-Z]{10}/.test(g) ? g.slice(2, 12) : "";
+}
+
+// Converts a non-negative number to words using the Indian numbering system
+// (lakh/crore), e.g. 705403 -> "Seven Lakh Five Thousand Four Hundred Three".
+function numberToWordsIndian(num) {
+  const ONES = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+    "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  function threeDigits(n) {
+    let s = "";
+    if (n >= 100) { s += ONES[Math.floor(n / 100)] + " Hundred "; n %= 100; }
+    if (n >= 20) { s += TENS[Math.floor(n / 10)] + " "; n %= 10; }
+    if (n > 0) s += ONES[n] + " ";
+    return s.trim();
+  }
+  let n = Math.round(Math.abs(num || 0));
+  if (n === 0) return "Zero";
+  const crore = Math.floor(n / 10000000); n %= 10000000;
+  const lakh = Math.floor(n / 100000); n %= 100000;
+  const thousand = Math.floor(n / 1000); n %= 1000;
+  const rest = n;
+  const parts = [];
+  if (crore) parts.push(threeDigits(crore) + " Crores");
+  if (lakh) parts.push(threeDigits(lakh) + " Lakhs");
+  if (thousand) parts.push(threeDigits(thousand) + " Thousand");
+  if (rest) parts.push(threeDigits(rest));
+  return parts.join(" ").replace(/\s+/g, " ").trim();
+}
+
+// ---------- dropdown population ----------
+function populateStateSelect(sel, withBlank) {
+  sel.innerHTML = "";
+  if (withBlank) sel.appendChild(new Option("-- select state --", ""));
+  MASTER.states.forEach(([name, code]) => {
+    sel.appendChild(new Option(`${name} (${code})`, String(code)));
+  });
+}
+function populateCurrencySelect(sel) {
+  sel.innerHTML = "";
+  sel.appendChild(new Option("-- select currency --", ""));
+  MASTER.currencies.forEach(([code, name]) => {
+    sel.appendChild(new Option(`${code} — ${name}`, code));
+  });
+}
+function populateCountrySelect(sel) {
+  sel.innerHTML = "";
+  sel.appendChild(new Option("-- select country --", ""));
+  MASTER.countries.forEach(([code, name]) => {
+    sel.appendChild(new Option(`${code} — ${name}`, code));
+  });
+}
+function populateUnitSelect(sel) {
+  sel.innerHTML = "";
+  sel.appendChild(new Option("--", ""));
+  MASTER.units.forEach(([name, code]) => {
+    sel.appendChild(new Option(`${code} (${name})`, code));
+  });
+  // "Others" (OTH) is the closest fit for carats/diamond-trade units, which
+  // aren't in the official UQC list — default new rows to it instead of
+  // leaving Unit blank, since it's required and OTH beats picking nothing.
+  sel.value = "OTH";
+}
+function populatePortDatalist() {
+  const dl = $("portList");
+  dl.innerHTML = "";
+  MASTER.ports.forEach(([code, desc]) => {
+    const opt = document.createElement("option");
+    opt.value = code;
+    opt.label = desc;
+    dl.appendChild(opt);
+  });
+}
+
+function initStaticDropdowns() {
+  ["SState", "BState", "DState", "ShState"].forEach((id) => populateStateSelect($(id), id !== "SState"));
+  populateStateSelect($("BPos"), true);
+  populateCurrencySelect($("ForCur"));
+  populateCountrySelect($("CntCode"));
+  populatePortDatalist();
+}
+
+// ---------- company profile management (localStorage) ----------
+const COMPANY_KEY = "einvoice_companies_v1";
+const SEED_FLAG_KEY = "einvoice_companies_seeded_v1";
+const SEED_DISMISSED_KEY = "einvoice_companies_seed_dismissed_v1";
+
+// Pre-loaded company profiles (from KYC documents). These are only written
+// into localStorage once, the first time this page is opened on a browser
+// that has no companies saved yet — after that, edits/deletes made in
+// "Manage companies" are the source of truth and this list is ignored.
+const SEED_COMPANIES = [
+  {
+    id: "vama_exports",
+    name: "Vama Exports",
+    gstin: "27AABPS5401L1ZM",
+    legalName: "CHETAN RASIKLAL SHAH",
+    tradeName: "VAMA EXPORTS",
+    addr1: "FW4010, Bharat Diamond Bourse, Block G",
+    addr2: "Bandra Kurla Complex, Bandra",
+    loc: "Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "9820157451",
+    email: "vamastock@yahoo.com",
+    // Extra fields used only by the printable invoice (not part of the
+    // e-invoice JSON schema) — taken from Vama's letterhead/sample invoice.
+    invoiceTemplate: "vama",
+    tagline: "Diamond Manufacturer | Importer | Exporter",
+    bankAccName: "VAMA EXPORTS",
+    bankAccNo: "121705500254",
+    bankIfsc: "ICIC0001217",
+    bankAddress: "ICICI Bank, BDB, BKC, Bandra (E), Mumbai - 400051",
+    jurisdictionNote: "GOODS SOLD & DELIVERED AT MUMBAI (SUBJECT TO MUMBAI JURISDICTION)",
+    signatoryTitle: "Authorized Signatory"
+  },
+  {
+    id: "divine_jewels",
+    name: "Divine Jewels",
+    gstin: "27AAKHA3999N1ZH",
+    legalName: "AMIT K GANDHI HUF",
+    tradeName: "DIVINE JEWELS",
+    addr1: "3rd Floor, 307, Hari Om CHS, New Chikhalwadi",
+    addr2: "Tardeo, Grant Road West",
+    loc: "Mumbai",
+    pin: "400007",
+    state: "27",
+    phone: "9892244383",
+    email: "divinejewels2018@gmail.com",
+    // Extra fields used only by the printable invoice — taken from Divine's
+    // tax invoice sample (bank details, jurisdiction line, signatory title).
+    invoiceTemplate: "divine",
+    bankName: "ICICI Bank",
+    bankAccNo: "121705000863",
+    bankIfsc: "ICIC0001217",
+    bankAddress: "BDB, Bandra - East, Mumbai - 400051",
+    jurisdictionNote: "GOODS SOLD & DELIVERED AT MUMBAI. (SUBJECT TO MUMBAI JURISDICTION)",
+    signatoryTitle: "Proprietor"
+  }
+];
+
+function loadCompanies() {
+  let list;
+  try { list = JSON.parse(localStorage.getItem(COMPANY_KEY)) || []; } catch (e) { list = []; }
+
+  // Backfill any built-in company that isn't in this browser's saved list yet
+  // (e.g. a new default company was added to the tool after this browser
+  // already had companies saved). Skips ones the user deliberately deleted.
+  let dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem(SEED_DISMISSED_KEY)) || []; } catch (e) { dismissed = []; }
+  let changed = false;
+  SEED_COMPANIES.forEach((seed) => {
+    const existing = list.find((c) => c.id === seed.id);
+    const wasDismissed = dismissed.includes(seed.id);
+    if (!existing && !wasDismissed) { list.push({ ...seed }); changed = true; }
+    else if (existing) {
+      // Merge in any fields that exist in the built-in seed but are still
+      // missing on this browser's saved copy (e.g. bank details / tagline
+      // added to the tool after this browser already had the company saved).
+      // Never overwrites a value the browser already has.
+      Object.keys(seed).forEach((k) => {
+        if (existing[k] === undefined) { existing[k] = seed[k]; changed = true; }
+      });
+    }
+  });
+  if (changed) localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
+  localStorage.setItem(SEED_FLAG_KEY, "1");
+  return list;
+}
+function saveCompanies(list) { localStorage.setItem(COMPANY_KEY, JSON.stringify(list)); }
+function markSeedDismissed(id) {
+  let dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem(SEED_DISMISSED_KEY)) || []; } catch (e) { dismissed = []; }
+  if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem(SEED_DISMISSED_KEY, JSON.stringify(dismissed)); }
+}
+
+// Company picker is two (or more) simple toggle buttons instead of a dropdown —
+// there are only ever a couple of companies in practice, so a toggle is faster
+// than opening a select. $("companyToggle") holds the currently-selected id in
+// its data-selected attribute.
+function refreshCompanySelect() {
+  const companies = loadCompanies();
+  const wrap = $("companyToggle");
+  const prev = wrap.dataset.selected || "";
+  wrap.innerHTML = "";
+  if (companies.length === 0) {
+    wrap.innerHTML = '<span class="hint" style="color:var(--muted);">No companies configured.</span>';
+    return;
+  }
+  companies.forEach((c) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "company-toggle-btn";
+    btn.textContent = c.name || c.gstin;
+    btn.dataset.id = c.id;
+    btn.addEventListener("click", () => {
+      wrap.dataset.selected = c.id;
+      [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === c.id));
+      applySelectedCompany();
+      saveDraft();
+    });
+    wrap.appendChild(btn);
+  });
+  const selected = companies.some((c) => c.id === prev) ? prev : companies[0].id;
+  wrap.dataset.selected = selected;
+  [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === selected));
+  applySelectedCompany();
+}
+
+function applySelectedCompany() {
+  const companies = loadCompanies();
+  const c = companies.find((x) => x.id === $("companyToggle").dataset.selected);
+  if (!c) return;
+  $("SGstin").value = c.gstin || "";
+  $("SLglNm").value = c.legalName || "";
+  $("STrdNm").value = c.tradeName || "";
+  $("SAddr1").value = c.addr1 || "";
+  $("SAddr2").value = c.addr2 || "";
+  $("SLoc").value = c.loc || "";
+  $("SPin").value = c.pin || "";
+  $("SState").value = c.state || "";
+  $("SPh").value = c.phone || "";
+  $("SEm").value = c.email || "";
+}
+
+// ---------- buyer address book (same idea as companies, one level simpler) ----------
+const BUYER_KEY = "einvoice_buyers_v1";
+const BUYER_SEED_DISMISSED_KEY = "einvoice_buyers_seed_dismissed_v1";
+
+// Pre-loaded buyer profiles, same backfill pattern as SEED_COMPANIES above:
+// written into localStorage the first time this browser sees them, unless
+// the user has since deliberately deleted that buyer.
+const SEED_BUYERS = [
+  {
+    id: "gehna_by_luthra_jewels",
+    name: "Gehna By Luthra Jewels",
+    gstin: "03AAMCG7135P1Z5",
+    legalName: "Gehna By Luthra Jewels Private Limited",
+    tradeName: "Gehna By Luthra Jewels",
+    pos: "03",
+    addr1: "Police Line Road, Luthra Jewellery House",
+    addr2: "Nehru Gate, Batala, Gurdaspur",
+    loc: "Batala, Gurdaspur",
+    pin: "143505",
+    state: "03",
+    phone: "9815076912",
+    email: ""
+  },
+  {
+    id: "saharsh_exports",
+    name: "Saharsh Exports",
+    gstin: "27AALFS1613E1ZE",
+    legalName: "Saharsh Exports",
+    tradeName: "Saharsh Exports",
+    pos: "27",
+    addr1: "3rd Floor, 301-B, Sanidhya Bldg.",
+    addr2: "Walkeshwar Road",
+    loc: "Mumbai",
+    pin: "400006",
+    state: "27",
+    phone: "+91 9820052423",
+    email: ""
+  },
+  {
+    id: "rosin_jewels_pvt_ltd",
+    name: "Rosin Jewels Pvt Ltd",
+    gstin: "27AAFCR6478P1ZF",
+    legalName: "Rosin Jewels Pvt Ltd",
+    tradeName: "",
+    pos: "27",
+    addr1: "EC* 8010-D 1, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "romil_impex",
+    name: "Romil Impex",
+    gstin: "27AACCR7499B1Z4",
+    legalName: "Romil Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "BW* 5011, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "+91 9821256519",
+    email: ""
+  },
+  {
+    id: "g_k_sons",
+    name: "G K Sons",
+    gstin: "27AANPK7603A1ZX",
+    legalName: "G K Sons",
+    tradeName: "",
+    pos: "27",
+    addr1: "2nd Floor, 245, Panchratna",
+    addr2: "Mama Parmanand Marg, Opera House",
+    loc: "Mumbai City",
+    pin: "400004",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "maa_impex",
+    name: "Maa Impex",
+    gstin: "24AJZPJ1636P1ZH",
+    legalName: "Maa Impex",
+    tradeName: "",
+    pos: "24",
+    addr1: "B, 142 Mahalaxmi Society",
+    addr2: "Yogi Chowk, Varachha",
+    loc: "Surat, Gujarat",
+    pin: "395006",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "vavisha_gems",
+    name: "Vavisha Gems",
+    gstin: "27AACFV2159B1ZF",
+    legalName: "Vavisha Gems",
+    tradeName: "",
+    pos: "27",
+    addr1: "GW* 6110, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "hva_diamond",
+    name: "Hva Diamond",
+    gstin: "24AFHPJ2769M1Z2",
+    legalName: "Hva Diamond",
+    tradeName: "",
+    pos: "24",
+    addr1: "Surya Kiran Apt",
+    addr2: "St. Xavier's School, Ghod Dod Road",
+    loc: "Surat, Gujarat",
+    pin: "395007",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "mkm_diamonds_pvt_ltd",
+    name: "MKM Diamonds Private Limited",
+    gstin: "27AACCE1920A1ZD",
+    legalName: "MKM Diamonds Private Limited",
+    tradeName: "",
+    pos: "27",
+    addr1: "BC* 4011, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "rajharsh_diam",
+    name: "Rajharsh Diam",
+    gstin: "24ABDPV6536A1ZU",
+    legalName: "Rajharsh Diam",
+    tradeName: "",
+    pos: "24",
+    addr1: "407, Vrundavan Chembers",
+    addr2: "Bhojabhai Tekra, Mahidharpura",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "epitome_jewels",
+    name: "Epitome Jewels",
+    gstin: "27AAJFE9258M1ZO",
+    legalName: "Epitome Jewels",
+    tradeName: "",
+    pos: "27",
+    addr1: "12, D, Crystal, 36, Altamount Road",
+    addr2: "Cumballa Hill",
+    loc: "Mumbai",
+    pin: "400026",
+    state: "27",
+    phone: "9820974973",
+    email: ""
+  },
+  {
+    id: "arun_joy_arakkal",
+    name: "Arun Joy Arakkal",
+    gstin: "",
+    legalName: "Arun Joy Arakkal",
+    tradeName: "",
+    pos: "32",
+    addr1: "Arakkal House, Vanhode Post",
+    addr2: "Kanjirangad, Vanhode",
+    loc: "Wayanad",
+    pin: "670731",
+    state: "32",
+    phone: "9121529673",
+    email: ""
+  },
+  {
+    id: "kejal_exports",
+    name: "Kejal Exports",
+    gstin: "27AHOPA2657A1ZO",
+    legalName: "Kejal Exports",
+    tradeName: "",
+    pos: "27",
+    addr1: "1st Floor, Flat No-4, 38, Walkeshwar House",
+    addr2: "Sital Baug, Walkeshwar Road",
+    loc: "Mumbai",
+    pin: "400006",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "ghanshyam_impex",
+    name: "Ghanshyam Impex",
+    gstin: "27AAIFG8790K1ZO",
+    legalName: "Ghanshyam Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "FW-3110, Bharat Diamond Bourse",
+    addr2: "BKC, Bandra East",
+    loc: "Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "9924611461",
+    email: ""
+  },
+  {
+    id: "n_v_diamonds",
+    name: "N V Diamonds",
+    gstin: "27AAPFN8114R1ZE",
+    legalName: "N V Diamonds",
+    tradeName: "",
+    pos: "27",
+    addr1: "B-39/40, Block B Tara Baug Estate",
+    addr2: "297, Charni Road, Opera House",
+    loc: "Mumbai",
+    pin: "400004",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "vrinjal_diam",
+    name: "Vrinjal Diam",
+    gstin: "24ACXPS5648B1Z6",
+    legalName: "Vrinjal Diam",
+    tradeName: "",
+    pos: "24",
+    addr1: "3rd Floor, 6/1425/301, Veer Ashish",
+    addr2: "Thobha Sheri, Mahidharpura",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "+91 9825119143",
+    email: ""
+  },
+  {
+    id: "gautam_gems_limited",
+    name: "Gautam Gems Limited",
+    gstin: "24AAFCG5576R1ZV",
+    legalName: "Gautam Gems Limited",
+    tradeName: "",
+    pos: "24",
+    addr1: "3rd Floor, 301, Sumukh Super Compound",
+    addr2: "Vasta Devadi Road",
+    loc: "Surat",
+    pin: "395004",
+    state: "24",
+    phone: "+91 9376495444",
+    email: ""
+  },
+  {
+    id: "dharmachakra_diamonds",
+    name: "Dharmachakra Diamonds",
+    gstin: "24BPWPP7208D1ZM",
+    legalName: "Dharmachakra Diamonds",
+    tradeName: "",
+    pos: "24",
+    addr1: "201, Darshan Complex",
+    addr2: "Rampura Main Road",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "+91 9428396297",
+    email: ""
+  },
+  {
+    id: "parshwanath_diamonds_llp",
+    name: "Parshwanath Diamonds LLP",
+    gstin: "27AASFP9131B1Z3",
+    legalName: "Parshwanath Diamonds LLP",
+    tradeName: "",
+    pos: "27",
+    addr1: "4th Floor, 41, Ekadashi Apartment",
+    addr2: "Parekh Road, Prarthna Samaj",
+    loc: "Mumbai City",
+    pin: "400004",
+    state: "27",
+    phone: "9870030249",
+    email: ""
+  }
+];
+
+function loadBuyers() {
+  let list;
+  try { list = JSON.parse(localStorage.getItem(BUYER_KEY)) || []; } catch (e) { list = []; }
+
+  let dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem(BUYER_SEED_DISMISSED_KEY)) || []; } catch (e) { dismissed = []; }
+  let changed = false;
+  SEED_BUYERS.forEach((seed) => {
+    const exists = list.some((b) => b.id === seed.id);
+    const wasDismissed = dismissed.includes(seed.id);
+    if (!exists && !wasDismissed) { list.push({ ...seed }); changed = true; }
+  });
+
+  // One-time correction: "Gehna By Luthra Jewels" was originally seeded with
+  // an incorrect GSTIN (03ABHPL0108N1ZX). The real one — confirmed from an
+  // actual invoice to this buyer — is 03AAMCG7135P1Z5, with a fuller legal
+  // name and address. If a browser already saved the old, wrong record,
+  // replace it with the corrected seed data so it doesn't keep getting used.
+  const gehnaIdx = list.findIndex((b) => b.id === "gehna_by_luthra_jewels" && b.gstin === "03ABHPL0108N1ZX");
+  if (gehnaIdx >= 0) {
+    const correctedSeed = SEED_BUYERS.find((s) => s.id === "gehna_by_luthra_jewels");
+    if (correctedSeed) { list[gehnaIdx] = { ...correctedSeed }; changed = true; }
+  }
+
+  // De-duplicate: if the same buyer (matched by GSTIN) ended up saved twice
+  // under different ids — e.g. from the old "Save this buyer" button — keep
+  // just one copy, preferring the built-in seed record if one of the
+  // duplicates is it. Buyers with a blank GSTIN are never merged, since a
+  // blank value isn't a reliable way to tell two different buyers apart.
+  const seenAt = new Map();
+  const deduped = [];
+  list.forEach((b) => {
+    const key = (b.gstin || "").trim().toUpperCase();
+    if (!key) { deduped.push(b); return; }
+    if (!seenAt.has(key)) { seenAt.set(key, deduped.length); deduped.push(b); return; }
+    changed = true;
+    const idx = seenAt.get(key);
+    const isSeed = SEED_BUYERS.some((s) => s.id === b.id);
+    const existingIsSeed = SEED_BUYERS.some((s) => s.id === deduped[idx].id);
+    if (isSeed && !existingIsSeed) deduped[idx] = b; // prefer the seed copy
+    // otherwise drop this duplicate, keep what's already in deduped
+  });
+
+  if (changed) localStorage.setItem(BUYER_KEY, JSON.stringify(deduped));
+  return deduped;
+}
+function saveBuyers(list) { localStorage.setItem(BUYER_KEY, JSON.stringify(list)); }
+function markBuyerSeedDismissed(id) {
+  let dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem(BUYER_SEED_DISMISSED_KEY)) || []; } catch (e) { dismissed = []; }
+  if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem(BUYER_SEED_DISMISSED_KEY, JSON.stringify(dismissed)); }
+}
+
+// Suggestion items for the buyer search box — built fresh on every render
+// so it always reflects the current saved-buyer list.
+function buyerSuggestionItems() {
+  return loadBuyers()
+    .map((b) => ({
+      value: b.name || b.gstin || "Unnamed buyer",
+      label: (b.name || b.gstin || "Unnamed buyer") + (b.gstin ? " — " + b.gstin : ""),
+      id: b.id
+    }))
+    .sort((a, b) => a.value.localeCompare(b.value, undefined, { sensitivity: "base" }));
+}
+
+function selectBuyerById(id) {
+  if (!id) {
+    // Going back to "-- pick a saved buyer --" clears the previously
+    // selected buyer's details instead of leaving stale data in the fields.
+    ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((fid) => { $(fid).value = ""; });
+    $("BPos").value = ""; $("BState").value = "";
+    if ($("pDelivery")) $("pDelivery").value = "";
+    document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+    return;
+  }
+  const b = loadBuyers().find((x) => x.id === id);
+  if (!b) return;
+  $("BGstin").value = b.gstin || "";
+  $("BLglNm").value = b.legalName || "";
+  $("BTrdNm").value = b.tradeName || "";
+  $("BPos").value = b.pos || "";
+  $("BAddr1").value = b.addr1 || "";
+  $("BAddr2").value = b.addr2 || "";
+  $("BLoc").value = b.loc || "";
+  $("BPin").value = b.pin || "";
+  $("BState").value = b.state || "";
+  $("BPh").value = b.phone || "";
+  $("BEm").value = b.email || "";
+  // Delivery place defaults to the buyer's own city — matches how you've
+  // filled it in on real invoices ("GOODS SOLD & DELIVERED AT <city>").
+  // Still a plain text field, so it can be overwritten by hand afterwards.
+  if ($("pDelivery")) {
+    $("pDelivery").value = b.loc ? ("GOODS SOLD & DELIVERED AT " + b.loc.toUpperCase()) : "";
+  }
+  document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+}
+
+// If Terms is COD, the due date is the same as the invoice date — keeps the
+// two fields in sync whenever either one changes.
+function syncDueDateWithTerms() {
+  const terms = ($("pTerms").value || "").trim().toUpperCase();
+  if (terms === "COD") {
+    $("pDueDate").value = $("DocDt").value || "";
+  }
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
+
+// ---------- item rows ----------
+let itemCounter = 0;
+function addItemRow(prefill) {
+  itemCounter++;
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input class="f-slno" value="${itemCounter}"></td>
+    <td><input class="f-desc" style="min-width:160px;" placeholder="Product / service description"></td>
+    <td><input class="f-hsn" maxlength="8" placeholder="e.g. 71023910"></td>
+    <td><input class="f-qty" type="number" step="0.001" value="1"></td>
+    <td><select class="f-unit"></select></td>
+    <td><input class="f-price" type="number" step="0.01" value="0"></td>
+    <td><input class="f-gross" type="number" step="0.01" value="0"></td>
+    <td><input class="f-disc" type="number" step="0.01" value="0"></td>
+    <td><input class="f-pretax" type="number" step="0.01" value="0"></td>
+    <td><input class="f-taxable" type="number" step="0.01" value="0"></td>
+    <td><input class="f-gstrate" type="number" step="0.01" value="1.5" list="gstRateList"></td>
+    <td><input class="f-sgst" type="number" step="0.01" value="0"></td>
+    <td><input class="f-cgst" type="number" step="0.01" value="0"></td>
+    <td><input class="f-igst" type="number" step="0.01" value="0"></td>
+    <td><input class="f-total" type="number" step="0.01" value="0"></td>
+    <td class="col-isserv"><select class="f-isserv"><option value="N">No</option><option value="Y">Yes</option></select></td>
+    <td class="col-bar"><input class="f-bar"></td>
+    <td class="col-freeqty"><input class="f-freeqty" type="number" step="0.001" value="0"></td>
+    <td class="col-cess"><input class="f-cessrate" type="number" step="0.01" value="0" list="cessRateList"></td>
+    <td class="col-cess"><input class="f-cessamt" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-cessnonadv" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-stcessrate" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-stcessamt" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-stcessnonadv" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-othchrg" type="number" step="0.01" value="0"></td>
+    <td class="col-batch"><input class="f-batchname"></td>
+    <td class="col-batch"><input class="f-batchexp" placeholder="DD/MM/YYYY"></td>
+    <td class="col-batch"><input class="f-batchwar" placeholder="DD/MM/YYYY"></td>
+    <td style="white-space:nowrap;"><button class="item-remove" title="Duplicate item" data-act="dup">⎘</button> <button class="item-remove" title="Remove item" data-act="del">✕</button></td>
+  `;
+  populateUnitSelect(tr.querySelector(".f-unit"));
+  $("itemsBody").appendChild(tr);
+  attachSuggestions(tr.querySelector(".f-hsn"), HSN_SUGGESTIONS);
+  attachSuggestions(tr.querySelector(".f-desc"), DESC_SUGGESTIONS);
+
+  const recalc = () => recalcItemRow(tr);
+  ["f-qty", "f-price", "f-disc", "f-gstrate", "f-cessrate", "f-stcessrate"].forEach((cls) => {
+    tr.querySelector("." + cls).addEventListener("input", recalc);
+  });
+  tr.querySelector('[data-act="del"]').addEventListener("click", () => { tr.remove(); recalcAllTotals(); saveDraft(); });
+  tr.querySelector('[data-act="dup"]').addEventListener("click", () => {
+    const clone = {};
+    tr.querySelectorAll("input, select").forEach((el) => { if (el.className) clone[el.className] = el.value; });
+    clone["f-slno"] = String(itemCounter + 1);
+    addItemRow(clone);
+    saveDraft();
+  });
+
+  if (prefill) {
+    Object.entries(prefill).forEach(([cls, v]) => {
+      const el = tr.querySelector("." + cls);
+      if (el) el.value = v;
+    });
+  }
+  recalcItemRow(tr);
+  return tr;
+}
+
+function isIntraState() {
+  const seller = $("SState").value;
+  const pos = $("BPos").value || $("BState").value;
+  if (!seller || !pos) return true; // default assumption until both known
+  return seller === pos;
+}
+
+function recalcItemRow(tr) {
+  const num = (cls) => parseFloat(tr.querySelector("." + cls).value) || 0;
+  const set = (cls, v) => { tr.querySelector("." + cls).value = round2(v); };
+
+  const qty = num("f-qty");
+  const price = num("f-price");
+  const gross = qty * price;
+  set("f-gross", gross);
+
+  const disc = num("f-disc");
+  const preTax = gross - disc;
+  set("f-pretax", preTax);
+
+  const taxable = preTax; // AssAmt = PreTaxVal per the workbook's Calculations sheet
+  set("f-taxable", taxable);
+
+  const gstRate = num("f-gstrate");
+  const igstOnIntra = $("IgstOnIntra").value === "Yes";
+  const intra = isIntraState() && !igstOnIntra;
+  if (intra) {
+    set("f-sgst", taxable * gstRate / 200);
+    set("f-cgst", taxable * gstRate / 200);
+    set("f-igst", 0);
+  } else {
+    set("f-sgst", 0);
+    set("f-cgst", 0);
+    set("f-igst", taxable * gstRate / 100);
+  }
+
+  const cessRate = num("f-cessrate");
+  set("f-cessamt", taxable * cessRate / 100);
+
+  const stCessRate = num("f-stcessrate");
+  set("f-stcessamt", taxable * stCessRate / 100);
+
+  const total = taxable + num("f-sgst") + num("f-cgst") + num("f-igst") + num("f-cessamt") + num("f-cessnonadv") + num("f-stcessamt") + num("f-stcessnonadv") + num("f-othchrg");
+  set("f-total", total);
+
+  recalcAllTotals();
+}
+
+function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+function recalcAllTotals() {
+  const rows = [...document.querySelectorAll("#itemsBody tr")];
+  const sum = (cls) => rows.reduce((a, tr) => a + (parseFloat(tr.querySelector("." + cls).value) || 0), 0);
+  const assVal = sum("f-taxable");
+  const sgst = sum("f-sgst"), cgst = sum("f-cgst"), igst = sum("f-igst");
+  const cess = sum("f-cessamt") + sum("f-cessnonadv");
+  const stCess = sum("f-stcessamt") + sum("f-stcessnonadv");
+  const discount = sum("f-disc");
+  const othChrg = sum("f-othchrg");
+
+  $("valAssVal").textContent = round2(assVal).toFixed(2);
+  $("valSgst").textContent = round2(sgst).toFixed(2);
+  $("valCgst").textContent = round2(cgst).toFixed(2);
+  $("valIgst").textContent = round2(igst).toFixed(2);
+  $("valCess").textContent = round2(cess).toFixed(2);
+  $("valStCess").textContent = round2(stCess).toFixed(2);
+  $("valDiscount").value = round2(discount);
+  $("valOthChrg").value = round2(othChrg);
+
+  const roundOff = parseFloat($("valRoundOff").value) || 0;
+  const totInv = assVal + sgst + cgst + igst + cess + stCess + othChrg + roundOff;
+  $("valTotInv").textContent = round2(totInv).toFixed(2);
+}
+
+// ---------- invoice settings (the 10 Yes/No questions) ----------
+function isOn(settingId) { return $(settingId).checked; }
+
+function applySettings() {
+  const show = (id, on) => { $(id).style.display = on ? "flex" : "none"; };
+  show("fieldRevCharge", isOn("setRevCharge"));
+  show("fieldEcomGstin", isOn("setEcomGstin"));
+  $("cardDispatch").style.display = isOn("setDispatch") ? "" : "none";
+  $("cardShipping").style.display = isOn("setShipping") ? "" : "none";
+  $("cardExport").style.display = isOn("setExport") ? "" : "none";
+  $("cardEwb").style.display = isOn("setEwb") ? "" : "none";
+
+  const table = $("itemsTable");
+  table.classList.toggle("hide-isserv", !isOn("setIsService"));
+  table.classList.toggle("hide-bar", !isOn("setBarcode"));
+  table.classList.toggle("hide-freeqty", !isOn("setFreeQty"));
+  table.classList.toggle("hide-batch", !isOn("setBatch"));
+  table.classList.toggle("hide-cess", !isOn("setCess"));
+}
+
+function wireSettings() {
+  ["setRevCharge", "setEcomGstin", "setDispatch", "setShipping", "setIsService", "setBarcode", "setFreeQty", "setBatch", "setExport", "setEwb", "setCess"].forEach((id) => {
+    $(id).addEventListener("change", applySettings);
+  });
+}
+
+function wireCardCollapse() {
+  document.querySelectorAll(".card-head[data-toggle]").forEach((h) => {
+    h.addEventListener("click", () => {
+      const card = document.getElementById(h.getAttribute("data-toggle"));
+      card.classList.toggle("collapsed");
+    });
+  });
+}
+
+// ---------- validation ----------
+function fieldErr(id, msg) {
+  const input = $(id);
+  const wrap = input.closest(".field");
+  if (wrap) { const e = wrap.querySelector(".err"); if (e) e.textContent = msg; }
+  input.style.borderColor = "var(--red)";
+}
+function fieldOk(id) {
+  const input = $(id);
+  const wrap = input.closest(".field");
+  if (wrap) { const e = wrap.querySelector(".err"); if (e) e.textContent = ""; }
+  input.style.borderColor = "";
+}
+
+function validateAll() {
+  const errors = [];
+  const check = (id, re, label, required) => {
+    const v = $(id).value.trim();
+    if (!v) {
+      if (required) { errors.push(`${label} is required.`); fieldErr(id, "Required"); }
+      else fieldOk(id);
+      return;
+    }
+    if (re && !re.test(v)) { errors.push(`${label} is invalid: "${v}"`); fieldErr(id, "Invalid format"); }
+    else fieldOk(id);
+  };
+
+  check("DocNo", RX.docNo, "Document Number", true);
+  check("DocDt", RX.docDt, "Document Date", true);
+  check("SGstin", RX.gstin, "Seller GSTIN", true);
+  check("SLglNm", null, "Seller Legal Name", true);
+  check("SAddr1", RX.addr, "Seller Address 1", true);
+  check("SLoc", null, "Seller Location", true);
+  check("SPin", RX.pin, "Seller Pin Code", true);
+  if (!$("SState").value) { errors.push("Seller State is required."); fieldErr("SState", "Required"); } else fieldOk("SState");
+
+  const buyerGstin = $("BGstin").value.trim().toUpperCase();
+  if (!buyerGstin) { errors.push("Buyer GSTIN is required (use URP if unregistered)."); fieldErr("BGstin", "Required"); }
+  else if (buyerGstin !== "URP" && !RX.gstin.test(buyerGstin)) { errors.push(`Buyer GSTIN is invalid: "${buyerGstin}"`); fieldErr("BGstin", "Invalid"); }
+  else fieldOk("BGstin");
+
+  check("BLglNm", null, "Buyer Legal Name", true);
+  check("BAddr1", RX.addr, "Buyer Address 1", true);
+  check("BLoc", null, "Buyer Location", true);
+  if (!$("BPos").value) { errors.push("Buyer Place Of Supply is required."); fieldErr("BPos", "Required"); } else fieldOk("BPos");
+  if (!$("BState").value) { errors.push("Buyer State is required."); fieldErr("BState", "Required"); } else fieldOk("BState");
+
+  if ($("EcmGstin").value.trim() && !RX.gstin.test($("EcmGstin").value.trim().toUpperCase())) {
+    errors.push("E-commerce GSTIN is invalid."); fieldErr("EcmGstin", "Invalid");
+  } else fieldOk("EcmGstin");
+
+  const rows = [...document.querySelectorAll("#itemsBody tr")];
+  if (rows.length === 0) errors.push("Add at least one item.");
+  rows.forEach((tr, i) => {
+    const n = i + 1;
+    const hsn = tr.querySelector(".f-hsn").value.trim();
+    if (!RX.hsn.test(hsn)) errors.push(`Item ${n}: HSN code must be 4, 6 or 8 digits (not all zero).`);
+    const desc = tr.querySelector(".f-desc").value.trim();
+    if (desc && !RX.desc.test(desc)) errors.push(`Item ${n}: description contains invalid characters or is too long.`);
+    const qty = parseFloat(tr.querySelector(".f-qty").value);
+    if (!(qty > 0)) errors.push(`Item ${n}: quantity must be greater than 0.`);
+    const price = parseFloat(tr.querySelector(".f-price").value);
+    if (!(price >= 0)) errors.push(`Item ${n}: unit price must be 0 or more.`);
+    if (!tr.querySelector(".f-unit").value) errors.push(`Item ${n}: unit is required.`);
+    const rate = parseFloat(tr.querySelector(".f-gstrate").value);
+    if (isNaN(rate) || rate < 0 || rate > 100) errors.push(`Item ${n}: GST rate looks invalid.`);
+  });
+
+  return errors;
+}
+
+function showErrors(errors) {
+  const box = $("errorBox");
+  const okBox = $("successBox");
+  if (errors.length === 0) {
+    box.style.display = "none";
+    okBox.style.display = "block";
+    okBox.textContent = "All validations passed.";
+    return true;
+  }
+  okBox.style.display = "none";
+  box.style.display = "block";
+  box.innerHTML = `<strong>${errors.length} issue(s) found:</strong><ul>${errors.map((e) => `<li>${escapeHtml(e)}</li>`).join("")}</ul>`;
+  return false;
+}
+
+// ---------- JSON building ----------
+function nullable(v) { return v === "" || v === undefined || v === null ? null : v; }
+function stateCodeOf(sel) { return $(sel).value ? String($(sel).value) : null; }
+
+function buildInvoiceJson() {
+  const supTyp = $("SupTyp").value;
+
+  const tranDtls = {
+    TaxSch: "GST",
+    SupTyp: supTyp,
+    IgstOnIntra: YN_CODE[$("IgstOnIntra").value] || "N",
+    RegRev: isOn("setRevCharge") && $("RegRev").value ? YN_CODE[$("RegRev").value] : null,
+    EcmGstin: isOn("setEcomGstin") ? nullable($("EcmGstin").value.trim().toUpperCase()) : null
+  };
+
+  const docDtls = {
+    Typ: DOC_TYPE_CODE[$("DocTyp").value],
+    No: $("DocNo").value.trim(),
+    Dt: $("DocDt").value.trim()
+  };
+
+  const sellerDtls = {
+    Gstin: $("SGstin").value.trim().toUpperCase(),
+    LglNm: $("SLglNm").value.trim(),
+    TrdNm: nullable($("STrdNm").value.trim()),
+    Addr1: $("SAddr1").value.trim(),
+    Addr2: nullable($("SAddr2").value.trim()),
+    Loc: $("SLoc").value.trim(),
+    Pin: parseInt($("SPin").value, 10) || 0,
+    Stcd: stateCodeOf("SState"),
+    Ph: nullable($("SPh").value.trim()),
+    Em: nullable($("SEm").value.trim())
+  };
+
+  const buyerGstinRaw = $("BGstin").value.trim().toUpperCase();
+  const buyerDtls = {
+    Gstin: buyerGstinRaw,
+    LglNm: $("BLglNm").value.trim(),
+    TrdNm: nullable($("BTrdNm").value.trim()),
+    Pos: stateCodeOf("BPos"),
+    Addr1: $("BAddr1").value.trim(),
+    Addr2: nullable($("BAddr2").value.trim()),
+    Loc: $("BLoc").value.trim(),
+    Pin: parseInt($("BPin").value, 10) || 0,
+    Stcd: stateCodeOf("BState"),
+    Ph: nullable($("BPh").value.trim()),
+    Em: nullable($("BEm").value.trim())
+  };
+
+  let dispDtls = null;
+  if (isOn("setDispatch")) {
+    const any = ["DName", "DAddr1", "DAddr2", "DLoc", "DPin"].some((id) => $(id).value.trim()) || $("DState").value;
+    if (any) {
+      dispDtls = {
+        Nm: nullable($("DName").value.trim()),
+        Addr1: nullable($("DAddr1").value.trim()),
+        Addr2: nullable($("DAddr2").value.trim()),
+        Loc: nullable($("DLoc").value.trim()),
+        Pin: parseInt($("DPin").value, 10) || 0,
+        Stcd: stateCodeOf("DState")
+      };
+    }
+  }
+
+  let shipDtls = null;
+  if (isOn("setShipping")) {
+    const any = ["ShGstin", "ShLglNm", "ShTrdNm", "ShAddr1", "ShAddr2", "ShLoc", "ShPin"].some((id) => $(id).value.trim()) || $("ShState").value;
+    if (any) {
+      shipDtls = {
+        Gstin: nullable($("ShGstin").value.trim().toUpperCase()),
+        LglNm: nullable($("ShLglNm").value.trim()),
+        TrdNm: nullable($("ShTrdNm").value.trim()),
+        Addr1: nullable($("ShAddr1").value.trim()),
+        Addr2: nullable($("ShAddr2").value.trim()),
+        Loc: nullable($("ShLoc").value.trim()),
+        Pin: parseInt($("ShPin").value, 10) || 0,
+        Stcd: stateCodeOf("ShState")
+      };
+    }
+  }
+
+  recalcAllTotals();
+  const valDtls = {
+    AssVal: round2(parseFloat($("valAssVal").textContent)),
+    IgstVal: round2(parseFloat($("valIgst").textContent)),
+    CgstVal: round2(parseFloat($("valCgst").textContent)),
+    SgstVal: round2(parseFloat($("valSgst").textContent)),
+    CesVal: round2(parseFloat($("valCess").textContent)),
+    StCesVal: round2(parseFloat($("valStCess").textContent)),
+    Discount: round2(parseFloat($("valDiscount").value) || 0),
+    OthChrg: round2(parseFloat($("valOthChrg").value) || 0),
+    RndOffAmt: round2(parseFloat($("valRoundOff").value) || 0),
+    TotInvVal: round2(parseFloat($("valTotInv").textContent))
+  };
+
+  let expDtls;
+  if (isOn("setExport")) {
+    expDtls = {
+      ShipBNo: nullable($("ShipBNo").value.trim()),
+      ShipBDt: nullable($("ShipBDt").value.trim()),
+      Port: nullable($("Port").value.trim()),
+      RefClm: $("RefClm").value ? YN_CODE[$("RefClm").value] : null,
+      ForCur: nullable($("ForCur").value),
+      CntCode: nullable($("CntCode").value),
+      ExpDuty: round2(parseFloat($("ExpDuty").value) || 0)
+    };
+  }
+
+  let ewbDtls;
+  const ewbEnabled = isOn("setEwb");
+  if (ewbEnabled) {
+    const any = ["TransId", "TransName", "TransDistance", "TransDocNo", "TransDocDt", "VehNo"].some((id) => $(id).value.trim()) || $("TransMode").value || $("VehType").value;
+    ewbDtls = any ? {
+      TransId: nullable($("TransId").value.trim().toUpperCase()),
+      TransName: nullable($("TransName").value.trim()),
+      TransMode: $("TransMode").value ? TRANS_MODE_CODE[$("TransMode").value] : null,
+      Distance: parseInt($("TransDistance").value, 10) || 0,
+      TransDocNo: nullable($("TransDocNo").value.trim()),
+      TransDocDt: nullable($("TransDocDt").value.trim()),
+      VehNo: nullable($("VehNo").value.trim()),
+      VehType: $("VehType").value ? VEH_TYPE_CODE[$("VehType").value] : null
+    } : null;
+  }
+
+  const isServiceOn = isOn("setIsService");
+  const barcodeOn = isOn("setBarcode");
+  const freeQtyOn = isOn("setFreeQty");
+  const batchOn = isOn("setBatch");
+
+  const itemList = [...document.querySelectorAll("#itemsBody tr")].map((tr) => {
+    const g = (cls) => tr.querySelector("." + cls).value.trim();
+    const n = (cls) => round2(parseFloat(tr.querySelector("." + cls).value) || 0);
+    const batchAny = g("f-batchname") || g("f-batchexp") || g("f-batchwar");
+
+    const item = {
+      SlNo: g("f-slno"),
+      PrdDesc: nullable(g("f-desc")),
+      IsServc: isServiceOn ? tr.querySelector(".f-isserv").value : "N",
+      HsnCd: g("f-hsn")
+    };
+    if (barcodeOn) item.Barcde = nullable(g("f-bar"));
+    item.Qty = n("f-qty");
+    if (freeQtyOn) item.FreeQty = n("f-freeqty");
+    item.Unit = nullable(tr.querySelector(".f-unit").value);
+    item.UnitPrice = n("f-price");
+    item.TotAmt = n("f-gross");
+    item.Discount = n("f-disc");
+    item.PreTaxVal = n("f-pretax");
+    item.AssAmt = n("f-taxable");
+    item.GstRt = n("f-gstrate");
+    item.IgstAmt = n("f-igst");
+    item.CgstAmt = n("f-cgst");
+    item.SgstAmt = n("f-sgst");
+    item.CesRt = n("f-cessrate");
+    item.CesAmt = n("f-cessamt");
+    item.CesNonAdvlAmt = n("f-cessnonadv");
+    item.StateCesRt = n("f-stcessrate");
+    item.StateCesAmt = n("f-stcessamt");
+    item.StateCesNonAdvlAmt = n("f-stcessnonadv");
+    item.OthChrg = n("f-othchrg");
+    item.TotItemVal = n("f-total");
+    if (batchOn) item.BchDtls = batchAny ? { Nm: nullable(g("f-batchname")), ExpDt: nullable(g("f-batchexp")), WrDt: nullable(g("f-batchwar")) } : null;
+
+    return item;
+  });
+
+  const invoice = {
+    Version: "1.1",
+    TranDtls: tranDtls,
+    DocDtls: docDtls,
+    SellerDtls: sellerDtls,
+    BuyerDtls: buyerDtls
+  };
+  if (isOn("setDispatch")) invoice.DispDtls = dispDtls;
+  if (isOn("setShipping")) invoice.ShipDtls = shipDtls;
+  invoice.ValDtls = valDtls;
+  if (isOn("setExport")) invoice.ExpDtls = expDtls;
+  if (ewbEnabled) invoice.EwbDtls = ewbDtls;
+  invoice.ItemList = itemList;
+
+  return invoice;
+}
+
+function downloadJson(obj) {
+  const docNo = ($("DocNo").value.trim() || "invoice").replace(/[^a-zA-Z0-9-_]/g, "_");
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `einvoice_${docNo}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- document number auto-increment ----------
+const DOCNO_KEY = "einvoice_last_docno_v1";
+function suggestNextDocNo() {
+  const last = (localStorage.getItem(DOCNO_KEY) || "").trim();
+  if (!last) return "INV-0001";
+  const m = last.match(/(\d+)(\D*)$/);
+  if (!m) return last;
+  const digits = m[1];
+  const incremented = String(parseInt(digits, 10) + 1).padStart(digits.length, "0");
+  return last.slice(0, m.index) + incremented + m[2];
+}
+
+// ---------- draft autosave / restore ----------
+const DRAFT_KEY = "einvoice_draft_v1";
+// Note: buyer fields (BGstin, BLglNm, etc.) are deliberately NOT included here.
+// The buyer picker should always start blank and force an explicit choice each
+// time the tool is opened, rather than silently remembering the last buyer used.
+const DRAFT_FIELD_IDS = [
+  "SupTyp", "DocTyp", "DocNo", "DocDt", "RegRev", "IgstOnIntra", "EcmGstin",
+  "pTerms", "pDueDate", "pDelivery",
+  "SGstin", "SLglNm", "STrdNm", "SAddr1", "SAddr2", "SLoc", "SPin", "SState", "SPh", "SEm",
+  "DName", "DAddr1", "DAddr2", "DLoc", "DPin", "DState",
+  "ShGstin", "ShLglNm", "ShTrdNm", "ShAddr1", "ShAddr2", "ShLoc", "ShPin", "ShState",
+  "valDiscount", "valOthChrg", "valRoundOff",
+  "ShipBNo", "ShipBDt", "Port", "RefClm", "ForCur", "CntCode", "ExpDuty",
+  "TransId", "TransName", "TransMode", "TransDistance", "TransDocNo", "TransDocDt", "VehNo", "VehType"
+];
+const DRAFT_CHECK_IDS = ["setRevCharge", "setEcomGstin", "setDispatch", "setShipping", "setIsService", "setBarcode", "setFreeQty", "setBatch", "setExport", "setEwb", "setCess"];
+const ITEM_FIELD_CLASSES = ["f-slno", "f-desc", "f-isserv", "f-hsn", "f-bar", "f-qty", "f-freeqty", "f-unit", "f-price", "f-gross", "f-disc", "f-pretax", "f-taxable", "f-gstrate", "f-sgst", "f-cgst", "f-igst", "f-cessrate", "f-cessamt", "f-cessnonadv", "f-stcessrate", "f-stcessamt", "f-stcessnonadv", "f-othchrg", "f-total", "f-batchname", "f-batchexp", "f-batchwar"];
+
+function collectDraft() {
+  const fields = {};
+  DRAFT_FIELD_IDS.forEach((id) => { const el = $(id); if (el) fields[id] = el.value; });
+  const checks = {};
+  DRAFT_CHECK_IDS.forEach((id) => { const el = $(id); if (el) checks[id] = el.checked; });
+  const items = [...document.querySelectorAll("#itemsBody tr")].map((tr) => {
+    const o = {};
+    ITEM_FIELD_CLASSES.forEach((c) => { const el = tr.querySelector("." + c); if (el) o[c] = el.value; });
+    return o;
+  });
+  return { fields, checks, items, companyId: $("companyToggle").dataset.selected || "" };
+}
+
+function saveDraft() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collectDraft())); } catch (e) { /* storage full/unavailable — ignore */ }
+}
+
+let draftSaveTimer = null;
+function scheduleDraftSave() { clearTimeout(draftSaveTimer); draftSaveTimer = setTimeout(saveDraft, 400); }
+
+function restoreDraft() {
+  let draft;
+  try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (e) { return false; }
+  if (!draft) return false;
+  const hasContent = (draft.fields && draft.fields.DocNo) || (draft.items || []).some((it) => it["f-desc"]);
+  if (!hasContent) return false;
+
+  Object.entries(draft.fields || {}).forEach(([id, v]) => { const el = $(id); if (el) el.value = v; });
+  Object.entries(draft.checks || {}).forEach(([id, v]) => { const el = $(id); if (el) el.checked = v; });
+  // Deliberately NOT restoring draft.items — every fresh page load should
+  // start with a clean, empty item list, even if a previous unsaved session
+  // had items in progress. (Everything else — seller, settings, document
+  // details — still restores as before.)
+  if (draft.companyId) {
+    const wrap = $("companyToggle");
+    wrap.dataset.selected = draft.companyId;
+    [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === draft.companyId));
+    applySelectedCompany();
+  }
+  applySettings();
+  recalcAllTotals();
+  return true;
+}
+
+function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
+
+// ---------- printable invoice (separate from the machine-readable JSON) ----------
+// Shared HTML/number-formatting helpers used by both invoice templates below.
+const escP = (s) => String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+const numP = (v) => { const n = parseFloat(v); return isNaN(n) || n === 0 ? "" : n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+const numAlwaysP = (v) => { const n = parseFloat(v) || 0; return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+
+// Pulls together everything both printable-invoice layouts need, straight
+// from the same form fields used for the e-invoice JSON — nothing is
+// re-entered. Each company can have its own layout (see invoiceTemplate
+// below) since real letterheads differ invoice to invoice, business to
+// business.
+function gatherInvoiceData() {
+  const g = (id) => ($(id) ? ($(id).value || "").trim() : "");
+  const companies = loadCompanies();
+  const selectedId = $("companyToggle") ? $("companyToggle").dataset.selected : "";
+  const company = companies.find((c) => c.id === selectedId) || {};
+
+  const rows = [...document.querySelectorAll("#itemsBody tr")].map((tr, i) => {
+    const gg = (c) => tr.querySelector("." + c).value;
+    return { sl: gg("f-slno") || String(i + 1), desc: gg("f-desc"), hsn: gg("f-hsn"), qty: gg("f-qty"), price: gg("f-price"), total: gg("f-total") };
+  });
+
+  const totalQty = rows.reduce((s, r) => s + (parseFloat(r.qty) || 0), 0);
+  const totalAmt = rows.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
+
+  const stateName = (MASTER.states.find((s) => String(s[1]) === g("SState")) || [""])[0];
+  const sellerPan = panFromGstin(g("SGstin"));
+  const buyerPan = panFromGstin(g("BGstin"));
+  const hsnCode = rows[0] ? rows[0].hsn : "";
+
+  const sgst = parseFloat($("valSgst").textContent) || 0;
+  const cgst = parseFloat($("valCgst").textContent) || 0;
+  const igst = parseFloat($("valIgst").textContent) || 0;
+  const totInv = parseFloat($("valTotInv").textContent) || 0;
+
+  const firstRateEl = document.querySelector("#itemsBody tr .f-gstrate");
+  const gstRate = firstRateEl ? parseFloat(firstRateEl.value) || 0 : 0;
+  const halfRate = gstRate / 2;
+
+  const amountWords = numberToWordsIndian(Math.round(totInv)) + " Rupees Only";
+
+  return { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords };
+}
+
+// ---- Vama Exports template (Tax Invoice layout) ----
+function renderVamaInvoiceHtml(d) {
+  const { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
+  const esc = escP, num = numP, numAlways = numAlwaysP;
+
+  const rowsHtml = rows.map((r) => `<tr>
+      <td class="c">${esc(r.sl)}</td>
+      <td>${esc(r.desc)}</td>
+      <td class="num">${esc(r.qty)}</td>
+      <td class="num">${numAlways(r.price)}</td>
+      <td class="num">${numAlways(r.total)}</td>
+    </tr>`).join("");
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
+  <style>
+    @page { margin: 10mm 12mm; size: A4; }
+    *{box-sizing:border-box;}
+    html,body{height:auto;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:10.5px;margin:0;line-height:1.42;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .letterhead-space{height:100px;}
+    .inv-wrap{border:1px solid #c7cbd6;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17px;letter-spacing:.12em;color:#2b3a67;padding:9px 0 8px;border-bottom:2px solid #2b3a67;}
+    .inv-topgrid{display:flex;page-break-inside:avoid;}
+    .inv-topgrid > div{flex:1;padding:9px 14px;}
+    .inv-topgrid > div:first-child{border-right:1px solid #d7dae2;}
+    .lbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:4px;}
+    .buyer-name{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
+    .addr{color:#333;margin-bottom:5px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:1.5px 0;border-bottom:1px dotted #e2e4ea;}
+    .kv span:first-child{color:#6b7280;}
+    .kv span:last-child{font-weight:600;text-align:right;}
+    table.items{width:100%;border-collapse:collapse;font-size:10px;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    table.items th{background:#f3f4f8;color:#2b3a67;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1.5px solid #2b3a67;text-align:left;}
+    table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
+    table.items td.c{text-align:center;}
+    table.items td.num, table.items th.num{text-align:right;}
+    .totrow td{font-weight:700;border-top:1.5px solid #2b3a67;border-bottom:none;background:#f8f9fb;}
+    .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .mid-grid > div{flex:1;padding:9px 14px;}
+    .mid-grid > div:first-child{border-right:1px solid #d7dae2;}
+    table.tax-mini{width:100%;border-collapse:collapse;}
+    table.tax-mini td{padding:1.5px 0;border:none;}
+    table.tax-mini td.amt{text-align:right;font-weight:600;}
+    .pay-decl-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .pay-decl-grid > div{flex:1;padding:9px 14px;}
+    .pay-decl-grid > div:first-child{border-right:1px solid #d7dae2;}
+    .grand-total{text-align:right;}
+    .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
+    .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
+    .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .sig-row > div{flex:1;padding:44px 14px 10px;}
+    .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
+    .sig-block{text-align:right;}
+    .sig-line{border-top:1px solid #999;margin:38px 0 4px 35%;}
+  </style></head><body>
+    <div class="letterhead-space"></div>
+    <div class="inv-wrap">
+      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-topgrid">
+        <div>
+          <div class="lbl">Bill To</div>
+          <div class="buyer-name">${esc(g("BLglNm") || g("BTrdNm"))}</div>
+          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div class="addr">${esc(g("BTrdNm"))}</div>` : ""}
+          <div class="addr">${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
+          <div class="addr">${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
+          <div class="kv"><span>PAN No</span><span>${esc(buyerPan)}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("BGstin"))}</span></div>
+          <div class="kv"><span>Tele</span><span>${esc(g("BPh"))}</span></div>
+        </div>
+        <div>
+          <div class="lbl">Invoice Details</div>
+          <div class="kv"><span>Invoice No</span><span>${esc(g("DocNo"))}</span></div>
+          <div class="kv"><span>Date</span><span>${esc(g("DocDt"))}</span></div>
+          <div class="kv"><span>Terms</span><span>${esc(g("pTerms"))}</span></div>
+          <div class="kv"><span>Due Date</span><span>${esc(g("pDueDate"))}</span></div>
+          <div class="kv"><span>Our State</span><span>${esc(stateName)}${stateName ? " Code " + esc(g("SState")) : ""}</span></div>
+          <div class="kv"><span>Delivery</span><span>${esc(g("pDelivery"))}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("SGstin"))}</span></div>
+          <div class="kv"><span>PAN No</span><span>${esc(sellerPan)}</span></div>
+          <div class="kv"><span>Email</span><span>${esc(g("SEm"))}</span></div>
+          <div class="kv"><span>HSN Code</span><span>${esc(hsnCode)}</span></div>
+        </div>
+      </div>
+
+      <table class="items">
+        <thead><tr>
+          <th class="c" style="width:8%;">Sr. No</th>
+          <th>Description</th>
+          <th class="num" style="width:14%;">Weight in Cts</th>
+          <th class="num" style="width:16%;">Rate per Cts</th>
+          <th class="num" style="width:16%;">Total Amount</th>
+        </tr></thead>
+        <tbody>${rowsHtml}
+          <tr class="totrow"><td class="c"></td><td style="text-align:right;">TOTAL</td><td class="num">${numAlways(totalQty)}</td><td></td><td class="num">${numAlways(totalAmt)}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="mid-grid">
+        <div>
+          <div class="lbl">Amount in Words</div>
+          ${esc(amountWords)}.
+        </div>
+        <div>
+          <table class="tax-mini">
+            <tr><td>Add CGST @ ${esc(String(halfRate))}%</td><td class="amt">${num(cgst)}</td></tr>
+            <tr><td>Add SGST @ ${esc(String(halfRate))}%</td><td class="amt">${num(sgst)}</td></tr>
+            <tr><td>Add IGST @ ${esc(String(gstRate))}%</td><td class="amt">${num(igst)}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="pay-decl-grid">
+        <div>
+          <div class="lbl">Payment Instructions</div>
+          <div>A/C Name: ${esc(company.bankAccName || "")}</div>
+          <div>A/C No: ${esc(company.bankAccNo || "")}</div>
+          <div>IFSC No: ${esc(company.bankIfsc || "")}</div>
+          <div>Bank Address: ${esc(company.bankAddress || "")}</div>
+        </div>
+        <div class="grand-total">
+          <div class="lbl">Net Amount</div>
+          <div class="amt">Rs. ${numAlways(totInv)}</div>
+        </div>
+      </div>
+
+      <div class="declaration">
+        The seller hereby guarantees that no diamonds of Russian origin purchased after February 24, 2022 are present in the products
+        supplied herein, based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. To the best
+        of our knowledge, we hereby declare that the diamonds herein invoiced have not been processed from rough diamonds originating
+        from the Russian Federation and invoiced to us after March 11th 2022, and the seller hereby guarantees that these diamonds are
+        conflict-free and confirms adherence to the WDC System of Warranties guidelines.<br><br>
+        <strong>Declaration:</strong> The diamonds herein invoiced have been purchased from legitimate sources not involved in funding
+        conflict and in compliance with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free,
+        based on personal knowledge and/or written guarantees provided by our suppliers. We state that "diamonds herein invoiced have not
+        been obtained in violation of applicable national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign
+        Assets Control (OFAC), and have not originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are
+        exclusively of natural origin and untreated, based on personal knowledge and/or written guarantees provided by the supplier of
+        these diamonds. The acceptance of goods herein invoiced will be as per the WFDB guidelines." "I/We hereby certify that my/our
+        registration certificate under the Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods
+        specified in this tax invoice is made by me/us, and the transaction of sale covered by this tax invoice has been effected by
+        me/us and shall be accounted for in the turnover of sales while filing returns, and due tax, if any, payable on the sale has
+        been paid or shall be paid." ${esc(company.jurisdictionNote || "")}
+      </div>
+
+      <div class="sig-row">
+        <div>Signature &amp; Stamp of Receiver</div>
+        <div class="sig-block">
+          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong>
+          <div class="sig-line"></div>
+          ${esc(company.signatoryTitle || "Authorized Signatory")}
+        </div>
+      </div>
+    </div>
+  </body></html>`;
+}
+
+// ---- Divine Jewels template (Tax Invoice layout) ----
+// Differs from Vama's real layout: heading says "Tax Invoice", HSN sits
+// inside the description cell instead of a top summary line, no Due
+// Date/state-name text (state code only), tax breakdown is a compact
+// SUBTOTAL/CGST/SGST/IGST/TOTAL table, and the declaration paragraph
+// omits Vama's Russian-origin/WDC preamble.
+function renderDivineInvoiceHtml(d) {
+  const { g, company, rows, stateName, sellerPan, buyerPan, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
+  const esc = escP, numAlways = numAlwaysP;
+  const subtotal = (parseFloat($("valAssVal").textContent) || 0);
+
+  const rowsHtml = rows.map((r) => `<tr>
+      <td class="c">${esc(r.sl)}</td>
+      <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN Code: ${esc(r.hsn)}</span>` : ""}</td>
+      <td class="num"></td>
+      <td class="num">${esc(r.qty)}</td>
+      <td class="num">${numAlways(r.price)}</td>
+      <td class="num">${numAlways(r.total)}</td>
+    </tr>`).join("");
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
+  <style>
+    @page { margin: 10mm 12mm; size: A4; }
+    *{box-sizing:border-box;}
+    html,body{height:auto;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:10.5px;margin:0;line-height:1.42;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .letterhead-space{height:100px;}
+    .inv-wrap{border:1px solid #c7cbd6;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17px;letter-spacing:.12em;color:#2b3a67;padding:9px 0 8px;border-bottom:2px solid #2b3a67;}
+    .inv-topgrid{display:flex;page-break-inside:avoid;}
+    .inv-topgrid > div{flex:1;padding:9px 14px;}
+    .inv-topgrid > div:first-child{border-right:1px solid #d7dae2;}
+    .lbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:4px;}
+    .buyer-name{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
+    .addr{color:#333;margin-bottom:5px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:1.5px 0;border-bottom:1px dotted #e2e4ea;}
+    .kv span:first-child{color:#6b7280;}
+    .kv span:last-child{font-weight:600;text-align:right;}
+    .kv.strong span:last-child{font-weight:700;}
+    table.items{width:100%;border-collapse:collapse;font-size:10px;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    table.items th{background:#f3f4f8;color:#2b3a67;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1.5px solid #2b3a67;text-align:left;}
+    table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
+    table.items td.c{text-align:center;}
+    table.items td.num, table.items th.num{text-align:right;}
+    table.items .hsn{font-size:9px;color:#6b7280;}
+    .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .mid-grid > div{flex:1;padding:9px 14px;}
+    .mid-grid > div:first-child{border-right:1px solid #d7dae2;}
+    table.tax-mini{width:100%;border-collapse:collapse;}
+    table.tax-mini td{padding:1.5px 0;border:none;}
+    table.tax-mini td.amt{text-align:right;font-weight:600;}
+    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #c7cbd6;padding-top:3px;color:#2b3a67;}
+    .pay-decl-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .pay-decl-grid > div{flex:1;padding:9px 14px;}
+    .pay-decl-grid > div:first-child{border-right:1px solid #d7dae2;}
+    .grand-total{text-align:right;}
+    .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
+    .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
+    .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .sig-row > div{flex:1;padding:44px 14px 10px;}
+    .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
+    .sig-block{text-align:right;}
+    .sig-line{border-top:1px solid #999;margin:38px 0 4px 35%;}
+  </style></head><body>
+    <div class="letterhead-space"></div>
+    <div class="inv-wrap">
+      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-topgrid">
+        <div>
+          <div class="lbl">Bill To</div>
+          <div class="buyer-name">${esc(g("BLglNm") || g("BTrdNm"))}</div>
+          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div class="addr">${esc(g("BTrdNm"))}</div>` : ""}
+          <div class="addr">${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
+          <div class="addr">${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
+          <div class="kv"><span>PAN No</span><span>${esc(buyerPan)}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("BGstin"))}</span></div>
+          <div class="kv"><span>Tele</span><span>${esc(g("BPh"))}</span></div>
+        </div>
+        <div>
+          <div class="lbl">Invoice Details</div>
+          <div class="kv"><span>Invoice No</span><span>${esc(g("DocNo"))}</span></div>
+          <div class="kv"><span>Date</span><span>${esc(g("DocDt"))}</span></div>
+          <div class="kv"><span>Terms</span><span>${esc(g("pTerms"))}</span></div>
+          <div class="kv strong"><span>Delivery</span><span>${esc(g("pDelivery"))}</span></div>
+          <div class="kv"><span>PAN No</span><span>${esc(sellerPan)}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("SGstin"))}</span></div>
+          <div class="kv"><span>Email</span><span>${esc(g("SEm"))}</span></div>
+          <div class="kv"><span>State Code</span><span>${esc(g("SState"))}</span></div>
+        </div>
+      </div>
+
+      <table class="items">
+        <thead><tr>
+          <th class="c" style="width:7%;">Sr. No</th>
+          <th>Description</th>
+          <th class="num" style="width:11%;">Avg Pcs per Cts</th>
+          <th class="num" style="width:12%;">Weight in Cts</th>
+          <th class="num" style="width:14%;">Rate per Cts</th>
+          <th class="num" style="width:16%;">Total Amount (Rs)</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+
+      <div class="mid-grid">
+        <div>
+          <div class="lbl">Amount</div>
+          ${esc(amountWords)}.
+        </div>
+        <div>
+          <table class="tax-mini">
+            <tr><td>Subtotal</td><td class="amt">${numAlways(subtotal)}</td></tr>
+            <tr><td>CGST @ ${esc(String(halfRate))}%</td><td class="amt">${numAlways(cgst)}</td></tr>
+            <tr><td>SGST @ ${esc(String(halfRate))}%</td><td class="amt">${numAlways(sgst)}</td></tr>
+            <tr><td>IGST @ ${esc(String(gstRate))}%</td><td class="amt">${numAlways(igst)}</td></tr>
+            <tr class="total"><td>Total</td><td class="amt">${numAlways(totInv)}</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="pay-decl-grid">
+        <div>
+          <div class="lbl">Payment Instructions</div>
+          <div>${esc(company.bankName || "")}</div>
+          <div>${esc(company.bankAddress || "")}</div>
+          <div>A/C No: ${esc(company.bankAccNo || "")}</div>
+          <div>IFSC No: ${esc(company.bankIfsc || "")}</div>
+        </div>
+        <div class="grand-total">
+          <div class="lbl">Total Payable</div>
+          <div class="amt">Rs. ${numAlways(totInv)}</div>
+        </div>
+      </div>
+
+      <div class="declaration">
+        The diamonds herein invoiced have been purchased from legitimate sources not involved in funding conflict and in compliance
+        with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free based on personal
+        knowledge and/or written guarantees provided by the supplier of these diamonds. To the best of our knowledge and/or written
+        assurances from our suppliers we state that "diamonds herein invoiced have not been obtained in violation of applicable
+        national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign Assets Control (OFAC) and have not
+        originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are exclusively of natural origin and
+        untreated based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. The acceptance of
+        goods herein invoiced will be as per the WFDB Guidelines." "I/We hereby certify that my/our registration certificate under the
+        Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods specified in this tax invoice is made by
+        me/us and the transaction of sale covered by this tax invoice has been effected by me/us and it shall be accounted for in the
+        turnover of the sales while filing of return and due tax, if any, payable on the sale has been paid or shall be paid."<br><br>
+        ${esc(company.jurisdictionNote || "")}
+      </div>
+
+      <div class="sig-row">
+        <div>Receiver's Signature &amp; Stamp</div>
+        <div class="sig-block">
+          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong>
+          <div class="sig-line"></div>
+          ${esc(company.signatoryTitle || "Proprietor")}
+        </div>
+      </div>
+    </div>
+  </body></html>`;
+}
+
+function buildPrintableInvoiceHtml() {
+  const data = gatherInvoiceData();
+  return data.company.invoiceTemplate === "divine" ? renderDivineInvoiceHtml(data) : renderVamaInvoiceHtml(data);
+}
+
+function printInvoice() {
+  const html = buildPrintableInvoiceHtml();
+  const w = window.open("", "_blank");
+  if (!w) { alert("Please allow pop-ups for this page to print the invoice."); return; }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => { try { w.print(); } catch (e) { /* ignore */ } }, 300);
+}
+
+// ---------- sample invoice ----------
+function loadSampleInvoice() {
+  $("SupTyp").value = "B2B";
+  $("DocTyp").value = "Tax Invoice";
+  $("DocNo").value = "INV-0001";
+  $("DocDt").value = fmtDateToday();
+  if (!$("pTerms").value.trim()) $("pTerms").value = "COD";
+  syncDueDateWithTerms();
+  $("RegRev").value = "No";
+  $("IgstOnIntra").value = "No";
+
+  if (!$("SGstin").value) {
+    $("SGstin").value = "29AASCS1234C1Z5";
+    $("SLglNm").value = "Sample Traders Pvt Ltd";
+    $("SAddr1").value = "12 MG Road";
+    $("SLoc").value = "Bengaluru";
+    $("SPin").value = "560001";
+    $("SState").value = "29";
+  }
+
+  // The sample invoice uses your two real companies as *each other's* buyer
+  // — whichever one is selected at the top as seller, the other one gets
+  // filled in as the buyer — with a realistic description/HSN/rate pulled
+  // from your own invoices, but rounded to easy multiples (10, 100, 1000)
+  // so the numbers are simple to follow at a glance.
+  const companies = loadCompanies();
+  const selectedId = $("companyToggle") ? $("companyToggle").dataset.selected : "";
+  const company = companies.find((c) => c.id === selectedId) || {};
+  const isDivine = company.invoiceTemplate === "divine";
+  const otherCompany = companies.find((c) => c.id === (isDivine ? "vama_exports" : "divine_jewels"));
+
+  if (otherCompany) {
+    $("buyerSearch").value = otherCompany.name;
+    $("BGstin").value = otherCompany.gstin || "";
+    $("BLglNm").value = otherCompany.legalName || "";
+    $("BTrdNm").value = otherCompany.tradeName || "";
+    $("BAddr1").value = otherCompany.addr1 || "";
+    $("BAddr2").value = otherCompany.addr2 || "";
+    $("BLoc").value = otherCompany.loc || "";
+    $("BPin").value = otherCompany.pin || "";
+    $("BState").value = otherCompany.state || "";
+    $("BPos").value = otherCompany.state || "";
+    $("BPh").value = otherCompany.phone || "";
+    $("BEm").value = otherCompany.email || "";
+    $("pDelivery").value = otherCompany.loc ? ("GOODS SOLD & DELIVERED AT " + otherCompany.loc.toUpperCase()) : "";
+  }
+
+  $("itemsBody").innerHTML = "";
+  itemCounter = 0;
+  if (isDivine) {
+    addItemRow({ "f-desc": "Rough Diamonds", "f-hsn": "71023100", "f-qty": 100, "f-price": 25000, "f-gstrate": 0.25 });
+  } else {
+    addItemRow({ "f-desc": "Cut & Polished Diamonds", "f-hsn": "71023910", "f-qty": 10, "f-price": 50000, "f-gstrate": 1.5 });
+  }
+
+  document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+  recalcAllTotals();
+}
+
+// ---------- header clock ----------
+function wireHeaderClock() {
+  const el = $("headerClock");
+  if (!el) return;
+  function render() {
+    const now = new Date();
+    const time = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    const date = now.toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "short", year: "numeric" });
+    el.innerHTML = `<div class="hc-time">${time}</div><div class="hc-date">${date}</div>`;
+  }
+  render();
+  setInterval(render, 1000);
+}
+
+// ---------- password gate ----------
+// A simple client-side lock screen — not real security (this is a static
+// page, so the password and everything behind it is visible to anyone who
+// views the page source), just a basic deterrent against casual snooping.
+// Unlocking is remembered for the rest of the browser session.
+const APP_PASSWORD = "VAMA";
+const PW_UNLOCK_KEY = "einv_unlocked_v1";
+function wirePasswordGate() {
+  const gate = $("pwGate");
+  if (!gate) return;
+  let unlocked = false;
+  try { unlocked = sessionStorage.getItem(PW_UNLOCK_KEY) === "1"; } catch (e) { unlocked = false; }
+  if (unlocked) { gate.classList.add("hidden"); return; }
+
+  const input = $("pwInput");
+  const err = $("pwErr");
+  const card = $("pwCard");
+  function tryUnlock() {
+    if ((input.value || "").trim().toUpperCase() === APP_PASSWORD) {
+      try { sessionStorage.setItem(PW_UNLOCK_KEY, "1"); } catch (e) { /* ignore */ }
+      gate.classList.add("hidden");
+    } else {
+      err.style.display = "block";
+      input.value = "";
+      input.focus();
+      if (card) {
+        card.classList.remove("shake");
+        void card.offsetWidth; // restart the animation even if triggered again immediately
+        card.classList.add("shake");
+      }
+    }
+  }
+  $("pwSubmit").addEventListener("click", tryUnlock);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+  setTimeout(() => input.focus(), 50);
+}
+
+// ---------- wiring ----------
+document.addEventListener("DOMContentLoaded", () => {
+  wirePasswordGate();
+  wireHeaderClock();
+  initStaticDropdowns();
+  wireCardCollapse();
+  wireSettings();
+  applySettings();
+
+  $("SupTyp").addEventListener("change", () => {
+    // Helpful nudge: auto-switch the Export Details setting to "Yes" when an
+    // export-like supply type is chosen, since that combination is almost
+    // always needed together. User can still switch it back to "No".
+    const isExport = EXPORT_SUPPLY_TYPES.includes($("SupTyp").value);
+    if (isExport && !$("setExport").checked) {
+      $("setExport").checked = true;
+      applySettings();
+    }
+    document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+  });
+
+  // Terms of COD means due date = invoice date; keep them in sync whenever
+  // either field changes.
+  $("pTerms").addEventListener("input", syncDueDateWithTerms);
+  $("DocDt").addEventListener("input", syncDueDateWithTerms);
+
+  ["SState", "BPos", "BState", "IgstOnIntra"].forEach((id) => {
+    $(id).addEventListener("change", () => {
+      document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+    });
+  });
+  $("valRoundOff").addEventListener("input", recalcAllTotals);
+
+  $("btnAddItem").addEventListener("click", () => { addItemRow(); saveDraft(); });
+  $("btnGenerate").addEventListener("click", () => {
+    const errors = validateAll();
+    if (!showErrors(errors)) return;
+    const invoice = buildInvoiceJson();
+    downloadJson(invoice);
+    localStorage.setItem(DOCNO_KEY, $("DocNo").value.trim());
+    $("statusMsg").textContent = "JSON downloaded.";
+  });
+  $("btnPrintInvoice").addEventListener("click", printInvoice);
+  $("btnLoadSample").addEventListener("click", () => { loadSampleInvoice(); saveDraft(); });
+  $("btnReset").addEventListener("click", () => {
+    if (!confirm("Start a new invoice? This clears the buyer and item list (your seller/company and settings stay as they are).")) return;
+    clearDraft();
+    $("itemsBody").innerHTML = "";
+    itemCounter = 0;
+    ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((id) => $(id).value = "");
+    $("BPos").value = ""; $("BState").value = ""; $("buyerSearch").value = "";
+    $("pDelivery").value = "";
+    $("DocNo").value = suggestNextDocNo();
+    $("DocDt").value = fmtDateToday();
+    syncDueDateWithTerms();
+    addItemRow();
+    recalcAllTotals();
+    $("statusMsg").textContent = "Ready for a new invoice.";
+  });
+
+  // buyer address book — search-as-you-type with inline ghost autocomplete
+  attachAutocomplete($("buyerSearch"), buyerSuggestionItems, (it) => { selectBuyerById(it.id); saveDraft(); });
+  $("btnClearBuyer").addEventListener("click", () => {
+    $("buyerSearch").value = "";
+    selectBuyerById("");
+    saveDraft();
+  });
+  $("btnSellerProfile").addEventListener("click", () => $("sellerModalOverlay").classList.remove("hidden"));
+  $("btnCloseSellerModal").addEventListener("click", () => $("sellerModalOverlay").classList.add("hidden"));
+
+  // draft autosave: any input/change anywhere in the form schedules a save
+  document.addEventListener("input", (e) => { if (!e.target.closest(".modal")) scheduleDraftSave(); });
+  document.addEventListener("change", (e) => { if (!e.target.closest(".modal")) scheduleDraftSave(); });
+
+  // Ctrl/Cmd+Enter = Generate & download, as a shortcut once the form is filled in
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); $("btnGenerate").click(); }
+  });
+
+  // company picker (two simple toggle buttons, built from loadCompanies())
+  refreshCompanySelect();
+
+  // Restore an in-progress invoice if the browser has one; otherwise start fresh
+  // with a suggested next document number and today's date.
+  const restored = restoreDraft();
+  if (restored) {
+    $("statusMsg").textContent = "Restored your unsaved invoice from last time.";
+  } else {
+    if (!$("DocNo").value.trim()) $("DocNo").value = suggestNextDocNo();
+    if (!$("DocDt").value.trim()) $("DocDt").value = fmtDateToday();
+    if (!$("pTerms").value.trim()) $("pTerms").value = "COD";
+    syncDueDateWithTerms();
+  }
+  if (document.querySelectorAll("#itemsBody tr").length === 0) addItemRow();
+  recalcAllTotals();
+});
+
+</script>
+</body>
+</html>
