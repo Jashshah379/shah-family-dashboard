@@ -9029,6 +9029,7 @@ const DEFAULT_ADVISORS = [
   {id:"mitul", name:"Mitul Bhai", firm:"", type:"Family Friend", color:"#a78bfa"},
   {id:"dharmesh", name:"Dharmesh", firm:"Sushil Financial", type:"Advisor", color:"#22d3ee",
    note:"FY24-26: ₹18.03Cr traded · -₹14.2L net realised (-0.79%) · 127 trades · 70W/57L · IWEL star performer · Open: ₹12.99Cr in 8 stocks"},
+  {id:"chitlangi", name:"Pankaj Chitlangi", firm:"Equity Advisor", type:"Advisor", color:"#f87171"},
   {id:"rupen", name:"Rupen Bhai", firm:"Sushil Financial", type:"Advisor", color:"#f0b429",
    note:"FY25-26 realised P&L: ₹-82.7L on ₹439.8L (-18.8%) · 26 trades · holdings in Sushil to be tagged"},
   {id:"adv1", name:"Advisor 1", firm:"", type:"Research Analyst", color:"#7eb8ff"},
@@ -9110,32 +9111,79 @@ const DEFAULT_TAGS = [
   {id:"hiren_tag_5",stock:"Hindustan Construction",qty:50000,advisorId:"hiren",member:"Rasiklal HUF",date:"2026-06-16",buyPrice:25.4,currentPrice:0,value:0,invested:1270000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-16T00:00:00.000Z"},
   {id:"hiren_tag_6",stock:"Adani Total Gas",qty:5000,advisorId:"hiren",member:"Rasiklal Shah",date:"2026-06-19",buyPrice:735,currentPrice:0,value:0,invested:3675000,notes:"Recommended by Hiren Bhai",conviction:"High",addedAt:"2026-06-19T00:00:00.000Z"},
   ...DEFAULT_TAGS_MITUL,,
-  {id:"rupen_t0",advisorId:"rupen",stock:"AUTOMOTIVE AXLES",qty:100,buyPrice:1610.0,sellPrice:1569.0,invested:161000,value:156900,date:"2025-04-01",sellDate:"2026-03-31",pl:-4100,plPct:-2.55,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t1",advisorId:"rupen",stock:"ADHAR HOUSING",qty:2007,buyPrice:425.0,sellPrice:448.0,invested:852975,value:899136,date:"2025-04-01",sellDate:"2026-03-31",pl:46161,plPct:5.41,days:364,notes:"FY25-26 realised trade · Won · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t2",advisorId:"rupen",stock:"BAYER CROPSCIENCE",qty:504,buyPrice:4896.0,sellPrice:4645.0,invested:2467584,value:2341080,date:"2025-04-01",sellDate:"2026-03-31",pl:-126504,plPct:-5.13,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t3",advisorId:"rupen",stock:"EVER READY",qty:5734,buyPrice:302.9,sellPrice:262.95,invested:1736829,value:1507755,date:"2025-04-01",sellDate:"2026-03-31",pl:-229073,plPct:-13.19,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t4",advisorId:"rupen",stock:"CONTROL PRINT",qty:2333,buyPrice:635.0,sellPrice:524.0,invested:1481455,value:1222492,date:"2025-04-01",sellDate:"2026-03-31",pl:-258963,plPct:-17.48,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t5",advisorId:"rupen",stock:"COSMO FIRST",qty:1008,buyPrice:620.0,sellPrice:595.0,invested:624960,value:599760,date:"2025-04-01",sellDate:"2026-03-31",pl:-25200,plPct:-4.03,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t6",advisorId:"rupen",stock:"CDSL",qty:4258,buyPrice:1220.0,sellPrice:1119.0,invested:5194760,value:4764702,date:"2025-04-01",sellDate:"2026-03-31",pl:-430058,plPct:-8.28,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t7",advisorId:"rupen",stock:"DLINK",qty:1004,buyPrice:407.5,sellPrice:395.55,invested:409130,value:397132,date:"2025-04-01",sellDate:"2026-03-31",pl:-11998,plPct:-2.93,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t8",advisorId:"rupen",stock:"DLINK",qty:1000,buyPrice:407.5,sellPrice:537.73,invested:407500,value:537730,date:"2025-04-01",sellDate:"2024-06-26",pl:130230,plPct:31.96,days:-279,notes:"FY25-26 realised trade · Won · -279d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t9",advisorId:"rupen",stock:"GREAVES COTTON",qty:2000,buyPrice:214.39,sellPrice:120.61,invested:428780,value:241220,date:"2025-04-01",sellDate:"2026-03-31",pl:-187560,plPct:-43.74,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t10",advisorId:"rupen",stock:"HERITAGE FOODS",qty:1620,buyPrice:385.7,sellPrice:293.95,invested:624834,value:476199,date:"2025-04-01",sellDate:"2026-03-31",pl:-148635,plPct:-23.79,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t11",advisorId:"rupen",stock:"JUST DIAL",qty:5002,buyPrice:813.75,sellPrice:490.7,invested:4070378,value:2454481,date:"2025-04-01",sellDate:"2026-03-31",pl:-1615896,plPct:-39.7,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t12",advisorId:"rupen",stock:"EPL",qty:5000,buyPrice:208.85,sellPrice:215.23,invested:1044250,value:1076150,date:"2025-11-13",sellDate:"2026-03-31",pl:31900,plPct:3.05,days:138,notes:"FY25-26 realised trade · Won · 138d hold",status:"closed",addedAt:"2025-11-13T00:00:00.000Z"},
-  {id:"rupen_t13",advisorId:"rupen",stock:"EPL",qty:5000,buyPrice:206.99,sellPrice:215.23,invested:1034950,value:1076150,date:"2025-11-13",sellDate:"2026-03-31",pl:41200,plPct:3.98,days:138,notes:"FY25-26 realised trade · Won · 138d hold",status:"closed",addedAt:"2025-11-13T00:00:00.000Z"},
-  {id:"rupen_t14",advisorId:"rupen",stock:"KKCL",qty:3000,buyPrice:486.98,sellPrice:416.0,invested:1460940,value:1248000,date:"2026-01-14",sellDate:"2026-03-31",pl:-212940,plPct:-14.58,days:76,notes:"FY25-26 realised trade · Lost · 76d hold",status:"closed",addedAt:"2026-01-14T00:00:00.000Z"},
-  {id:"rupen_t15",advisorId:"rupen",stock:"KABRA EXTU",qty:2000,buyPrice:291.0,sellPrice:183.0,invested:582000,value:366000,date:"2025-04-01",sellDate:"2026-03-31",pl:-216000,plPct:-37.11,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t16",advisorId:"rupen",stock:"3M INDIA",qty:101,buyPrice:30273.61,sellPrice:30120.0,invested:3057635,value:3042120,date:"2025-11-03",sellDate:"2026-03-31",pl:-15515,plPct:-0.51,days:148,notes:"FY25-26 realised trade · Lost · 148d hold",status:"closed",addedAt:"2025-11-03T00:00:00.000Z"},
-  {id:"rupen_t17",advisorId:"rupen",stock:"3M INDIA",qty:53,buyPrice:30273.61,sellPrice:34159.37,invested:1604501,value:1810447,date:"2025-11-03",sellDate:"2025-11-04",pl:205945,plPct:12.84,days:1,notes:"FY25-26 realised trade · Won · 1d hold",status:"closed",addedAt:"2025-11-03T00:00:00.000Z"},
-  {id:"rupen_t18",advisorId:"rupen",stock:"NORTHERN ARC",qty:1800,buyPrice:166.02,sellPrice:206.0,invested:298836,value:370800,date:"2025-04-01",sellDate:"2026-03-31",pl:71964,plPct:24.08,days:364,notes:"FY25-26 realised trade · Won · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t19",advisorId:"rupen",stock:"PRAJ INDUSTRIES",qty:2007,buyPrice:553.25,sellPrice:318.0,invested:1110373,value:638226,date:"2025-04-01",sellDate:"2026-03-31",pl:-472147,plPct:-42.52,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t20",advisorId:"rupen",stock:"RK SWAMY",qty:7008,buyPrice:216.0,sellPrice:69.02,invested:1513728,value:483692,date:"2025-04-01",sellDate:"2026-03-31",pl:-1030036,plPct:-68.05,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t21",advisorId:"rupen",stock:"TRENT",qty:750,buyPrice:5306.05,sellPrice:3526.0,invested:3979538,value:2644500,date:"2025-04-01",sellDate:"2026-03-31",pl:-1335038,plPct:-33.55,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t22",advisorId:"rupen",stock:"THIRUMALAI CHEMICAL",qty:5000,buyPrice:244.0,sellPrice:165.32,invested:1220000,value:826600,date:"2025-04-01",sellDate:"2026-03-31",pl:-393400,plPct:-32.25,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t23",advisorId:"rupen",stock:"TIME TECHNOPLAST",qty:36600,buyPrice:209.28,sellPrice:158.42,invested:7659648,value:5798172,date:"2025-04-01",sellDate:"2026-03-31",pl:-1861476,plPct:-24.3,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t24",advisorId:"rupen",stock:"ULTRAMARINE",qty:2007,buyPrice:474.7,sellPrice:366.0,invested:952723,value:734562,date:"2025-04-01",sellDate:"2026-03-31",pl:-218161,plPct:-22.9,days:364,notes:"FY25-26 realised trade · Lost · 364d hold",status:"closed",addedAt:"2025-04-01T00:00:00.000Z"},
-  {id:"rupen_t27",advisorId:"rupen",stock:"NOTE: SINCE THERE IS 82.65L LOSS IN THIS YEAR, THE PROFIT SHARING WILL HAPPEN IF THE PROFIT IS BEYOND 82.65L IN NEXT FINANCIAL YEAR 26-27",qty:0,buyPrice:0.0,sellPrice:0.0,invested:0,value:0,date:"",sellDate:"",pl:0,plPct:0.0,days:0,notes:"FY25-26 realised trade · Lost · 0d hold",status:"closed",addedAt:"T00:00:00.000Z"}
+  {id:"chitlangi_t1000",stock:"360ONE",qty:549,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:954.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1001",stock:"Aegis Logistics Limited",qty:1100,advisorId:"chitlangi",date:"02-May-25",buyPrice:778.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1002",stock:"Aditya Birla Lifestyle Brands Limited",qty:500,advisorId:"chitlangi",date:"12-Mar-26",buyPrice:989.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1003",stock:"ALLTIMEPL",qty:200,advisorId:"chitlangi",date:"04-Feb-26",buyPrice:245.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1004",stock:"Brigade Enterprises Limited",qty:900,advisorId:"chitlangi",date:"22-Jan-26",buyPrice:778.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1005",stock:"DEEPINDS",qty:700,advisorId:"chitlangi",date:"13-Jan-26",buyPrice:380.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1006",stock:"ZOMATO",qty:1140,advisorId:"chitlangi",date:"29-Jan-26",buyPrice:275.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1007",stock:"Five Star Bancorp",qty:750,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:723.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1008",stock:"Hariom Pipe Industries Limited",qty:1700,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:331.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1009",stock:"INNOVACAP",qty:915,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:876.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1010",stock:"Jsw Infrastructure Limited",qty:385,advisorId:"chitlangi",date:"29-Jan-26",buyPrice:261.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1011",stock:"Krones Ag",qty:780,advisorId:"chitlangi",date:"02-May-25",buyPrice:704.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1012",stock:"Nitin Spinners Limited",qty:1100,advisorId:"chitlangi",date:"02-Jun-25",buyPrice:393.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1013",stock:"Pearl Global Industries Limited",qty:400,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:131.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1014",stock:"PREMIERENE",qty:460,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:933.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1015",stock:"Ratnaveer Precision Engineering Limited",qty:1200,advisorId:"chitlangi",date:"20-May-26",buyPrice:183.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1016",stock:"RBLBANK",qty:600,advisorId:"chitlangi",date:"20-May-26",buyPrice:323.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1017",stock:"Time Technoplast Limited",qty:600,advisorId:"chitlangi",date:"07-Jul-26",buyPrice:176.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1018",stock:"Vishnu Chemicals Limited",qty:1300,advisorId:"chitlangi",date:"04-Aug-25",buyPrice:482.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1019",stock:"Wework India Management Limited",qty:300,advisorId:"chitlangi",date:"21-Jul-26",buyPrice:714.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1020",stock:"Yatharth Hospital & Trauma Care Services Limited",qty:1060,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:425.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1021",stock:"AEGISLOG",qty:300,advisorId:"chitlangi",date:"02-May-25",buyPrice:778.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1022",stock:"BIKAJI",qty:650,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:660.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1023",stock:"CSBBANK",qty:300,advisorId:"chitlangi",date:"20-May-26",buyPrice:358.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1024",stock:"DEEPINDS",qty:600,advisorId:"chitlangi",date:"22-Jan-26",buyPrice:360.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1025",stock:"Five Star. Busness",qty:1200,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:723.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1026",stock:"Ganesh Ecosphere",qty:670,advisorId:"chitlangi",date:"15-Dec-25",buyPrice:883.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1027",stock:"HARIOMPIPE",qty:889,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:331.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1028",stock:"KRNHEAT",qty:340,advisorId:"chitlangi",date:"02-May-25",buyPrice:704.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1029",stock:"Lactose",qty:747,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:89.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1030",stock:"Nitin Spinner",qty:200,advisorId:"chitlangi",date:"02-Jun-25",buyPrice:393.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1031",stock:"Piramal Enterprise",qty:600,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:982.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1032",stock:"PGEL",qty:1080,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:910.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1033",stock:"RELIGARE",qty:500,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:233.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1034",stock:"Spcl",qty:600,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:113.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1035",stock:"Ultramarine",qty:750,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:474.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1036",stock:"Vishnu Chemical",qty:300,advisorId:"chitlangi",date:"04-Aug-25",buyPrice:482.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1037",stock:"YATHARTH",qty:250,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:425.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"chitlangi_t1038",stock:"Sbin",qty:750,advisorId:"chitlangi",date:"01-Apr-25",buyPrice:772.0,notes:"Pankaj Chitlangi — Open position FY25-27"},
+  {id:"rupen_new_t1039",stock:"AUTOAXLES",qty:100,advisorId:"rupen",date:"4/1/2026",buyPrice:1569.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1040",stock:"Adhar Housing",qty:2007,advisorId:"rupen",date:"4/1/2026",buyPrice:448.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1041",stock:"BAYERCROP",qty:504,advisorId:"rupen",date:"4/1/2026",buyPrice:4645.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1042",stock:"Ever Ready",qty:5734,advisorId:"rupen",date:"4/1/2026",buyPrice:262.95,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1043",stock:"CONTROLPR",qty:2333,advisorId:"rupen",date:"4/1/2026",buyPrice:524.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1044",stock:"COSMOFIRST",qty:1008,advisorId:"rupen",date:"4/1/2026",buyPrice:595.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1045",stock:"CDSL",qty:4258,advisorId:"rupen",date:"4/1/2026",buyPrice:1119.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1046",stock:"Dlink",qty:1004,advisorId:"rupen",date:"4/1/2026",buyPrice:395.55,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1047",stock:"GREAVESCOT",qty:2000,advisorId:"rupen",date:"4/1/2026",buyPrice:120.61,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1048",stock:"JUSTDIAL",qty:5002,advisorId:"rupen",date:"4/1/2026",buyPrice:490.7,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1049",stock:"EPL",qty:5000,advisorId:"rupen",date:"4/1/2026",buyPrice:215.23,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1050",stock:"EPL",qty:5000,advisorId:"rupen",date:"4/1/2026",buyPrice:215.23,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1051",stock:"KKCL",qty:3000,advisorId:"rupen",date:"4/1/2026",buyPrice:416.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1052",stock:"Kabra Extu",qty:2000,advisorId:"rupen",date:"4/1/2026",buyPrice:183.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1053",stock:"3MINDIA",qty:101,advisorId:"rupen",date:"4/1/2026",buyPrice:30120.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1054",stock:"Northern Arc",qty:1800,advisorId:"rupen",date:"4/1/2026",buyPrice:206.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1055",stock:"PRAJIND",qty:2007,advisorId:"rupen",date:"4/1/2026",buyPrice:318.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1056",stock:"Rk Swamy",qty:7008,advisorId:"rupen",date:"4/1/2026",buyPrice:69.02,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1057",stock:"TRENT",qty:750,advisorId:"rupen",date:"4/1/2026",buyPrice:3526.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1058",stock:"Thirumalai Chemical",qty:5000,advisorId:"rupen",date:"4/1/2026",buyPrice:165.32,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1059",stock:"TIMETECHNO",qty:36600,advisorId:"rupen",date:"4/1/2026",buyPrice:158.42,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1060",stock:"Whirlpool",qty:700,advisorId:"rupen",date:"7/31/2026",buyPrice:811.39,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"rupen_new_t1061",stock:"Ultramarine",qty:2007,advisorId:"rupen",date:"4/1/2026",buyPrice:366.0,notes:"Rupen Bhai — Open position FY26-27"},
+  {id:"dharmesh_new_t1062",stock:"Career Point",qty:3806,advisorId:"dharmesh",date:"8/7/2024",buyPrice:487.55,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1063",stock:"CPCAP",qty:9000,advisorId:"dharmesh",date:"",buyPrice:0,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1064",stock:"GENESYS",qty:1663,advisorId:"dharmesh",date:"12/1/2023",buyPrice:405.0,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1065",stock:"Gfl Ltd",qty:35097,advisorId:"dharmesh",date:"11/15/2023",buyPrice:102.21,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1066",stock:"NELCO",qty:2798,advisorId:"dharmesh",date:"7/4/2024",buyPrice:884.82,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1067",stock:"Shree Digvijay",qty:9000,advisorId:"dharmesh",date:"8/1/2024",buyPrice:103.07,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1068",stock:"Sun Pharma Adv",qty:4500,advisorId:"dharmesh",date:"9/18/2024",buyPrice:221.7,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1069",stock:"Guj Fluro",qty:3451,advisorId:"dharmesh",date:"15289",buyPrice:52771907.0,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1070",stock:"Iwel",qty:10783,advisorId:"dharmesh",date:"800",buyPrice:8626984.0,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1071",stock:"Shree Digvi",qty:103,advisorId:"dharmesh",date:"9000",buyPrice:927630.0,notes:"Dharmesh — Open position"},
+  {id:"dharmesh_new_t1072",stock:"Sparc",qty:221,advisorId:"dharmesh",date:"4500",buyPrice:997650.0,notes:"Dharmesh — Open position"}
 ];
 
 function AdvisorTrackerTab() {
@@ -11031,7 +11079,7 @@ function FamilyApp() {
                                   <div style={{width:8,height:8,borderRadius:"50%",background:h.color,flexShrink:0}}/>
                                   <span style={{color:"#c8d0e8",fontWeight:600}}>{h.member}</span>
                                   {h.mtf&&<span title={"MTF funded: "+(h.mtfQty||h.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px"}}>MTF</span>}
-                                  {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===sym&&t.member===h.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
+                                  {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return (t.stock===sym||t.stock===(g&&g.displayName)||t.stock===h.s)&&t.member===h.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
                                     return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:4,padding:"1px 5px"}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
                                   })}
                                 </div>
@@ -23194,7 +23242,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                           <div style={{fontWeight:600,color:"#e8eaf0",fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.displayName||g.sym}</div>
                           {g.isDelisted&&<span style={{fontSize:8,fontWeight:700,color:"#ef4444",background:"#2a0a0a",border:"1px solid #5a1a1a",borderRadius:5,padding:"1px 6px",flexShrink:0}}>DELISTED</span>}
                           {g.mtfQty>0&&<span title={"MTF funded: "+g.mtfQty+" of "+g.totalQty+" shares"} style={{fontSize:8,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:5,padding:"1px 6px",flexShrink:0}}>MTF {g.mtfQty}</span>}
-                          {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
+                          {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym||t.stock===g.displayName||t.stock===g.s;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
                             return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:8,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:5,padding:"1px 6px",flexShrink:0}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
                           })}
                         </div>
@@ -23278,7 +23326,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                                       <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
                                         <span style={{color:"#c8d0e8",fontWeight:600,fontSize:11}}>{r.member}</span>
                                         {r.mtf&&<span style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:3,padding:"1px 5px"}}>MTF {(r.mtfQty||r.qty||0).toLocaleString("en-IN")}</span>}
-                                        {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym&&t.member===r.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,i,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===i;}).map(function(a){return <span key={a.id} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:3,padding:"1px 5px"}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;})}
+                                        {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return (t.stock===g.sym||t.stock===g.displayName)&&t.member===r.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,i,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===i;}).map(function(a){return <span key={a.id} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:3,padding:"1px 5px"}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;})}
                                       </div>
                                       <div style={{fontSize:8,color:"#3a5a7a",marginTop:1}}>{r.custodian}</div>
                                     </td>
