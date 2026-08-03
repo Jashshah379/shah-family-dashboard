@@ -24253,9 +24253,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                                     <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#c8d0e8",fontSize:10}}>
                                       {cr(r.val)}
                                     </td>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:9}}>
-                                      {r.cmp>0?"₹"+r.cmp.toFixed(2):"—"}
-                                    </td>
+                                    <td style={{padding:"5px 9px"}}/>
                                     <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,fontSize:10,color:rgain?"#34d399":"#f87171"}}>
                                       {r.pl!=null?(rgain?"+":"")+cr(Math.abs(r.pl)):"—"}
                                     </td>
@@ -24376,21 +24374,28 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                 })}
               </tbody>
               <tfoot>
-                <tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #1e2540"}}>
-                  <td style={{padding:"8px 9px",width:36,flexShrink:0}}/>
-                  <td style={{padding:"8px 9px",width:colWidths.sym,color:"#4d5f87",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>TOTAL &middot; {sorted.length}</td>
-                  <td style={{padding:"8px 9px",width:colWidths.totalQty,textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4"}}>{(grandTotalQty||0).toLocaleString("en-IN")}</td>
-                  <td style={{padding:"8px 9px",width:colWidths.avgCmp}}/>
-                  <td style={{padding:"8px 9px",width:colWidths.totalInv,textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#8a9bc4"}}>{fC(grandTotalInv)}</td>
-                  <td style={{padding:"8px 9px",width:colWidths.totalVal,textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>{fC(grandTotalVal)}</td>
-                  <td style={{padding:"8px 9px",width:colWidths.totalDayPL}}/>
-                  <td style={{padding:"8px 9px",width:colWidths.totalPL,textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>
-                    {grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}
+                <tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #233066"}}>
+                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700,letterSpacing:"0.04em",width:colWidths.sym}}>
+                    TOTAL &middot; {sorted.length}
                   </td>
-                  <td style={{padding:"8px 9px",width:colWidths.ret,textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>
-                    {grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4",fontSize:11}}>
+                    {(grandTotalQty||0).toLocaleString("en-IN")}
                   </td>
                   <td style={{padding:"8px 9px"}}/>
+                  <td style={{padding:"8px 9px"}}/>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#8a9bc4",fontSize:11}}>
+                    {fC(grandTotalInv)}
+                  </td>
+                  <td style={{padding:"8px 9px"}}/>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>
+                    {fC(grandTotalVal)}
+                  </td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:11,color:grandTotalPL>=0?"#34d399":"#f87171"}}>
+                    {grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}
+                  </td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:11,color:grandTotalPL>=0?"#34d399":"#f87171"}}>
+                    {grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}
+                  </td>
                 </tr>
               </tfoot>
             </table>
