@@ -11275,12 +11275,24 @@ function FamilyApp() {
                 <input ref={searchInputRef}
                   value={_inputVal}
                   onChange={function(e){
-                    var v = e.target.value;
+                    var v = e.target.value.slice(0, e.target.selectionStart);
                     setSearchTyped(v);
                     setSearchQ(v);
                     setSearchOpen(v.length>1);
                   }}
                   onKeyDown={function(e){
+                    if(e.key==="Backspace"){
+                      e.preventDefault();
+                      var next = searchTyped.slice(0,-1);
+                      setSearchTyped(next); setSearchQ(next);
+                      setSearchOpen(next.length>1);
+                      return;
+                    }
+                    if(e.key==="Delete"){
+                      e.preventDefault();
+                      setSearchTyped(""); setSearchQ(""); setSearchOpen(false);
+                      return;
+                    }
                     if(e.key==="Enter"){
                       e.preventDefault();
                       if(_topSym){ setStockDetail(_topSym); setSearchQ(""); setSearchTyped(""); setSearchOpen(false); }
