@@ -22731,26 +22731,41 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                 ref={srchRef}
                 value={_inputVal}
                 onChange={function(e){
-                  /* Only use the portion before any selection — that's what user typed */
+                  /* Backspace is handled in onKeyDown so this only fires for typed chars.
+                     When a suffix is selected and user types, the new char replaces the suffix.
+                     e.target.selectionStart points to right after the new char — use that. */
                   var el = e.target;
-                  var newVal = el.value;
-                  /* If selection was present and user typed a char, newVal replaced the suffix */
-                  /* Just use full newVal as the new typed text */
-                  setSrchTyped(newVal);
-                  setFilterStock(newVal);
+                  var typed = el.value.slice(0, el.selectionStart);
+                  setSrchTyped(typed);
+                  setFilterStock(typed);
                   setSrchHi(0);
                   setSrchOpen(true);
                 }}
                 onKeyDown={function(e){
                   var matched = srchTyped.length > 0 ? srchMatch(srchTyped).slice(0,8) : [];
+                  /* Backspace — must intercept BEFORE browser sees it.
+                     Without this, browser deletes the selected suffix, onChange
+                     fires with srchTyped again, useEffect re-selects suffix = stuck. */
+                  if(e.key==="Backspace"){
+                    e.preventDefault();
+                    var next = srchTyped.slice(0, -1);
+                    setSrchTyped(next);
+                    setFilterStock(next);
+                    setSrchOpen(next.length > 0);
+                    setSrchHi(0);
+                    return;
+                  }
+                  if(e.key==="Delete"){
+                    e.preventDefault();
+                    setSrchTyped(""); setFilterStock(""); setSrchOpen(false); setSrchHi(0);
+                    return;
+                  }
                   if(e.key==="Enter"){
                     e.preventDefault();
                     accept();
                   } else if(e.key==="Tab"){
                     if(_suffix){ e.preventDefault(); accept(); }
-                    /* else let Tab move focus normally */
                   } else if(e.key==="ArrowRight"){
-                    /* accept if cursor at end of typed text (in the suffix) */
                     if(_suffix){ e.preventDefault(); accept(); }
                   } else if(e.key==="ArrowDown"){
                     e.preventDefault();
