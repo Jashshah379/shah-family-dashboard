@@ -24118,17 +24118,34 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:700}}>
               <thead>
-                <tr style={{background:"#0a0d1c"}}>
-                  <SH col="sym"       label="Stock"      right={false}/>
-                  <SH col="member"    label="Member"     right={false}/>
-                  <SH col="custodian" label="Custodian"  right={false}/>
-                  <SH col="qty"       label="Qty"/>
-                  <SH col="avg"       label="Avg Cost"/>
-                  <SH col="cmp"       label="CMP"/>
-                  <SH col="val"       label="Value"/>
-                  <SH col="pl"        label="P/L ₹"/>
-                  <SH col="plPct"     label="P/L %"/>
-                </tr>
+                {groupBy==="stock" ? (
+                  /* Grouped view: 10 cols matching grouped data rows */
+                  <tr style={{background:"#0a0d1c"}}>
+                    <th style={{width:36,padding:"8px 4px",background:"rgba(6,8,15,0.9)"}}/>
+                    <SH col="sym"    label="Stock"    right={false}/>
+                    <SH col="qty"    label="Qty"/>
+                    <SH col="avg"    label="Avg Cost"/>
+                    <th style={{padding:"8px 9px",textAlign:"right",color:"#4d5f87",fontSize:9,fontWeight:700,cursor:"pointer",background:"rgba(6,8,15,0.9)"}} onClick={()=>{setSortCol("val");setSortDir(d=>d*-1);}}>Invested</th>
+                    <SH col="val"    label="Value"/>
+                    <th style={{padding:"8px 9px",textAlign:"right",color:"#4d5f87",fontSize:9,fontWeight:700,background:"rgba(6,8,15,0.9)"}}>Day P/L</th>
+                    <SH col="pl"     label="P/L ₹"/>
+                    <SH col="plPct"  label="P/L %"/>
+                    <th style={{padding:"8px 9px",background:"rgba(6,8,15,0.9)"}}/>
+                  </tr>
+                ) : (
+                  /* Ungrouped view: 9 cols matching flat rows */
+                  <tr style={{background:"#0a0d1c"}}>
+                    <SH col="sym"       label="Stock"      right={false}/>
+                    <SH col="member"    label="Member"     right={false}/>
+                    <SH col="custodian" label="Custodian"  right={false}/>
+                    <SH col="qty"       label="Qty"/>
+                    <SH col="avg"       label="Avg Cost"/>
+                    <SH col="cmp"       label="CMP"/>
+                    <SH col="val"       label="Value"/>
+                    <SH col="pl"        label="P/L ₹"/>
+                    <SH col="plPct"     label="P/L %"/>
+                  </tr>
+                )}
               </thead>
               <tbody>
                 {sorted.map((r,i)=>{
@@ -24178,31 +24195,34 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                   );
                 })}
               </tbody>
-              <tfoot>
-                <tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #233066"}}>
-                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700,letterSpacing:"0.04em",width:colWidths.sym}}>
-                    TOTAL &middot; {sorted.length}
-                  </td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4",fontSize:11}}>
-                    {(grandTotalQty||0).toLocaleString("en-IN")}
-                  </td>
+              {groupBy==="stock" ? (
+                /* Grouped tfoot: 10 cols */
+                <tfoot><tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #233066"}}>
+                  <td style={{padding:"8px 4px",width:36}}/>
+                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700}}>TOTAL &middot; {sorted.length}</td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4"}}>{(grandTotalQty||0).toLocaleString("en-IN")}</td>
+                  <td style={{padding:"8px 9px"}}/>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#8a9bc4"}}>{fC(grandTotalInv)}</td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>{fC(grandTotalVal)}</td>
+                  <td style={{padding:"8px 9px"}}/>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}</td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}</td>
+                  <td style={{padding:"8px 9px"}}/>
+                </tr></tfoot>
+              ) : (
+                /* Ungrouped tfoot: 9 cols */
+                <tfoot><tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #233066"}}>
+                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700}}>TOTAL &middot; {sorted.length}</td>
                   <td style={{padding:"8px 9px"}}/>
                   <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#8a9bc4",fontSize:11}}>
-                    {fC(grandTotalInv)}
-                  </td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4"}}>{(grandTotalQty||0).toLocaleString("en-IN")}</td>
                   <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>
-                    {fC(grandTotalVal)}
-                  </td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:11,color:grandTotalPL>=0?"#34d399":"#f87171"}}>
-                    {grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}
-                  </td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:11,color:grandTotalPL>=0?"#34d399":"#f87171"}}>
-                    {grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}
-                  </td>
-                </tr>
-              </tfoot>
+                  <td style={{padding:"8px 9px"}}/>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>{fC(grandTotalVal)}</td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}</td>
+                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}</td>
+                </tr></tfoot>
+              )}
             </table>
           </div>
         </div>
