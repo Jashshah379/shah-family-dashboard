@@ -9091,6 +9091,8 @@ const DEFAULT_ADVISORS = [
   {id:"mitul", name:"Mitul Bhai", firm:"", type:"Family Friend", color:"#a78bfa"},
   {id:"dharmesh", name:"Dharmesh", firm:"Sushil Financial", type:"Advisor", color:"#22d3ee",
    note:"FY24-26: ₹18.03Cr traded · -₹14.2L net realised (-0.79%) · 127 trades · 70W/57L · IWEL star performer · Open: ₹12.99Cr in 8 stocks"},
+  {id:"incred", name:"InCred PMS", firm:"InCred Asset Management", type:"PMS", color:"#f97316",
+   note:"Multicap PMS — Praful Shah HUF"},
   {id:"chitlangi", name:"Pankaj Chitlangi", firm:"Equity Advisor", type:"Advisor", color:"#f87171"},
   {id:"rupen", name:"Rupen Bhai", firm:"Sushil Financial", type:"Advisor", color:"#f0b429",
    note:"FY25-26 realised P&L: ₹-82.7L on ₹439.8L (-18.8%) · 26 trades · holdings in Sushil to be tagged"},
@@ -9245,7 +9247,37 @@ const DEFAULT_TAGS = [
   {id:"dharmesh_new_t1069",stock:"Guj Fluro",qty:3451,advisorId:"dharmesh",date:"15289",buyPrice:52771907.0,notes:"Dharmesh — Open position"},
   {id:"dharmesh_new_t1070",stock:"Iwel",qty:10783,advisorId:"dharmesh",date:"800",buyPrice:8626984.0,notes:"Dharmesh — Open position"},
   {id:"dharmesh_new_t1071",stock:"Shree Digvi",qty:103,advisorId:"dharmesh",date:"9000",buyPrice:927630.0,notes:"Dharmesh — Open position"},
-  {id:"dharmesh_new_t1072",stock:"Sparc",qty:221,advisorId:"dharmesh",date:"4500",buyPrice:997650.0,notes:"Dharmesh — Open position"}
+  {id:"dharmesh_new_t1072",stock:"Sparc",qty:221,advisorId:"dharmesh",date:"4500",buyPrice:997650.0,notes:"Dharmesh — Open position"},
+  /* InCred PMS — Praful Shah HUF */
+  {id:"incred_t0",stock:"AFFLE",qty:217,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1443.05,invested:313141.7,notes:"InCred Multicap PMS"},
+  {id:"incred_t1",stock:"BAJAJFINSV",qty:283,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1733.57,invested:490600.67,notes:"InCred Multicap PMS"},
+  {id:"incred_t2",stock:"BHARTIARTL",qty:273,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1859.72,invested:507704.1,notes:"InCred Multicap PMS"},
+  {id:"incred_t3",stock:"BHARTIHEXA",qty:394,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1531.74,invested:603506.63,notes:"InCred Multicap PMS"},
+  {id:"incred_t4",stock:"Canara Robeco Asset Management",qty:1322,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:243.7,invested:322176.04,notes:"InCred Multicap PMS"},
+  {id:"incred_t5",stock:"CHALET",qty:458,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:777.98,invested:356312.59,notes:"InCred Multicap PMS"},
+  {id:"incred_t6",stock:"CHOLAFIN",qty:182,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1517.19,invested:276128.63,notes:"InCred Multicap PMS"},
+  {id:"incred_t7",stock:"COFORGE",qty:102,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1287.45,invested:131320.26,notes:"InCred Multicap PMS"},
+  {id:"incred_t8",stock:"CAMS",qty:523,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:755.82,invested:395294.01,notes:"InCred Multicap PMS"},
+  {id:"incred_t9",stock:"ZOMATO",qty:1881,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:254.38,invested:478497.04,notes:"InCred Multicap PMS"},
+  {id:"incred_t10",stock:"HAVELLS",qty:400,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1305.15,invested:522061.9,notes:"InCred Multicap PMS"},
+  {id:"incred_t11",stock:"HDFCBANK",qty:409,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:804.67,invested:329109.98,notes:"InCred Multicap PMS"},
+  {id:"incred_t12",stock:"HINDCOPPER",qty:778,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:498.27,invested:387657.22,notes:"InCred Multicap PMS"},
+  {id:"incred_t13",stock:"ICRA",qty:75,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:5359.51,invested:401963.17,notes:"InCred Multicap PMS"},
+  {id:"incred_t14",stock:"NAUKRI",qty:517,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1053.68,invested:544754.2,notes:"InCred Multicap PMS"},
+  {id:"incred_t15",stock:"JKCEMENT",qty:97,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:5630.83,invested:546190.94,notes:"InCred Multicap PMS"},
+  {id:"incred_t16",stock:"KPR Mill",qty:287,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:926.84,invested:266003.1,notes:"InCred Multicap PMS"},
+  {id:"incred_t17",stock:"KARURVYSYA",qty:1068,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:281.23,invested:300351.57,notes:"InCred Multicap PMS"},
+  {id:"incred_t18",stock:"LENSKART",qty:657,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:469.27,invested:308313.09,notes:"InCred Multicap PMS"},
+  {id:"incred_t19",stock:"LTFOODS",qty:945,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:407.0,invested:384618.43,notes:"InCred Multicap PMS"},
+  {id:"incred_t20",stock:"M&M",qty:101,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:3066.41,invested:309707.2,notes:"InCred Multicap PMS"},
+  {id:"incred_t21",stock:"MAXHEALTH",qty:203,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1002.78,invested:203564.65,notes:"InCred Multicap PMS"},
+  {id:"incred_t22",stock:"NARAYANHC",qty:158,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1887.34,invested:298199.19,notes:"InCred Multicap PMS"},
+  {id:"incred_t23",stock:"SCHAEFFLER",qty:97,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:4091.21,invested:396847.55,notes:"InCred Multicap PMS"},
+  {id:"incred_t24",stock:"Sri Lotus Developers",qty:1459,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:143.43,invested:209270.58,notes:"InCred Multicap PMS"},
+  {id:"incred_t25",stock:"SUNDRMFAST",qty:255,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:830.81,invested:211856.55,notes:"InCred Multicap PMS"},
+  {id:"incred_t26",stock:"TBOTEK",qty:205,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:1290.85,invested:264623.39,notes:"InCred Multicap PMS"},
+  {id:"incred_t27",stock:"Torrent Pharmaceuticals",qty:73,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:3953.71,invested:292376.6,notes:"InCred Multicap PMS"},
+  {id:"incred_t28",stock:"TRENT",qty:49,advisorId:"incred",member:"Praful Shah HUF",date:"2026-08-03",buyPrice:671.52,invested:32904.7,notes:"InCred Multicap PMS"}
 ];
 
 function AdvisorTrackerTab() {
@@ -11163,7 +11195,7 @@ function FamilyApp() {
                                   <span style={{color:"#c8d0e8",fontWeight:600}}>{h.member}</span>
                                   {h.mtf&&<span title={"MTF funded: "+(h.mtfQty||h.qty)+" shares"} style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:4,padding:"1px 5px"}}>MTF</span>}
                                   {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return (t.stock===sym||t.stock===(typeof DISPLAY_NAME_MAP!=="undefined"&&sym&&DISPLAY_NAME_MAP[sym])||t.stock===h.s)&&t.member===h.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
-                                    return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:4,padding:"1px 5px"}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
+                                    return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:4,padding:"1px 5px"}}>{(a.id==="incred"?"IC":a.name.split(" ")[0].slice(0,2).toUpperCase())}</span>;
                                   })}
                                 </div>
                               </td>
@@ -17310,7 +17342,6 @@ var DISPLAY_NAME_MAP = {
   "POLYPLEX": "Polyplex Corpn",
   "PONDYOX": "Pondy Oxides & Chemicals",
   "POWERGRID": "Power Grid",
-  "POWERINDIA": "Hitachi Energy India",
   "PPAP": "PPAP Automotive",
   "PPLPHARMA": "Piramal Pharma",
   "PRAJIND": "Praj Industries",
@@ -24036,7 +24067,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                           {g.mtfQty>0&&<span title={"MTF funded: "+g.mtfQty+" of "+g.totalQty+" shares"} style={{fontSize:8,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:5,padding:"1px 6px",flexShrink:0}}>MTF {g.mtfQty}</span>}
                           {g.rows&&g.rows.some(function(r){return r._custodian&&r._custodian.toLowerCase().includes("incred");})&&<span title="Held in InCred PMS" style={{fontSize:7,fontWeight:800,color:"#f97316",background:"rgba(249,115,22,0.12)",border:"1px solid rgba(249,115,22,0.35)",borderRadius:4,padding:"1px 6px",flexShrink:0}}>IC</span>}
                           {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return t.stock===g.sym||t.stock===g.displayName||t.stock===g.s;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,idx,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===idx;}).map(function(a){
-                            return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:8,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:5,padding:"1px 6px",flexShrink:0}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;
+                            return <span key={a.id} title={"Recommended by "+a.name} style={{fontSize:8,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:5,padding:"1px 6px",flexShrink:0}}>{(a.id==="incred"?"IC":a.name.split(" ")[0].slice(0,2).toUpperCase())}</span>;
                           })}
                         </div>
                         <div style={{display:"flex",gap:6,marginTop:2,flexWrap:"wrap"}}>
@@ -24105,7 +24136,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                               <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
                                 <span style={{color:"#c8d0e8",fontWeight:600,fontSize:11}}>{r.member}</span>
                                 {r.mtf&&<span style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:3,padding:"1px 5px"}}>MTF {(r.mtfQty||r.qty||0).toLocaleString("en-IN")}</span>}
-                                {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return (t.stock===g.sym||t.stock===g.displayName)&&t.member===r.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,i,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===i;}).map(function(a){return <span key={a.id} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:3,padding:"1px 5px"}}>{a.name.split(" ")[0].slice(0,2).toUpperCase()}</span>;})}
+                                {typeof DEFAULT_TAGS!=="undefined"&&typeof DEFAULT_ADVISORS!=="undefined"&&DEFAULT_TAGS.filter(function(t){return (t.stock===g.sym||t.stock===g.displayName)&&t.member===r.member;}).map(function(t){return DEFAULT_ADVISORS.find(function(a){return a.id===t.advisorId;});}).filter(function(a,i,arr){return a&&arr.findIndex(function(x){return x&&x.id===a.id;})===i;}).map(function(a){return <span key={a.id} style={{fontSize:7,fontWeight:700,color:a.color,background:a.color+"18",border:"1px solid "+a.color+"55",borderRadius:3,padding:"1px 5px"}}>{(a.id==="incred"?"IC":a.name.split(" ")[0].slice(0,2).toUpperCase())}</span>;})}
                               </div>
                               <div style={{fontSize:8,color:"#3a5a7a",marginTop:1}}>{r.custodian}</div>
                             </td>
