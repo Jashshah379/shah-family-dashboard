@@ -24041,30 +24041,30 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                     isOpen && (
                       <tr key={g.sym+"_detail"}>
                         <td colSpan={10} style={{padding:0,background:"#060912",borderBottom:"3px solid #0a0d1c"}}>
-                          {/* Sub-rows — columns match outer table exactly */}
-                          {g.rows.map(function(r,ri){
-                            var rret=r.inv>0?(r.pl/r.inv*100):null;
-                            var rgain=(r.pl||0)>=0;
-                            return (
-                              <table key={ri} style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
-                                {ri===0&&<colgroup>
-                                  <col style={{width:36}}/>
-                                  <col style={{width:colWidths.sym}}/>
-                                  <col style={{width:colWidths.totalQty}}/>
-                                  <col style={{width:colWidths.avgCmp}}/>
-                                  <col style={{width:colWidths.totalInv}}/>
-                                  <col style={{width:colWidths.totalVal}}/>
-                                  <col style={{width:colWidths.totalDayPL}}/>
-                                  <col style={{width:colWidths.totalPL}}/>
-                                  <col style={{width:colWidths.ret}}/>
-                                  <col/>
-                                </colgroup>}
-                                <tbody>
-                                  <tr style={{borderBottom:"1px solid #0a0d14",background:ri%2===0?"transparent":"rgba(6,8,15,0.4)"}}>
-                                    <td style={{padding:"5px 9px",width:36}}>
+                          {/* Single table for all sub-rows — one colgroup, all rows aligned */}
+                          <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
+                            <colgroup>
+                              <col style={{width:36}}/>
+                              <col style={{width:colWidths.sym}}/>
+                              <col style={{width:colWidths.totalQty}}/>
+                              <col style={{width:colWidths.avgCmp}}/>
+                              <col style={{width:colWidths.totalInv}}/>
+                              <col style={{width:colWidths.totalVal}}/>
+                              <col style={{width:colWidths.totalDayPL}}/>
+                              <col style={{width:colWidths.totalPL}}/>
+                              <col style={{width:colWidths.ret}}/>
+                              <col/>
+                            </colgroup>
+                            <tbody>
+                              {g.rows.map(function(r,ri){
+                                var rret=r.inv>0?(r.pl/r.inv*100):null;
+                                var rgain=(r.pl||0)>=0;
+                                return (
+                                  <tr key={ri} style={{borderBottom:"1px solid #0a0d14",background:ri%2===0?"transparent":"rgba(6,8,15,0.4)"}}>
+                                    <td style={{padding:"5px 9px",textAlign:"center"}}>
                                       <div style={{width:7,height:7,borderRadius:"50%",background:r.memberCol,margin:"auto"}}/>
                                     </td>
-                                    <td style={{padding:"5px 9px"}}>
+                                    <td style={{padding:"5px 9px",overflow:"hidden"}}>
                                       <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
                                         <span style={{color:"#c8d0e8",fontWeight:600,fontSize:11}}>{r.member}</span>
                                         {r.mtf&&<span style={{fontSize:7,fontWeight:700,color:"#f0b429",background:"#1a1500",border:"1px solid #3a2a00",borderRadius:3,padding:"1px 5px"}}>MTF {(r.mtfQty||r.qty||0).toLocaleString("en-IN")}</span>}
@@ -24072,31 +24072,19 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                                       </div>
                                       <div style={{fontSize:8,color:"#3a5a7a",marginTop:1}}>{r.custodian}</div>
                                     </td>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a9bc4",fontSize:10}}>
-                                      {r.qty>0?r.qty.toLocaleString("en-IN"):"—"}
-                                    </td>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#f0b429",fontSize:9}}>
-                                      {r.avg>0?"₹"+r.avg.toFixed(2):"—"}
-                                    </td>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a9bc4",fontSize:10}}>
-                                      {r.inv>0?cr(r.inv):"—"}
-                                    </td>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#c8d0e8",fontSize:10}}>
-                                      {cr(r.val)}
-                                    </td>
+                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a9bc4",fontSize:10}}>{r.qty>0?r.qty.toLocaleString("en-IN"):"—"}</td>
+                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#f0b429",fontSize:9}}>{r.avg>0?"₹"+r.avg.toFixed(2):"—"}</td>
+                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a9bc4",fontSize:10}}>{r.inv>0?cr(r.inv):"—"}</td>
+                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#c8d0e8",fontSize:10}}>{cr(r.val)}</td>
                                     <td style={{padding:"5px 9px"}}/>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,fontSize:10,color:rgain?"#34d399":"#f87171"}}>
-                                      {r.pl!=null?(rgain?"+":"")+cr(Math.abs(r.pl)):"—"}
-                                    </td>
-                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,fontSize:10,color:rret!=null&&rret>=0?"#34d399":"#f87171"}}>
-                                      {rret!=null?(rret>=0?"+":"")+rret.toFixed(1)+"%":"—"}
-                                    </td>
+                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,fontSize:10,color:rgain?"#34d399":"#f87171"}}>{r.pl!=null?(rgain?"+":"")+cr(Math.abs(r.pl)):"—"}</td>
+                                    <td style={{padding:"5px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,fontSize:10,color:rret!=null&&rret>=0?"#34d399":"#f87171"}}>{rret!=null?(rret>=0?"+":"")+rret.toFixed(1)+"%":"—"}</td>
                                     <td style={{padding:"5px 9px"}}/>
                                   </tr>
-                                </tbody>
-                              </table>
-                            );
-                          })}
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         </td>
                       </tr>
                     )
