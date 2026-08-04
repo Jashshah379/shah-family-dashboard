@@ -23450,7 +23450,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
     const map = {};
     filtered.forEach(r => {
       const key = r.sym;
-      if(!map[key]) map[key] = {sym:key, rows:[], totalVal:0, totalInv:0, totalPL:0, totalQty:0, totalDayPL:0, chgPct:null, members:new Set(), custodians:new Set(), avgCmp:0, cmpCount:0, isDelisted:false, mtfQty:0};
+      if(!map[key]) map[key] = {sym:key, displayName:(typeof DISPLAY_NAME_MAP!=="undefined"&&DISPLAY_NAME_MAP[key])||key, rows:[], totalVal:0, totalInv:0, totalPL:0, totalQty:0, totalDayPL:0, chgPct:null, members:new Set(), custodians:new Set(), avgCmp:0, cmpCount:0, isDelisted:false, mtfQty:0};
       map[key].rows.push(r);
       map[key].totalVal += (r.val||0);
       map[key].totalInv += (r.inv||0);
