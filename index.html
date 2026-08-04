@@ -24292,54 +24292,6 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
         </div>
       )}
-
-      {taxView==="optimiser"&&<TaxOptimiserTab/>}
-
-      {taxView==="accounts"&&(
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {ACCOUNTS.map(acct=>{
-            const detail = acct.data.detail||[];
-            const stcg = acct.data.stcg||acct.data.total_st||0;
-            const ltcg = acct.data.ltcg||acct.data.total_lt||0;
-            return (
-              <div key={acct.key} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
-                <div style={{padding:"10px 16px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{acct.name}</div>
-                  <div style={{display:"flex",gap:16}}>
-                    <span style={{fontSize:10,color:"#f0b429",fontFamily:"monospace"}}>STCG {cr(stcg)}</span>
-                    <span style={{fontSize:10,color:"#7eb8ff",fontFamily:"monospace"}}>LTCG {cr(ltcg)}</span>
-                    <span style={{fontSize:9,color:"#3a4a6a"}}>{detail.length} lots</span>
-                  </div>
-                </div>
-                {detail.length>0&&(
-                  <div style={{maxHeight:250,overflowY:"auto"}}>
-                    <table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
-                      <thead><tr style={{background:"#0a0e1e",position:"sticky",top:0}}>
-                        {["Stock","Qty","Sale Date","Sale Val","Buy Val","STCG","LTCG"].map(h=>(
-                          <th key={h} style={{padding:"5px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
-                        ))}
-                      </tr></thead>
-                      <tbody>
-                        {detail.slice(0,50).map((t,i)=>(
-                          <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
-                            <td style={{padding:"5px 12px",color:"#c8d0e8",fontWeight:600}}>{t.s}</td>
-                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{t.qty}</td>
-                            <td style={{padding:"5px 12px",textAlign:"right",color:"#3a4a6a",fontSize:9}}>{t.sale_date}</td>
-                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff"}}>{cr(t.sale_val)}</td>
-                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#3a4a6a"}}>{cr(t.buy_val)}</td>
-                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#f0b429",fontWeight:600}}>{t.stcg>0?cr(t.stcg):"—"}</td>
-                            <td style={{padding:"5px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{t.ltcg>0?cr(t.ltcg):"—"}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
