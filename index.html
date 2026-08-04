@@ -383,37 +383,61 @@ function useCorporateActions(symbols) {
   const [actions, setActions] = React.useState([]);
   const [caStatus, setCaStatus] = React.useState("idle");
 
+  var classifyAction = function(a) {
+    var raw = a.purpose || a.subject || a.corpActionDetails || a.description || a.Purpose || "";
+    var p = raw.toLowerCase();
+    var type = (p.includes("interim") && p.includes("dividend"))?"INT"
+              :(p.includes("dividend")||p.includes("div - rs")||p.includes("div-rs")||p.includes("div rs")||p.includes("final dividend"))?"DIV"
+              :(p.includes("buyback")||p.includes("buy back")||p.includes("buy-back"))?"BYB"
+              :(p.includes("sub-division")||p.includes("sub division")||p.includes("stock split")||p.includes("face value split"))?"SPL"
+              :(p.includes("bonus"))?"BON"
+              :(p.includes("agm")||p.includes("annual general")||p.includes("a.g.m"))?"AGM"
+              :(p.includes("rights"))?"RTS"
+              :(p.includes("amalgam")||p.includes("merger")||p.includes("demerger"))?"MRG"
+              :(p.includes("delisting"))?"DEL"
+              :(p.includes("interim"))?"INT"
+              :"ACT";
+    /* NSE API uses different field names */
+    var sym = a.symbol || a.Symbol || a.scrip || "";
+    var exDate = a.exDate || a.exdate || a["Ex-Date"] || a.recordDate || a["Record Date"] || "";
+    return Object.assign({}, a, {_type:type, _purpose:raw||"–", symbol:sym, exDate:exDate});
+  };
+
   const fetchCA = React.useCallback(function() {
     if (!symbols || symbols.length === 0) return;
     setCaStatus("loading");
-    fetch(WORKER + "?symbols=" + encodeURIComponent(symbols.slice(0,150).join(",")))
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if(d.actions){
-          var classified = d.actions.map(function(a){
-            var raw = a.purpose || a.subject || a.corpActionDetails || a.description || "";
-            var p = raw.toLowerCase();
-            var type = (p.includes("interim"))?"INT"
-                      :(p.includes("dividend")||p.includes("div - rs")||p.includes("div-rs")||p.includes("div rs"))?"DIV"
-                      :(p.includes("buyback")||p.includes("buy back")||p.includes("buy-back"))?"BYB"
-                      :(p.includes("split")||p.includes("sub-division")||p.includes("sub division"))?"SPL"
-                      :(p.includes("bonus"))?"BON"
-                      :(p.includes("agm")||p.includes("annual general")||p.includes("a.g.m"))?"AGM"
-                      :(p.includes("rights"))?"RTS"
-                      :(p.includes("amalgam")||p.includes("merger"))?"MRG"
-                      :(p.includes("delisting"))?"DEL"
-                      :"ACT";
-            return {...a, _type:type, _purpose:raw||"–"};
-          });
-          classified.sort(function(a,b){
-            var da = new Date(a.exDate||a.recordDate||"2000"), db = new Date(b.exDate||b.recordDate||"2000");
-            return da - db;
-          });
-          setActions(classified);
-          setCaStatus("live");
-        }
-      })
-      .catch(function(){ setCaStatus("error"); });
+    /* Fetch ALL symbols — no limit, let worker filter */
+    /* Batch into 200 at a time to avoid URL length limits */
+    var BATCH = 200;
+    var batches = [];
+    for (var i = 0; i < symbols.length; i += BATCH) {
+      batches.push(symbols.slice(i, i + BATCH));
+    }
+    Promise.all(batches.map(function(batch) {
+      return fetch(WORKER + "?symbols=" + encodeURIComponent(batch.join(",")))
+        .then(function(r){ return r.json(); })
+        .catch(function(){ return {actions:[]}; });
+    })).then(function(results) {
+      var all = results.reduce(function(acc, d) {
+        return acc.concat(d.actions || []);
+      }, []);
+      /* Deduplicate by symbol+date */
+      var seen = {};
+      var deduped = all.filter(function(a) {
+        var k = (a.symbol||"") + "|" + (a.exDate||"") + "|" + (a.purpose||"").slice(0,15);
+        if (seen[k]) return false;
+        seen[k] = true;
+        return true;
+      });
+      var classified = deduped.map(classifyAction);
+      classified.sort(function(a,b){
+        var da = new Date(a.exDate||a.recordDate||"2000");
+        var db = new Date(b.exDate||b.recordDate||"2000");
+        return da - db;
+      });
+      setActions(classified);
+      setCaStatus(classified.length > 0 ? "live" : "live");
+    }).catch(function(){ setCaStatus("error"); });
   }, [symbols ? symbols.join(",") : ""]);
 
   React.useEffect(function(){
@@ -1262,7 +1286,19 @@ function WhatIfTab() {
                   <col style={{width:colWidths.ret}}/>
                 </colgroup>
               )}
-              <thead><tr style={{background:"#0a0e1e"}}>{["Member","Custodian","Qty","Avg Cost","Current Value","New Value","Gain/Loss"].map(h=>(
+              
+                <colgroup>
+                  <col style={{width:colWidths.sym}}/>
+                  <col style={{width:120}}/>
+                  <col style={{width:100}}/>
+                  <col style={{width:colWidths.totalQty}}/>
+                  <col style={{width:colWidths.avgCmp}}/>
+                  <col style={{width:colWidths.avgCmp}}/>
+                  <col style={{width:colWidths.totalVal}}/>
+                  <col style={{width:colWidths.totalPL}}/>
+                  <col style={{width:colWidths.ret}}/>
+                </colgroup>
+                <thead><tr style={{background:"#0a0e1e"}}>{["Member","Custodian","Qty","Avg Cost","Current Value","New Value","Gain/Loss"].map(h=>(
                 <th key={h} style={{padding:"7px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
               ))}</tr></thead>
               <tbody>
@@ -23922,7 +23958,19 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
 
           <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
+                <colgroup>
+                  <col style={{width:36}}/>
+                  <col style={{width:colWidths.sym}}/>
+                  <col style={{width:colWidths.totalQty}}/>
+                  <col style={{width:colWidths.avgCmp}}/>
+                  <col style={{width:colWidths.totalInv}}/>
+                  <col style={{width:colWidths.totalVal}}/>
+                  <col style={{width:colWidths.totalDayPL}}/>
+                  <col style={{width:colWidths.totalPL}}/>
+                  <col style={{width:colWidths.ret}}/>
+                  <col style={{width:90}}/>
+                </colgroup>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
                   <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
@@ -24096,28 +24144,30 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
               </tbody>
               <tfoot>
                 <tr style={{background:"#0a0e1e",borderTop:"2px solid #1e2540"}}>
-                  <td style={{padding:"7px 10px",fontWeight:700,color:"#3a4a6a",fontSize:10}}>
+                  <td style={{padding:"7px 8px",width:36}}/>
+                  <td style={{padding:"7px 8px",fontWeight:700,color:"#4d5f87",fontSize:10,letterSpacing:"0.04em"}}>
                     TOTAL · {stockGroups.length} stocks
                   </td>
-                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0",fontSize:10}}>
+                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4",fontSize:10}}> 
                     {stockGroups.reduce((s,g)=>s+g.totalQty,0).toLocaleString("en-IN")}
                   </td>
-                  <td/>
-                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10}}>
+                  <td style={{padding:"7px 8px"}}/>
+                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a9bc4",fontSize:10}}> 
                     {cr(stockGroups.reduce((s,g)=>s+g.totalInv,0))}
                   </td>
-                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#7eb8ff",fontSize:12}}>
+                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}> 
                     {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))}
                   </td>
-                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
-                    color:stockGroups.reduce((s,g)=>s+g.totalPL,0)>=0?"#34d399":"#f87171",fontSize:11}}>
-                    {(()=>{const t=stockGroups.reduce((s,g)=>s+g.totalPL,0);return (t>=0?"+":"")+cr(Math.abs(t));})()}
+                  <td style={{padding:"7px 8px"}}/>
+                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:10,
+                    color:(function(){var pl=stockGroups.reduce((s,g)=>s+g.totalPL,0);return pl>=0?"#34d399":"#f87171";}())}}>
+                    {(function(){var pl=stockGroups.reduce((s,g)=>s+g.totalPL,0),inv=stockGroups.reduce((s,g)=>s+g.totalInv,0);return inv>0?(pl>=0?"+":"")+cr(Math.abs(pl)):"—";})()}
                   </td>
-                  <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
-                    color:stockGroups.reduce((s,g)=>s+g.totalPL,0)>=0?"#34d399":"#f87171",fontSize:10}}>
-                    {(()=>{const inv=stockGroups.reduce((s,g)=>s+g.totalInv,0);const pl=stockGroups.reduce((s,g)=>s+g.totalPL,0);return inv>0?(pl>=0?"+":"")+( pl/inv*100).toFixed(1)+"%":"—";})()}
+                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:10,
+                    color:(function(){var pl=stockGroups.reduce((s,g)=>s+g.totalPL,0);return pl>=0?"#34d399":"#f87171";}())}}>
+                    {(function(){var pl=stockGroups.reduce((s,g)=>s+g.totalPL,0),inv=stockGroups.reduce((s,g)=>s+g.totalInv,0);return inv>0?(pl>=0?"+":"")+((pl/inv)*100).toFixed(1)+"%":"—";})()}
                   </td>
-                  <td/>
+                  <td style={{padding:"7px 8px"}}/>
                 </tr>
               </tfoot>
             </table>
@@ -24133,7 +24183,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
             <span style={{color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>{fC(grandTotalVal)}</span>
           </div>
           <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:700}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
               <thead>
                 {groupBy==="stock" ? (
                   /* Grouped view: 10 cols matching grouped data rows */
@@ -24212,142 +24262,26 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                   );
                 })}
               </tbody>
-              {groupBy==="stock" ? (
-                /* Grouped tfoot: 10 cols */
-                <tfoot><tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #233066"}}>
-                  <td style={{padding:"8px 4px",width:36}}/>
-                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700}}>TOTAL &middot; {sorted.length}</td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4"}}>{(grandTotalQty||0).toLocaleString("en-IN")}</td>
-                  <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#8a9bc4"}}>{fC(grandTotalInv)}</td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>{fC(grandTotalVal)}</td>
-                  <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}</td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}</td>
-                  <td style={{padding:"8px 9px"}}/>
-                </tr></tfoot>
-              ) : (
-                /* Ungrouped tfoot: 9 cols */
-                <tfoot><tr style={{background:"rgba(10,13,28,0.97)",borderTop:"2px solid #233066"}}>
-                  <td style={{padding:"8px 9px",color:"#4d5f87",fontSize:10,fontWeight:700}}>TOTAL &middot; {sorted.length}</td>
-                  <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4"}}>{(grandTotalQty||0).toLocaleString("en-IN")}</td>
-                  <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px"}}/>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}>{fC(grandTotalVal)}</td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+fC(grandTotalPL):"—"}</td>
-                  <td style={{padding:"8px 9px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:grandTotalPL>=0?"#34d399":"#f87171"}}>{grandTotalInv>0?(grandTotalPL>=0?"+":"")+((grandTotalPL/grandTotalInv)*100).toFixed(1)+"%":"—"}</td>
-                </tr></tfoot>
-              )}
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-
-/* - TAX P&L TAB -
-   FY 2025-26 · Sushil Finance Tax Implication Reports
-   8 clients: JD0C31, JD0A46, JD0V129, JD0R75, JD0M34, JD0R246, JD0P71, JD0H136
-   - */
-/* ═══════════════════════════════════════════════ TAX P/L TAB (REBUILD) */
-function TaxTab() {
-  const [taxView,setTaxView] = React.useState("summary");
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
-
-  /* ── Collect tax data from all accounts ── */
-  const ACCOUNTS = [
-    {name:"Rasiklal HUF", key:"R75",  data:typeof R75_TAX!=="undefined"?R75_TAX:null},
-    {name:"Vasumati",     key:"V129", data:typeof V129_TAX!=="undefined"?V129_TAX:null},
-    {name:"Asha Shah",    key:"A46",  data:typeof A46_TAX!=="undefined"?A46_TAX:null},
-    {name:"Chetan HUF",   key:"C31",  data:null}, /* C31_TAX not yet uploaded */
-    {name:"Praful HUF",   key:"P71",  data:typeof P71_TAX!=="undefined"?P71_TAX:null},
-    {name:"Maya Shah",    key:"M34",  data:typeof M34_TAX!=="undefined"?M34_TAX:null},
-  ].filter(a=>a.data);
-
-  const totalSTCG = ACCOUNTS.reduce((s,a)=>s+(a.data.stcg||a.data.total_st||0),0);
-  const totalLTCG = ACCOUNTS.reduce((s,a)=>s+(a.data.ltcg||a.data.total_lt||0),0);
-  const LTCG_EXEMPT = 125000;
-  const taxableLTCG = Math.max(0, totalLTCG - LTCG_EXEMPT);
-  const estTaxLTCG = Math.round(taxableLTCG * 0.125);
-  const estTaxSTCG = Math.round(totalSTCG * 0.20);
-  const totalTax = estTaxLTCG + estTaxSTCG;
-
-  const VIEWS = [{k:"summary",l:"📊 Summary"},{k:"optimiser",l:"⚡ Optimiser"},{k:"accounts",l:"📋 By Account"}];
-
-  return (
-    <div style={{paddingBottom:24}}>
-      {/* Sub-nav */}
-      <div style={{display:"flex",gap:6,marginBottom:14,borderBottom:"1px solid #1d2545",paddingBottom:10,flexWrap:"wrap"}}>
-        {VIEWS.map(({k,l})=>(
-          <button key={k} onClick={()=>setTaxView(k)}
-            style={{padding:"6px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,
-              background:taxView===k?"#1e3a5f":"#080b18",color:taxView===k?"#7eb8ff":"#3a4a6a"}}>
-            {l}
-          </button>
-        ))}
-      </div>
-
-      {taxView==="summary"&&(
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {/* KPI tiles */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:9}}>
-            {[
-              {l:"Total STCG",v:cr(totalSTCG),c:"#f0b429",sub:"@ 20% tax"},
-              {l:"Total LTCG",v:cr(totalLTCG),c:"#7eb8ff",sub:"@ 12.5% above ₹1.25L"},
-              {l:"LTCG Exempt",v:cr(LTCG_EXEMPT),c:"#34d399",sub:"₹1.25L per year"},
-              {l:"Est. STCG Tax",v:cr(estTaxSTCG),c:"#f87171",sub:"@20%"},
-              {l:"Est. LTCG Tax",v:cr(estTaxLTCG),c:"#f87171",sub:"@12.5%"},
-              {l:"Total Tax Liability",v:cr(totalTax),c:"#ef4444",sub:"FY2025-26 estimate"},
-            ].map(({l,v,c,sub})=>(
-              <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderTop:"2px solid "+c,borderRadius:12,padding:"12px 14px"}}>
-                <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{l}</div>
-                <div style={{fontSize:16,fontWeight:800,color:c,fontFamily:"monospace"}}>{v}</div>
-                <div style={{fontSize:9,color:"#2a3a50",marginTop:3}}>{sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Per-account breakdown */}
-          <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
-            <div style={{padding:"11px 16px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>
-              Tax by Account
-            </div>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-              <thead><tr style={{background:"#0a0e1e"}}>
-                {["Account","Lots","STCG","LTCG","Est. Tax","Taxable LTCG"].map(h=>(
-                  <th key={h} style={{padding:"7px 14px",textAlign:h==="Account"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
-                ))}
-              </tr></thead>
-              <tbody>
-                {ACCOUNTS.map((acct,i)=>{
-                  const stcg = acct.data.stcg||acct.data.total_st||0;
-                  const ltcg = acct.data.ltcg||acct.data.total_lt||0;
-                  const lots = acct.data.lots||(acct.data.detail||[]).length||0;
-                  const txblLT = Math.max(0,ltcg-LTCG_EXEMPT/ACCOUNTS.length);
-                  const tax = Math.round(stcg*0.20 + txblLT*0.125);
-                  return (
-                    <tr key={acct.key} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
-                      <td style={{padding:"9px 14px",fontWeight:600,color:"#c8d0e8"}}>{acct.name}</td>
-                      <td style={{padding:"9px 14px",textAlign:"right",color:"#3a4a6a",fontFamily:"monospace"}}>{lots}</td>
-                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#f0b429",fontWeight:600}}>{cr(stcg)}</td>
-                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff",fontWeight:600}}>{cr(ltcg)}</td>
-                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#f87171",fontWeight:700}}>{cr(tax)}</td>
-                      <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(txblLT)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
               <tfoot><tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
-                <td colSpan={2} style={{padding:"9px 14px",color:"#3a4a6a",fontWeight:700,fontSize:10}}>TOTAL</td>
-                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#f0b429"}}>{cr(totalSTCG)}</td>
-                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalLTCG)}</td>
-                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#ef4444"}}>{cr(totalTax)}</td>
-                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"monospace",color:"#ef4444"}}>{cr(taxableLTCG)}</td>
+                <td style={{padding:"9px 14px",color:"#4d5f87",fontWeight:700,fontSize:10}}>TOTAL · {sorted.length}</td>
+                <td style={{padding:"9px 14px"}}/> 
+                <td style={{padding:"9px 14px"}}/> 
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#8a9bc4"}}>
+                  {sorted.reduce(function(s,r){return s+(r.qty||0);},0).toLocaleString("en-IN")}
+                </td>
+                <td style={{padding:"9px 14px"}}/> 
+                <td style={{padding:"9px 14px"}}/> 
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}> 
+                  {cr(sorted.reduce(function(s,r){return s+(r.val||0);},0))}
+                </td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
+                  color:(function(){var pl=sorted.reduce(function(s,r){return s+(r.pl||0);},0);return pl>=0?"#34d399":"#f87171";}())}}>
+                  {(function(){var pl=sorted.reduce(function(s,r){return s+(r.pl||0);},0),inv=sorted.reduce(function(s,r){return s+(r.inv||0);},0);return inv>0?(pl>=0?"+":"")+cr(Math.abs(pl)):"—";})()}
+                </td>
+                <td style={{padding:"9px 14px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,
+                  color:(function(){var pl=sorted.reduce(function(s,r){return s+(r.pl||0);},0);return pl>=0?"#34d399":"#f87171";}())}}>
+                  {(function(){var pl=sorted.reduce(function(s,r){return s+(r.pl||0);},0),inv=sorted.reduce(function(s,r){return s+(r.inv||0);},0);return inv>0?(pl>=0?"+":"")+((pl/inv)*100).toFixed(1)+"%":"—";})()}
+                </td>
               </tr></tfoot>
             </table>
           </div>
