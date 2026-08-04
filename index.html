@@ -9328,6 +9328,24 @@ function AdvisorTrackerTab() {
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
+  const tagSortFn = function(a, b) {
+    var sm = stockMap || {};
+    var getVal = function(t) { var s=sm[t.stock]||sm[(typeof DISPLAY_NAME_MAP!=="undefined"&&DISPLAY_NAME_MAP[t.stock])||t.stock]||{}; return (s.cmp||0)*(t.qty||0); };
+    var getInv = function(t) { return t.invested||(t.buyPrice||0)*(t.qty||0); };
+    var getPL  = function(t) { return getVal(t)-getInv(t); };
+    var getRet = function(t) { var inv=getInv(t); return inv>0?(getPL(t)/inv):0; };
+    var va, vb;
+    if(tagSortCol==="stock")      { va=a.stock||""; vb=b.stock||""; return tagSortDir*(va<vb?-1:va>vb?1:0); }
+    if(tagSortCol==="qty")        { return tagSortDir*((a.qty||0)-(b.qty||0)); }
+    if(tagSortCol==="buyPrice")   { return tagSortDir*((a.buyPrice||0)-(b.buyPrice||0)); }
+    if(tagSortCol==="invested")   { return tagSortDir*(getInv(a)-getInv(b)); }
+    if(tagSortCol==="value")      { return tagSortDir*(getVal(a)-getVal(b)); }
+    if(tagSortCol==="pl")         { return tagSortDir*(getPL(a)-getPL(b)); }
+    if(tagSortCol==="return")     { return tagSortDir*(getRet(a)-getRet(b)); }
+    if(tagSortCol==="date")       { return tagSortDir*((a.date||"").localeCompare(b.date||"")); }
+    if(tagSortCol==="conviction") { var ord={High:1,Medium:2,Low:3}; return tagSortDir*((ord[a.conviction]||9)-(ord[b.conviction]||9)); }
+    return 0;
+  };
   const stockMap = React.useMemo(()=>{
     const m = {};
     allH.forEach(h=>{ if(h&&h.s&&h.val>0){
@@ -9684,11 +9702,26 @@ function AdvisorTrackerTab() {
             </div>
             <div style={{overflowX:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-                <thead><tr style={{background:"#0a0e1e"}}>{["Stock","Qty","Buy Price","CMP","Invested","Value","P&L","Return","Conviction","Date","Notes"].map(h=>(
-                  <th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Conviction"||h==="Date"||h==="Notes"?"left":"right",color:"#3a4a6a",fontSize:8,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>
-                ))}</tr></thead>
+                <thead><tr style={{background:"#0a0e1e"}}>
+                  {[["Stock","stock",false],["Qty","qty",true],["Buy Price","buyPrice",true],["CMP","cmp",true],
+                    ["Invested","invested",true],["Value","value",true],["P&L","pl",true],["Return","return",true],
+                    ["Conviction","conviction",false],["Date","date",false],["Notes",null,false]].map(function([label,col,right]){
+                    var active = col && tagSortCol===col;
+                    return <th key={label} onClick={col?function(){
+                      if(tagSortCol===col) setTagSortDir(function(d){return d*-1;});
+                      else { setTagSortCol(col); setTagSortDir(right?-1:1); }
+                    }:null}
+                    style={{padding:"7px 12px",textAlign:right?"right":"left",
+                      color:active?"#7eb8ff":"#3a4a6a",fontSize:8,fontWeight:700,
+                      borderBottom:"1px solid #1d2545",textTransform:"uppercase",
+                      whiteSpace:"nowrap",cursor:col?"pointer":"default",
+                      userSelect:"none",background:active?"rgba(30,37,64,0.5)":"transparent"}}>
+                      {label}{col?(active?(tagSortDir<0?" ↓":" ↑"):" ⇅"):""}
+                    </th>;
+                  })}
+                </tr></thead>
                 <tbody>
-                  {advTags.map((t,i)=>(
+                  {[...advTags].sort(tagSortFn).map((t,i)=>(
                     <tr key={t.id} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                       <td style={{padding:"8px 12px",fontWeight:700,color:"#c8d0e8",whiteSpace:"nowrap"}}>{t.stock}</td>
                       <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",color:"#a0aabb"}}>{t.qty.toLocaleString("en-IN")}</td>
@@ -11852,7 +11885,7 @@ function FamilyApp() {
         {/* - LIVE INDICES TICKER - */}
         <GlobalIndicesWidget/>
         
-        <DailyDigest priceVersion={priceVersion} livePrices={livePrices} onStockClick={function(sym){setTab("Stock List");setJumpStock(sym);}}/>
+        <DailyDigest priceVersion={priceVersion} livePrices={livePrices} onStockClick={function(sym){setStockDetail(sym);}}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
           <M label="Equity" value={cr(totalStocks)} sub={_usingLive?"Live prices":"Loading…"} color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="All members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
@@ -25877,6 +25910,8 @@ function WatchlistTab() {
   const [items, setItems] = React.useState(()=>{
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); } catch { return []; }
   });
+  const [tagSortCol, setTagSortCol] = React.useState("stock");
+  const [tagSortDir, setTagSortDir] = React.useState(1);
   const [form, setForm] = React.useState({sym:"",target:"",stop:"",notes:"",conv:"High"});
   const [editing, setEditing] = React.useState(false);
   const save = (list) => { setItems(list); try{localStorage.setItem(STORAGE_KEY,JSON.stringify(list));}catch{} };
