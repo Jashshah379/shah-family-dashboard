@@ -10875,9 +10875,7 @@ function usePullToRefresh(onRefresh) {
 function FamilyApp() {
   const isMobile = useMobile();
   const isTablet = useTablet();
-  const { pulling, pullY, refreshing, THRESHOLD } = usePullToRefresh(React.useCallback(function() {
-    return fetchPrices ? fetchPrices() : Promise.resolve();
-  }, [fetchPrices]));
+
   const [navVisible, setNavVisible] = React.useState(true);
   React.useEffect(function() {
     var lastY = window.pageYOffset || document.documentElement.scrollTop || 0;
@@ -10903,6 +10901,9 @@ function FamilyApp() {
   if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices, countdown: priceCountdown, mktStatus } = useLivePrices();
   const { navs: liveNavs, navStatus } = useLiveNAV();
+  const { pulling, pullY, refreshing, THRESHOLD } = usePullToRefresh(React.useCallback(function() {
+    return fetchPrices ? fetchPrices() : Promise.resolve();
+  }, [fetchPrices]));
 
   /* Apply live NAVs to MEMBER_MF_FOLIOS + COIN_MF_ADDITIONAL */
   React.useEffect(function() {
