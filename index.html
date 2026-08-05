@@ -11163,7 +11163,7 @@ function FamilyApp() {
   ];
 
   return (
-    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw"}}>
+    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw"}}>
 
       {/* - STOCK DETAIL PAGE - */}
       {stockDetail&&(()=>{
@@ -11810,7 +11810,6 @@ function FamilyApp() {
             })()}
           </div>
           {/* Primary Tabs + Sidebar Toggle */}
-          <div style={{height:42,flexShrink:0}}/>{/* spacer for fixed tab-bar */}
           <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",msOverflowStyle:"none",scrollbarWidth:"none",position:"fixed",top:0,left:0,right:0,zIndex:500,background:"rgba(7,10,22,0.97)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid rgba(255,255,255,0.06)",transform:navVisible?"translateY(0)":"translateY(-110%)",transition:"transform 0.2s cubic-bezier(0.4,0,0.2,1)",padding:"5px 18px 6px 18px",boxSizing:"border-box"}}>
             <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
               style={{background:"none",border:"none",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
@@ -18816,7 +18815,7 @@ function PortfolioApp(){
           <div style={{fontSize:11,fontWeight:600,color:S.mt,marginBottom:10}}>Yearly Activity Summary</div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Year","Trades","Bought","Sold","Net","Charges","STT"].map(h=>(
                   <th key={h} style={{padding:"8px 10px",textAlign:h==="Year"?"left":"right",
                     color:S.mt,fontWeight:600,fontSize:10,borderBottom:"1px solid #1e2540",textTransform:"uppercase"}}>{h}</th>
@@ -19145,7 +19144,7 @@ function CASHistoryTab() {
         <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"auto"}}>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:900}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 <th style={{padding:"10px 12px",textAlign:"left",color:"#3a4a6a",fontWeight:600,fontSize:10,letterSpacing:"0.05em",textTransform:"uppercase",borderBottom:"1px solid #1a2035",position:"sticky",left:0,background:"#0a0d1c"}}>Member</th>
                 <th style={{padding:"10px 12px",textAlign:"left",color:"#3a4a6a",fontWeight:600,fontSize:10,letterSpacing:"0.05em",textTransform:"uppercase",borderBottom:"1px solid #1a2035"}}>Type</th>
                 {CAS_DATES.map(d=>(
@@ -19501,7 +19500,7 @@ function BrokerLedgerTab() {
           </div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Date","Type","Narration","Amount"].map(h=>(
                   <th key={h} style={{padding:"10px 14px",textAlign:h==="Amount"?"right":"left",color:"#3a4a6a",fontWeight:600,fontSize:10,letterSpacing:"0.05em",textTransform:"uppercase",borderBottom:"1px solid #1a2035"}}>{h}</th>
                 ))}
@@ -19547,7 +19546,7 @@ function BrokerLedgerTab() {
           <div style={{padding:"12px 16px",borderBottom:"1px solid #1a2035",fontSize:11,color:"#3a4a6a",fontWeight:600}}>Top Holdings · Net Position</div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Stock","Qty","Avg Rate","Value"].map(h=>(
                   <th key={h} style={{padding:"10px 14px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",fontWeight:600,fontSize:10,borderBottom:"1px solid #1a2035",textTransform:"uppercase",letterSpacing:"0.05em"}}>{h}</th>
                 ))}
@@ -19740,7 +19739,7 @@ function PortfolioDetailTab() {
           </div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:500}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Stock",person.demat?"Value":"Qty","Price","Value","% of Equity"].map(h=>(
                   <th key={h} style={{padding:"9px 12px",textAlign:h==="Stock"?"left":"right",color:"#3a4a6a",
                     fontWeight:600,fontSize:10,borderBottom:"1px solid #1a2035",textTransform:"uppercase",letterSpacing:"0.05em"}}>{h}</th>
@@ -19817,7 +19816,7 @@ function PortfolioDetailTab() {
           <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
               <thead>
-                <tr style={{background:"#0a0d1c"}}>
+                <tr style={{background:"#080b18"}}>
                   {["Scheme","Holder","Type","Units","NAV","Invested","Value","P&L","P&L %"].map(h=>(
                     <th key={h} style={{padding:"9px 12px",textAlign:h==="Scheme"||h==="Holder"||h==="Type"?"left":"right",
                       color:"#3a4a6a",fontWeight:600,fontSize:10,borderBottom:"1px solid #1a2035",
@@ -19936,10 +19935,10 @@ function PortfolioDetailTab() {
               </div>
             ))}
           </div>
-          <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden",marginBottom:12}}>
+          <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"clip",marginBottom:12}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
               <thead>
-                <tr style={{background:"#0a0d1c"}}>
+                <tr style={{background:"#080b18"}}>
                   {["Depository Participant","BO ID","ISINs","Value","% Share"].map(h=>(
                     <th key={h} style={{padding:"9px 12px",textAlign:h==="Depository Participant"?"left":"right",
                       color:"#3a4a6a",fontWeight:600,fontSize:10,borderBottom:"1px solid #1a2035",
@@ -20174,7 +20173,7 @@ function InCredTab() {
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:500}}>
               <thead>
-                <tr style={{background:"#0a0d1c"}}>
+                <tr style={{background:"#080b18"}}>
                   <th style={{padding:"8px 10px",textAlign:"center",color:"#3a4a6a",fontWeight:600,fontSize:9,
                     borderBottom:"1px solid #1e2540",width:30}}>#</th>
                   <SH col="name"   label="Security"   right={false}/>
@@ -20222,7 +20221,7 @@ function InCredTab() {
                     {(equityHoldings.reduce((s,h)=>s+h.pct,0)).toFixed(2)}%
                   </td>
                 </tr>
-                {cash&&<tr style={{background:"#0a0d1c"}}>
+                {cash&&<tr style={{background:"#080b18"}}>
                   <td colSpan={3} style={{padding:"6px 10px",color:"#3a4a6a",fontSize:10}}>Cash + Dividend</td>
                   <td style={{padding:"6px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#f59e0b"}}>
                     {fC((cash.val||0)+((div||{}).val||0))}
@@ -20403,7 +20402,7 @@ function KarishmaTab() {
           </div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Stock","Qty","Avg Cost","LTP","Value","P&L","P&L %"].map(h=>(
                   <th key={h} style={{padding:"8px 12px",textAlign:h==="Stock"?"left":"right",
                     color:"#3a4a6a",fontWeight:600,fontSize:10,borderBottom:"1px solid #1a2035",
@@ -20503,7 +20502,7 @@ function KarishmaTab() {
           </div>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Stock","Buy Value","Sell Value","Realised P&L"].map(h=>(
                   <th key={h} style={{padding:"8px 12px",textAlign:h==="Stock"?"left":"right",
                     color:"#3a4a6a",fontWeight:600,fontSize:10,borderBottom:"1px solid #1a2035"}}>{h}</th>
@@ -21145,7 +21144,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
 
       {/* - STOCK GROUP VIEW - */}
       {groupBy==="stock"&&stockGroups&&(
-        <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden",marginBottom:12}}>
+        <div style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,overflow:"clip",marginBottom:12}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #1a2035",display:"flex",alignItems:"center",gap:14}}>
             <button onClick={function(){setSelectionMode(function(v){if(v){setSelectedStocks({});}return !v;});}}
               style={{background:selectionMode?"#1e3a5f":"#0a0e1e",border:"1px solid "+(selectionMode?"#3b82f6":"#1d2545"),
@@ -21438,10 +21437,10 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
-              <thead style={{position:"sticky",top:42,zIndex:10,boxShadow:"0 2px 8px rgba(0,0,0,0.5)"}}>
+              <thead style={{position:"sticky",top:42,zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.8)"}}>
                 {groupBy==="stock" ? (
                   /* Grouped view: 10 cols matching grouped data rows */
-                  <tr style={{background:"#0a0d1c"}}>
+                  <tr style={{background:"#080b18"}}>
                     <th style={{width:36,padding:"8px 4px",background:"rgba(6,8,15,0.9)"}}/>
                     <SH col="sym"    label="Stock"    right={false}/>
                     <SH col="qty"    label="Qty"/>
@@ -21455,7 +21454,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                   </tr>
                 ) : (
                   /* Ungrouped view: 9 cols matching flat rows */
-                  <tr style={{background:"#0a0d1c"}}>
+                  <tr style={{background:"#080b18"}}>
                     <SH col="sym"       label="Stock"      right={false}/>
                     <SH col="member"    label="Member"     right={false}/>
                     <SH col="custodian" label="Custodian"  right={false}/>
@@ -24275,7 +24274,7 @@ function MTFTab() {
         <div style={{overflowX:"auto"}}>
           <table style={{width:"100%",borderCollapse:"collapse",minWidth:480}}>
             <thead>
-              <tr style={{background:"#0a0d1c"}}>
+              <tr style={{background:"#080b18"}}>
                 {["Portfolio Return","Portfolio Gain","− Annual Interest","Net Gain","Return on Own Capital"].map(function(h,i){return(
                   <th key={h} style={{padding:"10px 14px",textAlign:i===0?"center":"right",fontSize:9,color:"#3a4a6a",fontWeight:700,textTransform:"uppercase",borderBottom:"1px solid #1a2035"}}>{h}</th>
                 );})}
