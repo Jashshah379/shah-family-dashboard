@@ -1227,6 +1227,11 @@ function WhatIfTab() {
   const [suggestions, setSuggestions] = React.useState([]);
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
+  var _rawSym = sym;
+  if(sym && typeof sym === "object") {
+    _rawSym = sym.s || sym.sym || "";
+  }
+  var sym = _rawSym;
   var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
 
   const stockMap = React.useMemo(()=>{
@@ -12195,7 +12200,7 @@ function FamilyApp() {
               const stockMap2 = {};
               allH2.forEach(h=>{
                 if(!h||!h.s||!(h.val>0)) return;
-                if(!stockMap2[h.s]) stockMap2[h.s]={sym:h.s,val:0,inv:0,cmp:h.cmp||0,members:new Set()};
+                if(!stockMap2[h.s]) stockMap2[h.s]={sym:h.sym||h.s,val:0,inv:0,cmp:h.cmp||0,members:new Set()};
                 stockMap2[h.s].val+=h.val; stockMap2[h.s].inv+=h.inv;
                 if(h.cmp) stockMap2[h.s].cmp=h.cmp;
                 if(h._member) stockMap2[h.s].members.add(h._member.split(" ")[0]);
@@ -12232,7 +12237,7 @@ function FamilyApp() {
                 return (
                   <div key={keyPrefix+h.sym} onClick={function(){
                       var sym = h.sym||h.s;
-                      var allH = MEMBER_HOLDINGS["ALL_FAMILY"];
+                      var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:MEMBER_HOLDINGS["ALL_FAMILY"]||[]);
                       var rows = allH.filter(function(x){return (x.sym||x.s)===sym;});
                       if(rows.length>0){
                         var members=new Set(rows.map(function(x){return x._member;}));
@@ -15595,15 +15600,16 @@ var RASIKLAL_HUF_ICICI_HOLDINGS = [
 
 
 const JASH_PORTFOLIO_HOLDINGS = [
-  {s:"Borosil Renewables",sym:"BORORENEW",qty:4260.0,avg:664.84,cmp:516.7,val:2201142,inv:2832218,unreal:-631065,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"Coal India",sym:"COALINDIA",qty:9000.0,avg:484.0,cmp:446.2,val:4015800,inv:4356000,unreal:-340200,sector:"METALS"},
-  {s:"Gokaldas Exports",sym:"GOKEX",qty:1563.0,avg:885.67,cmp:655.9,val:1025172,inv:1384302,unreal:-359128,sector:"TEXTILES"},
-  {s:"Happy Forgings",sym:"HAPPYFORGE",qty:6564.0,avg:1102.9,cmp:1351.0,val:8867964,inv:7239436,unreal:1628519,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"IndoStar Capital Finance",sym:"INDOSTAR",qty:4100.0,avg:250.43,cmp:234.0,val:959400,inv:1026763,unreal:-67358,sector:"FINANCIAL SERVICES"},
-  {s:"Liquid BeES",qty:0.024,avg:0.0,cmp:1000.0,val:24,inv:0,unreal:24,sector:"ETF"},
-  {s:"Northern Arc Capital",sym:"NORTHARC",qty:4725.0,avg:271.0,cmp:277.65,val:1311896,inv:1280475,unreal:31421,sector:"FINANCIAL SERVICES"},
-  {s:"Party Cruisers",qty:5000.0,avg:111.0,cmp:99.0,val:495000,inv:555000,unreal:-60000,sector:"SERVICES"},
-  {s:"Sansera Engineering",sym:"SANSERA",qty:6091.0,avg:1338.75,cmp:2861.5,val:17429396,inv:8154326,unreal:9275091,sector:"AUTO ANCILLARY"},
+  {s:"Borosil Renewables",   sym:"BORORENEW",   qty:4260,   avg:664.8374, cmp:559.65,  val:2384109.0,    inv:2832278.0,    unreal:-448098.45, sector:"ENGINEERING & CAPITAL GOODS"},
+  {s:"Coal India",           sym:"COALINDIA",   qty:9000,   avg:484.0,    cmp:415.5,   val:3739500.0,    inv:4356000.0,    unreal:-616500.0,   sector:"ENERGY"},
+  {s:"Gokaldas Exports",     sym:"GOKEX",       qty:1563,   avg:885.6681, cmp:805.7,   val:1259309.1,    inv:1384299.25,   unreal:-124990.15,  sector:"TEXTILES"},
+  {s:"Happy Forgings",       sym:"HAPPYFORGE",  qty:6564,   avg:1102.9014,cmp:1817.0,  val:11929788.0,   inv:7239905.78,   unreal:4687343.0,   sector:"ENGINEERING & CAPITAL GOODS"},
+  {s:"IndoStar Capital",     sym:"INDOSTAR",    qty:5100,   avg:249.1683, cmp:233.7,   val:1191870.0,    inv:1270758.33,   unreal:-78888.3,    sector:"FINANCIAL SERVICES"},
+  {s:"Northern Arc Capital", sym:"NORTHARC",    qty:4725,   avg:271.0,    cmp:285.15,  val:1347333.75,   inv:1280475.0,    unreal:66858.75,    sector:"FINANCIAL SERVICES"},
+  {s:"Party Cruisers",       sym:"PARTYCRUSISM",qty:5000,   avg:111.0,    cmp:85.5,    val:427500.0,     inv:555000.0,     unreal:-127500.0,   sector:"SERVICES"},
+  {s:"Sansera Engineering",  sym:"SANSERA",     qty:6091,   avg:1338.7466,cmp:3742.85, val:22798839.35,  inv:8155519.79,   unreal:14643393.95, sector:"AUTO ANCILLARY"},
+  {s:"SKF India",            sym:"SKFINDUS",    qty:769,    avg:2903.4008,cmp:2739.45, val:2106327.05,   inv:2232405.22,   unreal:-126078.17,  sector:"ENGINEERING & CAPITAL GOODS"},
+  {s:"Wendt India",          sym:"WENDT",       qty:180,    avg:7765.1556,cmp:8052.0,  val:1449360.0,    inv:1397728.01,   unreal:51632.0,     sector:"ENGINEERING & CAPITAL GOODS"}
 ];
 
 const JASH_PORTFOLIO_SUMMARY = {
