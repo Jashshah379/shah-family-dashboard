@@ -83,14 +83,19 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
   
   /* Nav tabs — horizontal scroll, no wrap */
   .tab-bar { 
-    overflow-x: auto !important; 
-    -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap !important; 
-    gap: 2px !important; 
+    display: flex !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    max-width: 100vw !important;
+    gap: 2px !important;
     padding: 4px 6px !important;
-    scrollbar-width: none;
+    scrollbar-width: none !important;
+    box-sizing: border-box !important;
   }
-  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-bar::-webkit-scrollbar { display: none !important; }
+  .tab-bar button, .tab-bar .tb { flex-shrink: 0 !important; }
   .tb { 
     font-size: 9px !important; 
     padding: 5px 9px !important; 
@@ -11781,7 +11786,7 @@ function FamilyApp() {
             })()}
           </div>
           {/* Primary Tabs + Sidebar Toggle */}
-          <div style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:4,msOverflowStyle:"none",scrollbarWidth:"none"} } className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:4}}>
+          <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:2,msOverflowStyle:"none",scrollbarWidth:"none",maxWidth:"100vw"}}>
             <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
               style={{background:"none",border:"none",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
                 cursor:"pointer",padding:"5px 8px",borderRadius:7,fontSize:18,lineHeight:1,flexShrink:0}}>
@@ -21682,7 +21687,7 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
           </div>
           {/* Top dividend payers */}
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginLeft:"auto"}}>
-            {Object.entries(activeSource==="v129"?(V129_DIV_BY_STOCK||{}):(C31_DIV_BY_STOCK||{}))
+            {Object.entries(activeSource==="v129"?(typeof V129_DIV_BY_STOCK!=="undefined"?V129_DIV_BY_STOCK:{}):(typeof C31_DIV_BY_STOCK!=="undefined"?C31_DIV_BY_STOCK:{}))
               .filter(([k])=>k!=="Grand Total")
               .sort((a,b)=>b[1]-a[1]).slice(0,5).map(([stock,amt])=>(
                 <div key={stock} style={{background:"#1a1208",border:"1px solid #2a1f05",
