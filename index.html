@@ -10606,7 +10606,7 @@ function FamilyApp() {
               totalEq={(function(){try{return (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){return h.val>0;}).reduce(function(s,h){return s+(h.val||0);},0);}catch(e){return 0;}})()}
               totalMF={(function(){try{return Object.values(typeof MEMBER_MF_FOLIOS!=="undefined"?MEMBER_MF_FOLIOS:{}).reduce(function(s,a){return s+a.reduce(function(ss,f){return ss+(f.value||f.val||0);},0);},0);}catch(e){return 0;}})()}
               totalBank={(function(){try{return (typeof BANK_ACCOUNTS!=="undefined"?BANK_ACCOUNTS:[]).reduce(function(s,a){return s+(a.balance||0);},0);}catch(e){return 0;}})()}
-              totalMTF={totalOutstanding}/>
+              totalMTF={(function(){try{if(typeof MTF_OUTSTANDING_OVERRIDE!=="undefined"){var t=Object.values(MTF_OUTSTANDING_OVERRIDE).reduce(function(s,v){return s+(typeof v==="number"?v:0);},0);if(t>0)return t;}return 0;}catch(e){return 0;}})()} />
             <button onClick={function(){setShowFreshness(function(v){return !v;});}}
               title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
               style={{position:"relative",flexShrink:0,marginLeft:8,background:"none",border:"none",
