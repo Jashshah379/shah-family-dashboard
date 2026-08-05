@@ -155,6 +155,137 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
   .card-grid { grid-template-columns: 1fr 1fr !important; }
   .main-content { padding: 12px !important; }
 }
+
+/* ══════════════════════════════════════
+   SMOOTH UI/UX — Global polish layer
+   ══════════════════════════════════════ */
+
+/* ── Smooth scroll ── */
+html { scroll-behavior: smooth; }
+
+/* ── Global transitions on interactive elements ── */
+button, [role="button"] {
+  transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease,
+              transform 0.12s ease, box-shadow 0.15s ease !important;
+}
+button:active { transform: scale(0.96) !important; }
+
+/* ── Tab buttons (the main ribbon) ── */
+.tb {
+  transition: background 0.18s ease, color 0.18s ease,
+              box-shadow 0.18s ease !important;
+  position: relative;
+}
+.tb.on {
+  box-shadow: 0 0 12px rgba(126,184,255,0.25) !important;
+}
+.tb:not(.on):hover {
+  background: rgba(126,184,255,0.08) !important;
+  color: #7eb8ff !important;
+}
+
+/* ── Card hover lift ── */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+  cursor: pointer;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+
+/* ── All clickable divs ── */
+[style*="cursor:"pointer""]:not(button):not(.no-hover) {
+  transition: background 0.15s ease, opacity 0.15s ease !important;
+}
+
+/* ── Stock table rows ── */
+tbody tr {
+  transition: background 0.12s ease !important;
+}
+
+/* ── Search input smooth focus ── */
+input[type="text"], input[type="search"], input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+              background 0.2s ease !important;
+  outline: none !important;
+}
+input:focus {
+  box-shadow: 0 0 0 2px rgba(126,184,255,0.2) !important;
+}
+
+/* ── Popup / modal slide-in ── */
+[style*="position:"fixed""][style*="zIndex:300"],
+[style*="position:"fixed""][style*="zIndex:400"],
+[style*="position:"fixed""][style*="zIndex:500"] {
+  animation: fadeUp 0.22s cubic-bezier(0.4,0,0.2,1) !important;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Sidebar slide animation ── */
+[style*="position:"fixed""][style*="left:0"][style*="bottom:0"] {
+  animation: slideRight 0.22s cubic-bezier(0.4,0,0.2,1) !important;
+}
+@keyframes slideRight {
+  from { transform: translateX(-100%); opacity: 0.8; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+/* ── Expand/collapse rows ── */
+tbody { }
+
+/* ── Number counters ── */
+[style*="JetBrains Mono"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Mover chips pulse on live update ── */
+@keyframes livePulse {
+  0%,100% { box-shadow: none; }
+  50% { box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+}
+
+/* ── Tooltip fade ── */
+[title]:hover::after {
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Scrollbar custom (webkit) ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(126,184,255,0.2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(126,184,255,0.4); }
+
+/* ── Table sort headers ── */
+th[style*="cursor:"pointer""]:hover {
+  color: #7eb8ff !important;
+  background: rgba(126,184,255,0.06) !important;
+}
+
+/* ── Badge pills ── */
+span[style*="borderRadius"] {
+  transition: opacity 0.15s ease !important;
+}
+
+/* ── Loading skeleton shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #0d1122 25%, #111827 50%, #0d1122 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+
 </style>
 </head>
 <body>
@@ -11876,7 +12007,7 @@ function FamilyApp() {
             })()}
           </div>
           {/* Primary Tabs + Sidebar Toggle */}
-          <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",msOverflowStyle:"none",scrollbarWidth:"none",position:"fixed",top:0,left:0,right:0,zIndex:500,background:"rgba(7,10,22,0.97)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid rgba(255,255,255,0.06)",transform:navVisible?"translateY(0)":"translateY(-110%)",transition:"transform 0.2s cubic-bezier(0.4,0,0.2,1)",padding:"5px 18px 6px 18px",boxSizing:"border-box"}}>
+          <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",msOverflowStyle:"none",scrollbarWidth:"none",position:"fixed",top:0,left:0,right:0,zIndex:500,background:"rgba(7,10,22,0.97)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid rgba(255,255,255,0.06)",transform:navVisible?"translateY(0)":"translateY(-110%)",transition:"transform 0.2s cubic-bezier(0.4,0,0.2,1)",willChange:"transform",padding:"5px 18px 6px 18px",boxSizing:"border-box"}}>
             <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
               style={{background:"none",border:"none",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
                 cursor:"pointer",padding:"5px 8px",borderRadius:7,fontSize:18,lineHeight:1,flexShrink:0}}>
@@ -13078,7 +13209,7 @@ function FamilyApp() {
       {tab==="CAS History"&&<CASHistoryTab/>}
       {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
-      {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion} jumpStock={jumpStock} onJumpConsumed={function(){setJumpStock(null);}}/>}
+      {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion} jumpStock={jumpStock} onJumpConsumed={function(){setJumpStock(null);}} onStockClick={function(sym){setStockDetail(sym);}}/>}
       {tab==="MTF"&&<MTFTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
@@ -20646,7 +20777,7 @@ function KarishmaTab() {
    Consolidates every member's equity holdings into one sortable, filterable table.
    Each row shows stock, member, custodian, qty, avg, CMP, value, P&L, P&L%.
    - */
-function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
+function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onStockClick}) {
   const [sortCol, setSortCol] = React.useState("sym");
   const [sortDir, setSortDir] = React.useState(1);
   const [filterMember, setFilterMember] = React.useState("All");
@@ -21162,9 +21293,14 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
                 {movers.map(function(m){
                   var up = m.dayPL >= 0;
                   return (
-                    <div key={m.sym} style={{background:up?"#071a0f":"#1a0707",
+                    <div key={m.sym}
+                      onClick={function(){if(onStockClick)onStockClick(m.sym);}}
+                      style={{background:up?"#071a0f":"#1a0707",
                       border:"1px solid "+(up?"#0d3320":"#331010"),borderRadius:8,
-                      padding:"4px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                      padding:"4px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:1,
+                      cursor:"pointer",transition:"opacity 0.12s"}}
+                      onMouseEnter={function(e){e.currentTarget.style.opacity="0.75";}}
+                      onMouseLeave={function(e){e.currentTarget.style.opacity="1";}}>
                       <div style={{fontSize:10,fontWeight:700,color:"#e8eaf0"}}>{m.sym}</div>
                       <div style={{fontSize:11,fontWeight:800,color:up?"#10b981":"#ef4444",fontFamily:"monospace"}}>
                         {up?"+":""}{fC(m.dayPL)}
@@ -21504,7 +21640,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
-              <thead style={{position:"sticky",top:0,zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.8)"}}>
+              <thead style={{position:"sticky",top:0,zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.8)",willChange:"transform"}}>
                 {groupBy==="stock" ? (
                   /* Grouped view: 10 cols matching grouped data rows */
                   <tr style={{background:"#080b18"}}>
