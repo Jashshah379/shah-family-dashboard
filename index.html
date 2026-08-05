@@ -10822,9 +10822,62 @@ function MembersTab() {
 }
 
 /* ── News Widget — fetches latest headlines for top 40 holdings, refreshes every 15 min ── */
+function usePullToRefresh(onRefresh) {
+  const [pulling, setPulling] = React.useState(false);
+  const [pullY, setPullY] = React.useState(0);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const startY = React.useRef(0);
+  const THRESHOLD = 72;
+
+  React.useEffect(function() {
+    function onTouchStart(e) {
+      if(window.scrollY > 0) return;
+      startY.current = e.touches[0].clientY;
+    }
+    function onTouchMove(e) {
+      if(window.scrollY > 0) { setPulling(false); setPullY(0); return; }
+      var dy = e.touches[0].clientY - startY.current;
+      if(dy > 0 && dy < 160) {
+        setPulling(true);
+        setPullY(Math.min(dy * 0.5, THRESHOLD + 8));
+        if(dy > THRESHOLD * 1.5) e.preventDefault();
+      }
+    }
+    function onTouchEnd() {
+      if(pullY >= THRESHOLD && !refreshing) {
+        setRefreshing(true);
+        setPullY(THRESHOLD);
+        Promise.resolve(onRefresh()).finally(function() {
+          setTimeout(function() {
+            setRefreshing(false);
+            setPulling(false);
+            setPullY(0);
+          }, 600);
+        });
+      } else {
+        setPulling(false);
+        setPullY(0);
+      }
+    }
+    document.addEventListener("touchstart", onTouchStart, {passive:true});
+    document.addEventListener("touchmove", onTouchMove, {passive:false});
+    document.addEventListener("touchend", onTouchEnd);
+    return function() {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [pullY, refreshing, onRefresh]);
+
+  return {pulling, pullY, refreshing, THRESHOLD};
+}
+
 function FamilyApp() {
   const isMobile = useMobile();
   const isTablet = useTablet();
+  const { pulling, pullY, refreshing, THRESHOLD } = usePullToRefresh(React.useCallback(function() {
+    return fetchPrices ? fetchPrices() : Promise.resolve();
+  }, [fetchPrices]));
   const [navVisible, setNavVisible] = React.useState(true);
   React.useEffect(function() {
     var lastY = window.pageYOffset || document.documentElement.scrollTop || 0;
@@ -11163,7 +11216,14 @@ function FamilyApp() {
   ];
 
   return (
-    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw"}}>
+    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"translateY(0)",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
+      {/* ── PULL TO REFRESH INDICATOR ── */}
+      {(pulling||refreshing)&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",zIndex:600,display:"flex",alignItems:"center",gap:8,background:"rgba(15,20,40,0.95)",border:"1px solid rgba(99,102,241,0.3)",borderRadius:20,padding:"6px 14px",fontSize:11,color:"#7eb8ff",backdropFilter:"blur(8px)",transition:"opacity 0.2s"}}>
+        {refreshing
+          ? <><span style={{display:"inline-block",width:12,height:12,border:"2px solid #3b4fd8",borderTopColor:"#7eb8ff",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/><span>Refreshing…</span></>
+          : <><span style={{fontSize:14,transform:pullY>=THRESHOLD?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s",display:"inline-block"}}>↓</span><span>{pullY>=THRESHOLD?"Release to refresh":"Pull to refresh"}</span></>
+        }
+      </div>}
 
       {/* - STOCK DETAIL PAGE - */}
       {stockDetail&&(()=>{
@@ -21229,7 +21289,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
             })}
           </div>
 
-          <div style={{overflowX:"clip"}}>
+          <div style={{overflowX:"auto",overflowY:"auto",maxHeight:"calc(100vh - 130px)",WebkitOverflowScrolling:"touch"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
                 <colgroup>
                   <col style={{width:36}}/>
@@ -21437,11 +21497,11 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
-              <thead style={{position:"sticky",top:42,zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.8)"}}>
+              <thead style={{position:"sticky",top:0,zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.8)"}}>
                 {groupBy==="stock" ? (
                   /* Grouped view: 10 cols matching grouped data rows */
                   <tr style={{background:"#080b18"}}>
-                    <th style={{width:36,padding:"8px 4px",background:"rgba(6,8,15,0.9)"}}/>
+                    <th style={{width:36,padding:"8px 4px",background:"#080b18"}}/>
                     <SH col="sym"    label="Stock"    right={false}/>
                     <SH col="qty"    label="Qty"/>
                     <SH col="avg"    label="Avg Cost"/>
