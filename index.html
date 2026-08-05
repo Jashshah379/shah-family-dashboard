@@ -9410,6 +9410,26 @@ function AdvisorTrackerTab() {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Persistent state ── */
+  const [tagSortCol, setTagSortCol] = React.useState("stock");
+  const [tagSortDir, setTagSortDir] = React.useState(1);
+  const tagSortFn = function(a, b) {
+    var getInv = function(t) { return t.invested||(t.buyPrice||0)*(t.qty||0); };
+    var getVal = function(t,sm) { var s=sm[t.stock]||sm[(typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP[t.stock]:t.stock)||t.stock]||{}; return (s.cmp||0)*(t.qty||0); };
+    var getPL  = function(t,sm) { return getVal(t,sm)-getInv(t); };
+    var getRet = function(t,sm) { var inv=getInv(t); return inv>0?getPL(t,sm)/inv:0; };
+    var sm = (typeof stockMap!=="undefined"&&stockMap)||{};
+    var va, vb;
+    if(tagSortCol==="stock")     { va=a.stock||""; vb=b.stock||""; return tagSortDir*(va<vb?-1:va>vb?1:0); }
+    if(tagSortCol==="qty")       { return tagSortDir*((a.qty||0)-(b.qty||0)); }
+    if(tagSortCol==="buyPrice")  { return tagSortDir*((a.buyPrice||0)-(b.buyPrice||0)); }
+    if(tagSortCol==="invested")  { return tagSortDir*(getInv(a)-getInv(b)); }
+    if(tagSortCol==="value")     { return tagSortDir*(getVal(a,sm)-getVal(b,sm)); }
+    if(tagSortCol==="pl")        { return tagSortDir*(getPL(a,sm)-getPL(b,sm)); }
+    if(tagSortCol==="return")    { return tagSortDir*(getRet(a,sm)-getRet(b,sm)); }
+    if(tagSortCol==="date")      { return tagSortDir*((a.date||"").localeCompare(b.date||"")); }
+    if(tagSortCol==="conviction"){ var ord={High:1,Medium:2,Low:3}; return tagSortDir*((ord[a.conviction]||9)-(ord[b.conviction]||9)); }
+    return 0;
+  };
   const [advisors, setAdvisors] = React.useState(()=>{
     try{
       const s=localStorage.getItem(ADVISOR_STORAGE);
@@ -9454,24 +9474,7 @@ function AdvisorTrackerTab() {
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
-  const tagSortFn = function(a, b) {
-    var sm = stockMap || {};
-    var getVal = function(t) { var s=sm[t.stock]||sm[(typeof DISPLAY_NAME_MAP!=="undefined"&&DISPLAY_NAME_MAP[t.stock])||t.stock]||{}; return (s.cmp||0)*(t.qty||0); };
-    var getInv = function(t) { return t.invested||(t.buyPrice||0)*(t.qty||0); };
-    var getPL  = function(t) { return getVal(t)-getInv(t); };
-    var getRet = function(t) { var inv=getInv(t); return inv>0?(getPL(t)/inv):0; };
-    var va, vb;
-    if(tagSortCol==="stock")      { va=a.stock||""; vb=b.stock||""; return tagSortDir*(va<vb?-1:va>vb?1:0); }
-    if(tagSortCol==="qty")        { return tagSortDir*((a.qty||0)-(b.qty||0)); }
-    if(tagSortCol==="buyPrice")   { return tagSortDir*((a.buyPrice||0)-(b.buyPrice||0)); }
-    if(tagSortCol==="invested")   { return tagSortDir*(getInv(a)-getInv(b)); }
-    if(tagSortCol==="value")      { return tagSortDir*(getVal(a)-getVal(b)); }
-    if(tagSortCol==="pl")         { return tagSortDir*(getPL(a)-getPL(b)); }
-    if(tagSortCol==="return")     { return tagSortDir*(getRet(a)-getRet(b)); }
-    if(tagSortCol==="date")       { return tagSortDir*((a.date||"").localeCompare(b.date||"")); }
-    if(tagSortCol==="conviction") { var ord={High:1,Medium:2,Low:3}; return tagSortDir*((ord[a.conviction]||9)-(ord[b.conviction]||9)); }
-    return 0;
-  };
+
   const stockMap = React.useMemo(()=>{
     const m = {};
     allH.forEach(h=>{ if(h&&h.s&&h.val>0){
@@ -23107,8 +23110,6 @@ function WatchlistTab() {
   const [items, setItems] = React.useState(()=>{
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); } catch { return []; }
   });
-  const [tagSortCol, setTagSortCol] = React.useState("stock");
-  const [tagSortDir, setTagSortDir] = React.useState(1);
   const [form, setForm] = React.useState({sym:"",target:"",stop:"",notes:"",conv:"High"});
   const [editing, setEditing] = React.useState(false);
   const save = (list) => { setItems(list); try{localStorage.setItem(STORAGE_KEY,JSON.stringify(list));}catch{} };
