@@ -8786,7 +8786,13 @@ function StockDetailPanel({ sym, onClose }) {
   /* ── Family holdings of this stock ── */
   const _dm = typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP:{};
   const _symToName = _dm[sym] || sym;
-  const holdings = allH.filter(h => (h.s===sym || h.s===_symToName || h.sym===sym || h._nseSym===sym) && h.val>0);
+  /* Also check SYMBOL_MAP for name→ticker mapping */
+  const _smMap = typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP:{};
+  const _ticker = _smMap[sym] || _smMap[_symToName] || sym;
+  const holdings = allH.filter(h => {
+    if(!h.val || h.val<=0) return false;
+    return h.s===sym || h.s===_symToName || h.sym===sym || h.sym===_ticker || h._nseSym===sym || h._nseSym===_ticker;
+  });
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   const totalInv = holdings.reduce((s,h)=>s+(h.inv||0),0);
   const totalQty = holdings.reduce((s,h)=>s+(h.qty||0),0);
@@ -21840,7 +21846,7 @@ function LiveStocksTab({onStockClick}) {
         {searchResults.length>0&&(
           <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,zIndex:50,maxHeight:300,overflowY:"auto",marginTop:4}}>
             {searchResults.map(s=>(
-              <div key={s.s} onClick={function(){if(onStockClick)onStockClick(s.s||s.sym);}} style={{padding:"9px 16px",borderBottom:"1px solid #0d1020",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div key={s.s} onClick={function(){var _sd=s.s||(s.sym&&(typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP[s.sym]||s.sym:s.sym)); if(_sd&&onStockClick)onStockClick(_sd);}} style={{padding:"9px 16px",borderBottom:"1px solid #0d1020",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontSize:12,fontWeight:600,color:"#c8d0e8"}}>{s.s}</div>
                   <div style={{fontSize:9,color:"#3a4a6a"}}>{s.memberCount} member{s.memberCount!==1?"s":" "} · {s.sector}</div>
@@ -21963,7 +21969,7 @@ function LiveStocksTab({onStockClick}) {
             <div key={title} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:14,overflow:"hidden"}}>
               <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:pos?"#34d399":"#f87171",textTransform:"uppercase",letterSpacing:"0.08em"}}>{title}</div>
               {data.map((h,i)=>(
-                <div key={h.s} onClick={function(){ var _s=h.s; if(onStockClick)onStockClick(_s); }} style={{padding:"9px 14px",borderBottom:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",background:i%2===0?"transparent":"#080a12"}}>
+                <div key={h.s} onClick={function(){ var _s=h.s||(h.sym&&(typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP[h.sym]||h.sym:h.sym)); if(_s&&onStockClick)onStockClick(_s); }} style={{padding:"9px 14px",borderBottom:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",background:i%2===0?"transparent":"#080a12"}}>
                   <div>
                     <div style={{fontSize:11,fontWeight:600,color:"#c8d0e8"}}>{h.s}</div>
                     <div style={{fontSize:9,color:"#3a4a6a"}}>{h.memberCount} member{h.memberCount!==1?"s":""} · {cr(h.val)}</div>
@@ -22006,7 +22012,7 @@ function LiveStocksTab({onStockClick}) {
                 <div style={{fontSize:9,color:"#3a4a6a",marginBottom:8}}>{pct.toFixed(1)}% of equity · inv {cr(sec.inv)}</div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                   {secStocks.slice(0,8).map(s=>(
-                    <span key={s.s} onClick={function(){ var _s=s.s; if(onStockClick)onStockClick(_s); }} style={{fontSize:9,background:"#0a1020",border:"1px solid #1a2035",color:"#7eb8ff",padding:"2px 8px",borderRadius:5,cursor:"pointer",fontWeight:600}}>{s.s}</span>
+                    <span key={s.s} onClick={function(){ var _s=s.s||(s.sym&&(typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP[s.sym]||s.sym:s.sym)); if(_s&&onStockClick)onStockClick(_s); }} style={{fontSize:9,background:"#0a1020",border:"1px solid #1a2035",color:"#7eb8ff",padding:"2px 8px",borderRadius:5,cursor:"pointer",fontWeight:600}}>{s.s}</span>
                   ))}
                   {secStocks.length>8&&<span style={{fontSize:9,color:"#3a4a6a",padding:"2px 4px"}}>+{secStocks.length-8} more</span>}
                 </div>
@@ -22069,7 +22075,7 @@ function LiveStocksTab({onStockClick}) {
               <thead style={{position:"sticky",top:0}}><tr style={{background:"#080a12"}}>{["Stock","Sector","Members","Value","P&L","Return"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Stock"||h==="Sector"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
                 {[...stockMap].sort((a,b)=>b.val-a.val).map((h,i)=>(
-                  <tr key={h.s} onClick={function(){ var _s=h.s; if(onStockClick)onStockClick(_s); }} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12",cursor:"pointer"}}>
+                  <tr key={h.s} onClick={function(){ var _s=h.s||(h.sym&&(typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP[h.sym]||h.sym:h.sym)); if(_s&&onStockClick)onStockClick(_s); }} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12",cursor:"pointer"}}>
                     <td style={{padding:"7px 12px",fontWeight:600,color:"#c8d0e8"}}>{h.s}</td>
                     <td style={{padding:"7px 12px",fontSize:9,color:"#3a5a7a"}}>{h.sector}</td>
                     <td style={{padding:"7px 12px",textAlign:"right",color:"#3a5a7a",fontSize:10}}>{h.memberCount}</td>
