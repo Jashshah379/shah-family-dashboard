@@ -8784,7 +8784,9 @@ function StockDetailPanel({ sym, onClose }) {
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
   /* ── Family holdings of this stock ── */
-  const holdings = allH.filter(h => h.s === sym && h.val > 0);
+  const _dm = typeof DISPLAY_NAME_MAP!=="undefined"?DISPLAY_NAME_MAP:{};
+  const _symToName = _dm[sym] || sym;
+  const holdings = allH.filter(h => (h.s===sym || h.s===_symToName || h.sym===sym || h._nseSym===sym) && h.val>0);
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   const totalInv = holdings.reduce((s,h)=>s+(h.inv||0),0);
   const totalQty = holdings.reduce((s,h)=>s+(h.qty||0),0);
@@ -21839,7 +21841,7 @@ function LiveStocksTab({onStockClick}) {
         {searchResults.length>0&&(
           <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,zIndex:50,maxHeight:300,overflowY:"auto",marginTop:4}}>
             {searchResults.map(s=>(
-              <div key={s.s} onClick={function(){if(onStockClick)(onStockClick)(s.sym||s.s);}} style={{padding:"9px 16px",borderBottom:"1px solid #0d1020",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div key={s.s} onClick={function(){if(onStockClick)onStockClick(s.s||s.sym);}} style={{padding:"9px 16px",borderBottom:"1px solid #0d1020",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontSize:12,fontWeight:600,color:"#c8d0e8"}}>{s.s}</div>
                   <div style={{fontSize:9,color:"#3a4a6a"}}>{s.memberCount} member{s.memberCount!==1?"s":" "} · {s.sector}</div>
