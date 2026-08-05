@@ -21438,7 +21438,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed}) {
           </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
-              <thead>
+              <thead style={{position:"sticky",top:42,zIndex:10}}>
                 {groupBy==="stock" ? (
                   /* Grouped view: 10 cols matching grouped data rows */
                   <tr style={{background:"#0a0d1c"}}>
