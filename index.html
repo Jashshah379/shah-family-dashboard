@@ -1227,7 +1227,7 @@ function WhatIfTab() {
   const [suggestions, setSuggestions] = React.useState([]);
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
-  const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
+  var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
 
   const stockMap = React.useMemo(()=>{
     const m = {};
@@ -2992,7 +2992,7 @@ function GlobalIndicesWidget() {
 function DailyDigest({priceVersion, livePrices, onStockClick}) {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
-  const allH  = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(h=>h&&h.val>0);
+  const allH  = MEMBER_HOLDINGS["ALL_FAMILY"].filter(h=>h&&h.val>0);
   const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const bank  = (typeof BANK!=="undefined"?BANK:[]);
   const ppf   = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]);
@@ -10438,7 +10438,7 @@ function MembersTab() {
     var mh = typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS : {};
     var arr = mh[m.holdingsRef] || [];
     if (!arr.length) {
-      arr = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){ return h._member===m.n; });
+      arr = MEMBER_HOLDINGS["ALL_FAMILY"].filter(function(h){ return h._member===m.n; });
     }
     /* Normalize: if holding uses sym instead of s, map it */
     return arr.filter(function(h){ return h && h.val > 0; }).map(function(h) {
@@ -11143,7 +11143,7 @@ function FamilyApp() {
   /* Stocks missing CMP */
   var stocksNeedingCmp = React.useMemo(function() {
     var seen = {};
-    return (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[])
+    return MEMBER_HOLDINGS["ALL_FAMILY"]
       .filter(function(h){ return h.s && (!h.cmp || h.cmp===0) && !manualCmp[h.s]; })
       .filter(function(h){ if(seen[h.s]) return false; seen[h.s]=true; return true; })
       .map(function(h){ return h.s; }).sort();
@@ -12232,7 +12232,7 @@ function FamilyApp() {
                 return (
                   <div key={keyPrefix+h.sym} onClick={function(){
                       var sym = h.sym||h.s;
-                      var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
+                      var allH = MEMBER_HOLDINGS["ALL_FAMILY"];
                       var rows = allH.filter(function(x){return (x.sym||x.s)===sym;});
                       if(rows.length>0){
                         var members=new Set(rows.map(function(x){return x._member;}));
@@ -21965,7 +21965,7 @@ function LiveStocksTab({onStockClick}) {
   const cr = (v) => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),sg=v<0?"-":""; if(a>=1e7) return sg+"₹"+(a/1e7).toFixed(2)+" Cr"; if(a>=1e5) return sg+"₹"+(a/1e5).toFixed(1)+" L"; return sg+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const fPct = (v) => v==null?"--":(v>=0?"+":"")+v.toFixed(1)+"%";
 
-  const allHoldings = MEMBER_HOLDINGS["ALL_FAMILY"]||[];
+  var allHoldings = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
   const SECT_C={"BFSI":"#7eb8ff","IT":"#a78bfa","PHARMA":"#34d399","FMCG":"#f0b429","AUTO":"#f87171","ENGG":"#fb923c","METL":"#60a5fa","INFRA":"#4ade80","CHEM":"#e879f9","ENRG":"#facc15","REALTY":"#38bdf8","OTHR":"#94a3b8","Other":"#64748b","TEXTILES":"#f472b6","Power":"#fbbf24","Power Infra":"#34d399","Diversified":"#a78bfa"};
   const getSC = (s) => SECT_C[s]||("#"+Math.abs((s||"").split("").reduce((h,c)=>((h<<5)-h)+c.charCodeAt(0),0)).toString(16).slice(0,6).padEnd(6,"0"));
 
