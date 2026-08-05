@@ -9117,6 +9117,20 @@ function StockDetailPanel({ sym, onClose }) {
                   CMP ₹{cmp.toLocaleString("en-IN")}
                 </span>
               )}
+              {chgPct != null && (
+                <span style={{fontSize:10,fontWeight:700,fontFamily:"monospace",
+                  color:chgPct>=0?"#34d399":"#f87171",
+                  background:chgPct>=0?"rgba(52,211,153,0.1)":"rgba(248,113,113,0.1)",
+                  padding:"2px 8px",borderRadius:5}}>
+                  {chgPct>=0?"▲":"▼"} {Math.abs(chgPct).toFixed(2)}%
+                  {chgAmt != null && <span style={{opacity:0.7}}> ({chgAmt>=0?"+":""}{typeof chgAmt === "number" ? "₹"+Math.abs(chgAmt).toFixed(2) : ""})</span>}
+                </span>
+              )}
+              {prevClose != null && cmp > 0 && (
+                <span style={{fontSize:9,color:"#3a4a6a",fontFamily:"monospace"}}>
+                  Prev ₹{prevClose.toFixed(2)}
+                </span>
+              )}
               {holdings.length === 0 && realisedTrades.length === 0 && (
                 <span style={{fontSize:10,background:"#1a2035",color:"#3a4a6a",padding:"2px 9px",borderRadius:5}}>Not currently held</span>
               )}
@@ -10518,7 +10532,7 @@ function SortableHoldingsTable(props) {
           </tr></thead>
           <tbody>
             {sorted.map(function(h,i){var isGain=h._ret==null||h._ret>=0;return(
-              <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+              <tr key={i} onClick={function(){if(onStockClick){var _s=h.sym||h.s;if(_s)onStockClick(_s);}}} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
                 <td style={{padding:"7px 12px",fontWeight:600,color:"#c8d0e8"}}>
                     <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
                       <span>{h.s}</span>
@@ -10556,7 +10570,7 @@ function SortableHoldingsTable(props) {
 }
 
 
-function MembersTab() {
+function MembersTab({onStockClick}) {
   const [selMem, setSelMem] = React.useState(null);
   const [subTab, setSubTab] = React.useState("equity");
   const [expandedScheme, setExpandedScheme] = React.useState(null);
@@ -10748,7 +10762,7 @@ function MembersTab() {
                       No equity holdings data available
                     </div>
                   ) : (
-                    <SortableHoldingsTable holdings={holdings} cr={cr} sortCol={hSortCol} sortDir={hSortDir} onSort={onHSort}/>
+                    <SortableHoldingsTable holdings={holdings} cr={cr} sortCol={hSortCol} sortDir={hSortDir} onSort={onHSort} onStockClick={onStockClick}/>
                   )}
                 </div>
               )}
@@ -13049,7 +13063,7 @@ function FamilyApp() {
         );
       })()}
 
-      {tab==="Members"&&<MembersTab/>}
+      {tab==="Members"&&<MembersTab onStockClick={function(sym){setStockDetail(sym);}}/>}
 
       {tab==="Bank"&&(()=>{
         const banks=[...new Set(BANK.map(r=>r.bank))];
@@ -14473,7 +14487,7 @@ const CT5294_PNL = [
   {s:"Easy Trip Planners",qty:10,bv:5814.6,sv:5900.0,pl:85.4,pp:1.4687},
   {s:"Eicher Motors",qty:6,bv:16501.0,sv:16740.0,pl:239.0,pp:1.4484},
   {s:"ELECON",qty:5200,bv:2733697.0,sv:2741770.25,pl:8073.25,pp:0.2953},
-  {s:"EMAMILTD",qty:75,bv:37630.0,sv:34699.25,pl:-2930.75,pp:-7.7883},
+  {s:"EMAMILTD",sym:"EMAMILIT",qty:75,bv:37630.0,sv:34699.25,pl:-2930.75,pp:-7.7883},
   {s:"EMBDL",qty:150,bv:15498.5,sv:15750.0,pl:251.5,pp:1.6227},
   {s:"ENGINERSIN",qty:25,bv:1825.0,sv:1956.25,pl:131.25,pp:7.1918},
   {s:"Escorts Kubota",sym:"ESCORTS",qty:5,bv:6020.0,sv:6750.0,pl:730.0,pp:12.1262},
@@ -14666,7 +14680,7 @@ const CT5294_PNL = [
   {s:"Tata Consumer",sym:"TATACONSUM",qty:100,bv:22134.6,sv:22250.0,pl:115.4,pp:0.5214},
   {s:"Tata Consumer",sym:"TATACONSUM",qty:32,bv:20474.3,sv:21291.75,pl:817.45,pp:3.9926},
   {s:"Tata Elxsi",sym:"TATAELXSI",qty:110,bv:323787.0,sv:449162.15,pl:125375.15,pp:38.7215},
-  {s:"Tata Investment",qty:65,bv:70319.95,sv:72047.9,pl:1727.95,pp:2.4573},
+  {s:"Tata Investment",sym:"TATAINVEST",qty:65,bv:70319.95,sv:72047.9,pl:1727.95,pp:2.4573},
   {s:"Tata Metaliks",qty:24,bv:19110.4,sv:19138.0,pl:27.6,pp:0.1444},
   {s:"Tata Motors DVR",qty:1090,bv:221023.55,sv:222475.0,pl:1451.45,pp:0.6567},
   {s:"Tata Power",sym:"TATAPOWER",qty:450,bv:93665.0,sv:98494.0,pl:4829.0,pp:5.1556},
@@ -15050,7 +15064,7 @@ var C31_SUSHIL_HOLDINGS = [
   {s:"Thermax",sym:"THERMAX",qty:200,avg:2114.66,cmp:4134.0,val:826800.0,inv:422932.0,unreal:403868.0},
   {s:"Trent",sym:"TRENT",qty:552,avg:762.02,cmp:3025.2,val:1669910.4,inv:420635.04,unreal:1249275.36},
   {s:"Unichem Labs",sym:"UNICHEMLAB",qty:1500,avg:309.09,cmp:507.0,val:760500.0,inv:463635.0,unreal:296865.0},
-  {s:"Va Tech Wabag",qty:300,avg:1551.03,cmp:1998.0,val:599400.0,inv:465309.0,unreal:134091.0},
+  {s:"Va Tech Wabag",sym:"WABAG",qty:300,avg:1551.03,cmp:1998.0,val:599400.0,inv:465309.0,unreal:134091.0},
   {s:"Valor Estate",sym:"VALOR",qty:1920,avg:136.09,cmp:113.65,val:218208.0,inv:261292.8,unreal:-43084.8},
   {s:"Walchandnagar Industries",sym:"WCL",qty:510,avg:226.82,cmp:231.5,val:118065.0,inv:115678.2,unreal:2386.8},
   {s:"Wockhardt",sym:"WOCKPHARMA",qty:200,avg:1564.09,cmp:2027.0,val:405400.0,inv:312818.0,unreal:92582.0},
@@ -15329,7 +15343,7 @@ var R124_SUSHIL_HOLDINGS = [
   {s:"Ratnaveer Precision",sym:"RATNAVEER",qty:1200,avg:171.25,cmp:206.61,val:247932.0,inv:205500.0,unreal:42432.0},
   {s:"Reliance Power",sym:"RPOWER",qty:282,avg:28.32,cmp:24.05,val:6782.1,inv:7986.24,unreal:-1204.14},
   {s:"Religare Enterprises",sym:"RELIGARE",qty:430,avg:228.92,cmp:261.2,val:112316.0,inv:98435.6,unreal:13880.4},
-  {s:"Rubicon Research",qty:180,avg:1302.54,cmp:1508.9,val:271602.0,inv:234457.2,unreal:37144.8},
+  {s:"Rubicon Research",sym:"RUBICON",qty:180,avg:1302.54,cmp:1508.9,val:271602.0,inv:234457.2,unreal:37144.8},
   {s:"Sagility India",sym:"SAGILITY",qty:9800,avg:50.19,cmp:43.79,val:429142.0,inv:491862.0,unreal:-62720.0},
   {s:"Samvardhana Motherson",sym:"MOTHERSON",qty:4200,avg:80.78,cmp:154.08,val:647136.0,inv:339276.0,unreal:307860.0},
   {s:"Schaeffler India",sym:"SCHAEFFLER",qty:108,avg:3237.04,cmp:4095.9,val:442357.2,inv:349600.32,unreal:92756.88},
@@ -15344,7 +15358,7 @@ var R124_SUSHIL_HOLDINGS = [
   {s:"Thermax",sym:"THERMAX",qty:100,avg:4721.23,cmp:4134.0,val:413400.0,inv:472123.0,unreal:-58723.0},
   {s:"Time Technoplast",sym:"TIMETECHNO",qty:10600,avg:46.11,cmp:209.23,val:2217838.0,inv:488766.0,unreal:1729072.0},
   {s:"Tinna Rubber & Infrastructure",sym:"TINNA",qty:1300,avg:1127.13,cmp:1110.1,val:1443130.0,inv:1465269.0,unreal:-22139.0},
-  {s:"TTK Prestige",qty:82,avg:699.05,cmp:643.3,val:52750.6,inv:57322.1,unreal:-4571.5},
+  {s:"TTK Prestige",sym:"TTKPRESTIG",qty:82,avg:699.05,cmp:643.3,val:52750.6,inv:57322.1,unreal:-4571.5},
   {s:"Ultramarine & Pigments",sym:"ULTRAMARI",qty:999,avg:457.66,cmp:385.0,val:384615.0,inv:457202.34,unreal:-72587.34},
   {s:"Uniparts India",sym:"UNIPARTS",qty:500,avg:428.85,cmp:730.4,val:365200.0,inv:214425.0,unreal:150775.0},
   {s:"Valor Estate",sym:"VALOR",qty:8250,avg:131.1,cmp:113.6,val:937200.0,inv:1081575.0,unreal:-144375.0},
@@ -15553,7 +15567,7 @@ var RAKESH_HUF_HOLDINGS = [
   {s:"GPT Infraprojects",sym:"GPTINFRA",qty:80,avg:142.45,cmp:114.16,val:9132.8,inv:11396.0,unreal:-2263.2},
   {s:"GTL Infrastructure",sym:"GTLINFRA",qty:50000,avg:2.26,cmp:1.31,val:65500.0,inv:113000.0,unreal:-47500.0},
   {s:"Hexa Tradex",sym:"HEXATRADEX",qty:2050,avg:288.97,cmp:157.55,val:322977.5,inv:592388.5,unreal:-269411.0},
-  {s:"Indiabulls",qty:6000,avg:18.41,cmp:27.77,val:166620.0,inv:110460.0,unreal:56160.0},
+  {s:"Indiabulls",sym:"INDIABULL",qty:6000,avg:18.41,cmp:27.77,val:166620.0,inv:110460.0,unreal:56160.0},
   {s:"Inox Wind",sym:"INOXWIND",qty:600,avg:97.57,cmp:79.55,val:47730.0,inv:58542.0,unreal:-10812.0},
   {s:"Jai Balaji Industries",sym:"JAIBALAJI",qty:3600,avg:73.11,cmp:60.59,val:218124.0,inv:263196.0,unreal:-45072.0},
   {s:"Jaiprakash Power Ventures",sym:"JPPOWER",qty:10800,avg:19.91,cmp:18.85,val:203580.0,inv:215028.0,unreal:-11448.0},
