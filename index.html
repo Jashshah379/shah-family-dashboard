@@ -72,6 +72,84 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
   .tab-content { will-change: transform, opacity; }
   /* Prevent layout thrash on price updates */
   [data-price] { min-width: 4em; display: inline-block; }
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media (max-width: 768px) {
+  /* Viewport */
+  html { font-size: 13px; }
+  
+  /* Hide non-essential sidebar elements */
+  .search-bar-desktop { display: none !important; }
+  
+  /* Nav tabs — horizontal scroll, no wrap */
+  .tab-bar { 
+    overflow-x: auto !important; 
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important; 
+    gap: 2px !important; 
+    padding: 4px 6px !important;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tb { 
+    font-size: 9px !important; 
+    padding: 5px 9px !important; 
+    white-space: nowrap;
+    flex-shrink: 0 !important;
+    border-radius: 6px !important;
+  }
+  
+  /* Tables — scroll container */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -8px; padding: 0 8px; }
+  
+  /* Reduce panel padding */
+  .panel, [class*="panel"] { padding: 10px !important; }
+  
+  /* Stack flex rows */
+  .row-flex { flex-direction: column !important; }
+  
+  /* Full width cards */
+  .card { width: 100% !important; }
+  
+  /* Reduce chart heights */
+  .recharts-wrapper { max-height: 180px; }
+
+
+  /* Tab bar — horizontal scroll on mobile */
+  .tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; gap: 2px !important; padding: 6px 8px !important; }
+  .tb { font-size: 9px !important; padding: 6px 10px !important; white-space: nowrap; flex-shrink: 0; }
+  
+  /* Hide sidebar on mobile */
+  .sidebar { display: none !important; }
+  
+  /* Main content full width */
+  .main-content { margin-left: 0 !important; padding: 8px !important; }
+  
+  /* Tables → horizontal scroll */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 700px; }
+  
+  /* Cards stack vertically */
+  .card-grid { grid-template-columns: 1fr !important; }
+  .two-col { flex-direction: column !important; }
+  
+  /* Reduce padding */
+  .panel, .card { padding: 12px !important; }
+  
+  /* Font scale */
+  body { font-size: 12px; }
+}
+
+@media (max-width: 480px) {
+  .tb { font-size: 8px !important; padding: 5px 8px !important; }
+  .panel { padding: 8px !important; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* iPad — 2 col grids */
+  .card-grid { grid-template-columns: 1fr 1fr !important; }
+  .main-content { padding: 12px !important; }
+}
 </style>
 </head>
 <body>
@@ -303,6 +381,29 @@ function getNSEStatus() {
   return { isOpen: false, label: "NSE Closed", sub: "Opens tomorrow 9:15 AM",
     color: "#3a4a6a", refreshSecs: null,
     nextLabel: day === 5 ? "Opens Monday 9:15 AM" : "Opens tomorrow 9:15 AM" };
+}
+
+function useMobile() {
+  const [isMobile, setIsMobile] = React.useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+  React.useEffect(function() {
+    function check() { setIsMobile(window.innerWidth < 768); }
+    window.addEventListener("resize", check);
+    return function() { window.removeEventListener("resize", check); };
+  }, []);
+  return isMobile;
+}
+function useTablet() {
+  const [isTablet, setIsTablet] = React.useState(
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+  React.useEffect(function() {
+    function check() { setIsTablet(window.innerWidth < 1024); }
+    window.addEventListener("resize", check);
+    return function() { window.removeEventListener("resize", check); };
+  }, []);
+  return isTablet;
 }
 
 function useLivePrices() {
@@ -3073,7 +3174,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
       </div>
 
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+      <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10}}>
 
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -10632,7 +10733,7 @@ function MembersTab() {
                   {/* Broker / account info */}
                   <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,padding:"14px 16px"}}>
                     <div style={{fontSize:10,fontWeight:700,color:"#a5b4fc",marginBottom:10}}>🏦 Account Details</div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                    <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10}}>
                       {[
                         {l:"Broker ID",v:m.broker||"—"},
                         {l:"ICICI Account",v:m.icici||"—"},
@@ -10675,7 +10776,7 @@ function MembersTab() {
                     <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
                       <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:9,fontWeight:700,color:"#3b82f6"}}>📘 PPF Account</div>
                       {ppfData.map(function(p,i){return(
-                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                        <div key={i} style={{padding:"10px 14px",display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10}}>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>ACCOUNT NUMBER</div><div style={{fontSize:11,color:"#7eb8ff",fontFamily:"monospace",fontWeight:600}}>{p.acc}</div></div>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>BALANCE</div><div style={{fontSize:11,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>{cr(p.bal)}</div></div>
                           <div><div style={{fontSize:8,color:"#3a4a6a",marginBottom:2}}>OPENED</div><div style={{fontSize:10,color:"#8899bb"}}>{p.opened}</div></div>
@@ -10714,6 +10815,8 @@ function MembersTab() {
 
 /* ── News Widget — fetches latest headlines for top 40 holdings, refreshes every 15 min ── */
 function FamilyApp() {
+  const isMobile = useMobile();
+  const isTablet = useTablet();
   const [hideValues, setHideValues] = React.useState(false);
   if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices, countdown: priceCountdown, mktStatus } = useLivePrices();
@@ -11685,7 +11788,7 @@ function FamilyApp() {
               {sidebarOpen?"✕":"☰"}
             </button>
             {TABS.map(t=>(
-              <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{t}</button>
+              <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{typeof isMobile!=="undefined"&&isMobile&&t.length>8?t.slice(0,7)+"…":t}</button>
             ))}
             <button onClick={function(){setShowFreshness(function(v){return !v;});}}
               title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
@@ -18324,7 +18427,7 @@ function PortfolioApp(){
           {l:"Win rate",v:Math.round(wins/traded.length*100)+"%",s:wins+"/"+traded.length+" symbols",ac:"#9d7bea"},
           {l:"SANSERA ⭐",v:"+₹95.6L",s:"Best open position",ac:"#00c2d4"},
         ]}/>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10,marginBottom:10}}>
           <div style={box()}>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Realised P/L by FY</div>
             <ResponsiveContainer width="100%" height={185}><BarChart data={fyBar}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>Math.abs(v)>=1e5?Math.round(v/1e5)+"L":Math.abs(v)>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>[(v>=0?"+":"")+"₹"+Math.abs(v).toLocaleString("en-IN"),"P/L"]}/><Bar dataKey="pl" radius={[4,4,0,0]}>{fyBar.map((_,i)=><Cell key={i} fill={_.pl>=0?"#00d68f":"#ff4060"}/>)}</Bar></BarChart></ResponsiveContainer>
@@ -18407,7 +18510,7 @@ function PortfolioApp(){
             </div>
           );})}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10,marginBottom:10}}>
           {[["FY24-25",TB3],["FY23-24",TB4]].map(([label,data])=>{
             const top=[...data].sort((a,b)=>b["Realized PL"]-a["Realized PL"]).slice(0,10);
             return <div key={label} style={box()}>
@@ -18416,7 +18519,7 @@ function PortfolioApp(){
             </div>;
           })}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10}}>
           {[["FY24-25",TB3],["FY23-24",TB4]].map(([label,data])=><div key={label}>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{label}</div>
             <div style={{background:S.cd,border:"1px solid "+S.bd,borderRadius:9,overflow:"hidden"}}>
@@ -18437,7 +18540,7 @@ function PortfolioApp(){
           {l:"FY25-26",v:fL(_DT["FY25-26"]||0),s:"5 payments",ac:S.mt},
           {l:"Top payer",v:Object.entries(divSym).sort((a,b)=>b[1]-a[1])[0]&&([][0])[0]||"—",s:fL(Object.entries(divSym).sort((a,b)=>b[1]-a[1])[0]&&([][0])[1]||0),ac:S.gn},
         ]}/>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10,marginBottom:10}}>
           <div style={box(0)}><div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Dividends by FY</div><ResponsiveContainer width="100%" height={145}><BarChart data={dvBar}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e5?Math.round(v/1e5)+"L":v>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>["₹"+v.toLocaleString("en-IN"),"Dividends"]}/><Bar dataKey="v" fill="#f5a623" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
           <div style={box(0)}><div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Top 8 payers</div><ResponsiveContainer width="100%" height={145}><BarChart data={Object.entries(divSym).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,v])=>({name,v:Math.round(v)}))}><XAxis dataKey="name" tick={ax} axisLine={false} tickLine={false}/><YAxis tick={ax} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e3?Math.round(v/1e3)+"k":v}/><Tooltip {...tt} formatter={(v)=>["₹"+v.toLocaleString("en-IN"),"Amount"]}/><Bar dataKey="v" fill="#f5a623" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
         </div>
@@ -18549,7 +18652,7 @@ function PortfolioApp(){
 
       {/* - LEADERBOARD - */}
       {tab==="lb"&&<div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:typeof isMobile!=="undefined"&&isMobile?"1fr":"1fr 1fr",gap:10,marginBottom:10}}>
           <div>
             <div style={{fontSize:10,color:S.mt,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Top 20 winners</div>
             <div style={{background:S.cd,border:"1px solid "+S.bd,borderRadius:9,overflow:"hidden"}}>
@@ -24155,7 +24258,7 @@ function MTFTab() {
           <div style={{fontSize:9,color:"#3a4a6a"}}>Annual interest: {cr(totalAnnualInt)}</div>
         </div>
         <div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",minWidth:480}}>
             <thead>
               <tr style={{background:"#0a0d1c"}}>
                 {["Portfolio Return","Portfolio Gain","− Annual Interest","Net Gain","Return on Own Capital"].map(function(h,i){return(
