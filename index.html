@@ -7519,6 +7519,9 @@ function StockDetailPanel({ sym, onClose }) {
     return h.s===sym || h.s===_symToName || h.sym===sym || h.sym===_ticker || h._nseSym===sym || h._nseSym===_ticker;
   });
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
+  var chgPct   = holdings.length > 0 ? (holdings[0].chgPct!=null?holdings[0].chgPct:null) : null;
+  var chgAmt   = holdings.length > 0 ? (holdings[0].chgAmt||holdings[0].dayChg||null) : null;
+  var prevClose= holdings.length > 0 ? (holdings[0].prevClose||null) : null;
   const totalInv = holdings.reduce((s,h)=>s+(h.inv||0),0);
   const totalQty = holdings.reduce((s,h)=>s+(h.qty||0),0);
   const totalPL  = totalVal - totalInv;
