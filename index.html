@@ -644,17 +644,17 @@ function CorpActionBanner({corpActions, allSyms}) {
   
   if(collapsed) return (
     <div onClick={function(){setCollapsed(false);}}
-      style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(251,191,36,0.08)",
-        border:"1px solid rgba(251,191,36,0.2)",borderRadius:20,padding:"4px 12px",
-        cursor:"pointer",marginBottom:8,fontSize:10,color:"#f0b429",fontWeight:600}}>
-      🔔 {upcoming.length} upcoming corporate action{upcoming.length>1?"s":""} — tap to expand
+      style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,255,255,0.04)",
+        border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,padding:"3px 10px",
+        cursor:"pointer",marginBottom:6,fontSize:9,color:"#4a5a7a",fontWeight:500}}>
+      🔔 {upcoming.length} corporate action{upcoming.length>1?"s":""} upcoming — tap
     </div>
   );
   
   return (
-    <div style={{background:"rgba(251,191,36,0.08)",border:"1px solid rgba(251,191,36,0.25)",borderRadius:10,
+    <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,
       padding:"8px 14px",marginBottom:10,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-      <span style={{fontSize:12,flexShrink:0}}>🔔</span>
+      <span style={{fontSize:11,flexShrink:0,opacity:0.5}}>🔔</span>
       <div style={{flex:1,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
         {upcoming.map(function(a) {
           var urgency = a._diff===0?"#f87171":a._diff<=3?"#f0b429":"#94a3b8";
@@ -942,7 +942,8 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh, cou
           .hero-resp{font-size:26px!important;}
           .hide-sm{display:none!important;}
         }
-        @keyframes pulseMarquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+        @keyframes pulseMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        .pulse-track{backface-visibility:hidden;-webkit-backface-visibility:hidden;}
         @media(max-width:480px){
           .grid-resp-4{grid-template-columns:repeat(2,1fr)!important;}
           .hero-resp{font-size:20px!important;}
@@ -1522,9 +1523,8 @@ function GlobalIndicesWidget() {
     var s = document.createElement("style");
     s.id = "ticker-kf";
     s.textContent = [
-      "@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}",
-      ".ticker-track{display:flex;animation:marquee 45s linear infinite;will-change:transform;}",
-      ".ticker-track:hover{animation-play-state:paused;}",
+      "@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}",
+      ".ticker-track{display:flex;animation:ticker-scroll 50s linear infinite;will-change:transform;backface-visibility:hidden;}",
     ].join("");
     document.head.appendChild(s);
   }, []);
@@ -1762,7 +1762,6 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:14,position:"relative"}}>
           <div>
             <div style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Shah Family Office</div>
-            <div style={{fontSize:11,color:"#6a7a9a",marginBottom:10}}>{new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</div>
             <div style={{fontSize:11,color:"#a0aabb",marginBottom:3}}>Net Family Wealth <span style={{fontSize:9,opacity:0.6}}>(ex-MTF borrowing)</span></div>
             <div style={{fontSize:"clamp(22px,5vw,38px)",fontWeight:900,letterSpacing:"-0.02em",background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontFamily:"'JetBrains Mono',monospace",transform:shown?"translateY(0)":"translateY(8px)",opacity:shown?1:0,transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)"}}>
               {cr(totalWealth)}
@@ -9909,6 +9908,15 @@ function FamilyApp() {
   ];
 
   return (
+    <React.Fragment>
+    {/* ── STOCK DETAIL PANEL — outside overflow div so position:fixed works on iOS ── */}
+    {stockDetail&&(()=>{
+        var sym = typeof stockDetail === "string" ? stockDetail : (stockDetail.s||stockDetail.sym||"");
+        if(!sym) return null;
+        return <StockDetailPanel key={sym} sym={sym} onClose={function(){setStockDetail(null);}}/>;
+    })()}
+    {/* ── SIDEBAR OVERLAY (fixed, must be outside overflow container) ── */}
+    {sidebarOpen&&<div onClick={function(){setSidebarOpen(false);}} style={{position:"fixed",inset:0,background:"#00000066",zIndex:999}}/>}
     <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"translateY(0)",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
       {/* ── PULL TO REFRESH INDICATOR ── */}
       {(pulling||refreshing)&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",zIndex:600,display:"flex",alignItems:"center",gap:8,background:"rgba(15,20,40,0.95)",border:"1px solid rgba(99,102,241,0.3)",borderRadius:20,padding:"6px 14px",fontSize:11,color:"#7eb8ff",backdropFilter:"blur(8px)",transition:"opacity 0.2s"}}>
@@ -10882,8 +10890,7 @@ function FamilyApp() {
               </div>
             </div>
           </div>
-          <div style={{overflow:"hidden"}} onMouseEnter={function(e){var t=e.currentTarget.querySelector(".pulse-track");if(t)t.style.animationPlayState="paused";}}
-               onMouseLeave={function(e){var t=e.currentTarget.querySelector(".pulse-track");if(t)t.style.animationPlayState="running";}}>
+          <div style={{overflow:"hidden"}}>
             {(()=>{
               /* Top 30 family stocks by VALUE + 5 deterministic "picks of the day" (rotate daily) */
               const allH2 = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
@@ -10968,10 +10975,10 @@ function FamilyApp() {
 
               return (
                 <div style={{display:"flex"}}>
-                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 60s linear infinite"}}>
+                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 50s linear infinite",backfaceVisibility:"hidden"}}>
                     {displayStocks.map((h,i)=>renderCard(h,"a"))}
                   </div>
-                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 60s linear infinite"}}>
+                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 50s linear infinite",backfaceVisibility:"hidden"}}>
                     {displayStocks.map((h,i)=>renderCard(h,"b"))}
                   </div>
                 </div>
@@ -11811,6 +11818,7 @@ function FamilyApp() {
        {tab==="Broker Ledger"&&<BrokerLedgerTab/>}
     
     </div>
+    </React.Fragment>
   );
 }
 
