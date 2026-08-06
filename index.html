@@ -617,70 +617,6 @@ function useLivePrices() {
 
   return {prices, indices, status, lastUpdate, refresh: fetchPrices, countdown, mktStatus};
 }
-function CorpActionBanner({corpActions, allSyms}) {
-  const [dismissed, setDismissed] = React.useState({});
-  const [collapsed, setCollapsed] = React.useState(false);
-  React.useEffect(function() {
-    var t = setTimeout(function(){ setCollapsed(true); }, 15000);
-    return function(){ clearTimeout(t); };
-  }, []);
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  
-  const upcoming = (corpActions||[]).filter(function(a) {
-    if(!a.symbol || !a.exDate) return false;
-    if(!allSyms.has(a.symbol.toUpperCase())) return false;
-    var d = new Date(a.exDate);
-    var diff = Math.round((d - today) / 86400000);
-    return diff >= 0 && diff <= 14 && !dismissed[a.symbol+a.exDate];
-  }).map(function(a) {
-    var d = new Date(a.exDate);
-    var diff = Math.round((d - today) / 86400000);
-    var p = (a.purpose||a.subject||"").replace(/\s+/g,' ').slice(0,60);
-    return {...a, _diff:diff, _purpose:p};
-  }).sort(function(a,b){return a._diff-b._diff;}).slice(0,6);
-  
-  if(!upcoming.length) return null;
-  
-  if(collapsed) return (
-    <div onClick={function(){setCollapsed(false);}}
-      style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,255,255,0.04)",
-        border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,padding:"3px 10px",
-        cursor:"pointer",marginBottom:6,fontSize:9,color:"#4a5a7a",fontWeight:500}}>
-      🔔 {upcoming.length} corporate action{upcoming.length>1?"s":""} upcoming — tap
-    </div>
-  );
-  
-  return (
-    <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,
-      padding:"8px 14px",marginBottom:10,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-      <span style={{fontSize:11,flexShrink:0,opacity:0.5}}>🔔</span>
-      <div style={{flex:1,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-        {upcoming.map(function(a) {
-          var urgency = a._diff===0?"#f87171":a._diff<=3?"#f0b429":"#94a3b8";
-          return (
-            <div key={a.symbol+a.exDate} style={{display:"flex",alignItems:"center",gap:5,
-              background:"rgba(0,0,0,0.2)",borderRadius:6,padding:"3px 8px",cursor:"pointer"}}
-              onClick={function(){setDismissed(function(d){var n={};Object.assign(n,d);n[a.symbol+a.exDate]=1;return n;});}}>
-              <span style={{fontSize:10,fontWeight:700,color:"#e8eaf0"}}>{a.symbol}</span>
-              <span style={{fontSize:9,color:urgency,fontWeight:600}}>
-                {a._diff===0?"TODAY":a._diff===1?"TOMORROW":a._diff+"d"}
-              </span>
-              <span style={{fontSize:9,color:"#64748b"}}>{a._purpose}</span>
-              <span style={{fontSize:9,color:"#3a4a6a",marginLeft:2}}>×</span>
-            </div>
-          );
-        })}
-      </div>
-      <span style={{fontSize:9,color:"#3a4a6a",flexShrink:0}}>Click chip to dismiss</span>
-      <button onClick={function(){setCollapsed(true);}}
-        style={{background:"none",border:"none",cursor:"pointer",color:"#3a4a6a",fontSize:11,padding:"0 4px",flexShrink:0}}
-        title="Collapse">▲</button>
-    </div>
-  );
-}
-
-
 
 function useLiveNAV() {
   const WORKER = "https://noisy-sea-5936.jashshah379.workers.dev/nav";
@@ -1820,8 +1756,20 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                   <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]} <span style={{color:"#1e3a20"}}>→ Stock List</span></div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:12,fontWeight:800,color:"#10b981",fontFamily:"monospace"}}>▲{Math.abs(dispPct||0).toFixed(2)}%</div>
-                  <div style={{fontSize:8,color:"#10b98199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:dispPct>=0?"#10b981":"#f87171",fontFamily:"monospace"}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
+                  <div style={{fontSize:8,color:dispPct>=0?"#10b98199":"#f8717199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
+                  <div style={{display:"flex",gap:4,justifyContent:"flex-end",marginTop:3}}>
+                    {h.chgPct!=null&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
+                      background:h.chgPct>=0?"rgba(16,185,129,0.1)":"rgba(248,113,113,0.1)",
+                      color:h.chgPct>=0?"#10b981":"#f87171",fontFamily:"monospace",fontWeight:600}}>
+                      {h.chgPct>=0?"▲":"▼"}{Math.abs(h.chgPct).toFixed(1)}% today
+                    </span>}
+                    {h.inv>0&&h.val>0&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
+                      background:(h.val-h.inv)>=0?"rgba(16,185,129,0.07)":"rgba(248,113,113,0.07)",
+                      color:(h.val-h.inv)>=0?"#059669":"#dc2626",fontFamily:"monospace",fontWeight:600}}>
+                      {(h.val-h.inv)>=0?"▲":"▼"}{Math.abs((h.val-h.inv)/h.inv*100).toFixed(1)}% overall
+                    </span>}
+                  </div>
                 </div>
               </div>
             );
@@ -7505,6 +7453,19 @@ function BankStatementTab() {
 function StockDetailPanel({ sym, onClose }) {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"—";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+"Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+"L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [view, setView] = React.useState("overview");
+  const [history, setHistory] = React.useState(null);
+  const [histLoading, setHistLoading] = React.useState(false);
+  const WORKER = "https://noisy-sea-5936.jashshah379.workers.dev";
+  React.useEffect(function() {
+    if(!sym) return;
+    var ticker = sym;
+    if(typeof SYMBOL_MAP!=="undefined" && SYMBOL_MAP[sym]) ticker = SYMBOL_MAP[sym];
+    setHistLoading(true);
+    fetch(WORKER + "/history?sym=" + encodeURIComponent(ticker))
+      .then(function(r){return r.json();})
+      .then(function(d){setHistory(d);setHistLoading(false);})
+      .catch(function(){setHistLoading(false);});
+  }, [sym]);
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
@@ -7518,6 +7479,27 @@ function StockDetailPanel({ sym, onClose }) {
     if(!h.val || h.val<=0) return false;
     return h.s===sym || h.s===_symToName || h.sym===sym || h.sym===_ticker || h._nseSym===sym || h._nseSym===_ticker;
   });
+  /* Sparkline renderer */
+  var SparkLine = function(props) {
+    var pts = props.data || [];
+    if(pts.length < 2) return null;
+    var closes = pts.map(function(p){return p.c;});
+    var min = Math.min.apply(null, closes);
+    var max = Math.max.apply(null, closes);
+    var range = max - min || 1;
+    var W=120, H=32, pad=2;
+    var points = closes.map(function(c, i) {
+      var x = pad + (i / (closes.length-1)) * (W - pad*2);
+      var y = H - pad - ((c-min)/range)*(H-pad*2);
+      return x.toFixed(1)+","+y.toFixed(1);
+    }).join(" ");
+    var lastUp = closes[closes.length-1] >= closes[0];
+    return (
+      <svg width={W} height={H} style={{display:"block"}}>
+        <polyline points={points} fill="none" stroke={lastUp?"#34d399":"#f87171"} strokeWidth={1.5} strokeLinejoin="round"/>
+      </svg>
+    );
+  };
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   var chgPct   = holdings.length > 0 ? (holdings[0].chgPct!=null?holdings[0].chgPct:null) : null;
   var chgAmt   = holdings.length > 0 ? (holdings[0].chgAmt||holdings[0].dayChg||null) : null;
@@ -7616,6 +7598,24 @@ function StockDetailPanel({ sym, onClose }) {
                 <span style={{fontSize:9,color:"#3a4a6a",fontFamily:"monospace"}}>
                   Prev ₹{prevClose.toFixed(2)}
                 </span>
+              )}
+              {/* ── Historical returns ── */}
+              {histLoading && <span style={{fontSize:9,color:"#3a4a6a"}}>Loading returns…</span>}
+              {history && history.returns && Object.entries(history.returns).map(function(entry) {
+                var label=entry[0], pct=parseFloat(entry[1]);
+                return (
+                  <span key={label} style={{fontSize:9,fontWeight:700,fontFamily:"monospace",
+                    color:pct>=0?"#34d399":"#f87171",
+                    background:pct>=0?"rgba(52,211,153,0.08)":"rgba(248,113,113,0.08)",
+                    padding:"2px 7px",borderRadius:4}}>
+                    {label}: {pct>=0?"▲":"▼"}{Math.abs(pct).toFixed(1)}%
+                  </span>
+                );
+              })}
+              {history && history.sparkline && history.sparkline.length > 1 && (
+                <div style={{marginLeft:8,opacity:0.8}}>
+                  <SparkLine data={history.sparkline}/>
+                </div>
               )}
               {holdings.length === 0 && realisedTrades.length === 0 && (
                 <span style={{fontSize:10,background:"#1a2035",color:"#3a4a6a",padding:"2px 9px",borderRadius:5}}>Not currently held</span>
@@ -9650,9 +9650,7 @@ function FamilyApp() {
     return [...syms];
   }, []);
   const { actions: corpActions, caStatus, refresh: refreshCA } = useCorporateActions(_allNSESyms);
-  const _corpAllSyms = React.useMemo(function(){
-    return new Set((typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).map(function(h){return (h.sym||h.s||"").toUpperCase();}).filter(Boolean));
-  }, []);
+
   const { items: marketNewsItems, status: marketNewsStatus, lastUpdate: marketNewsLastUpdate, refresh: refreshMarketNews } = useMarketNews();
 
   /* ── Patch live prices into holdings data ─────────────────────────────── */
