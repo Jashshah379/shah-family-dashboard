@@ -619,6 +619,11 @@ function useLivePrices() {
 }
 function CorpActionBanner({corpActions, allSyms}) {
   const [dismissed, setDismissed] = React.useState({});
+  const [collapsed, setCollapsed] = React.useState(false);
+  React.useEffect(function() {
+    var t = setTimeout(function(){ setCollapsed(true); }, 15000);
+    return function(){ clearTimeout(t); };
+  }, []);
   const today = new Date();
   today.setHours(0,0,0,0);
   
@@ -636,6 +641,15 @@ function CorpActionBanner({corpActions, allSyms}) {
   }).sort(function(a,b){return a._diff-b._diff;}).slice(0,6);
   
   if(!upcoming.length) return null;
+  
+  if(collapsed) return (
+    <div onClick={function(){setCollapsed(false);}}
+      style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(251,191,36,0.08)",
+        border:"1px solid rgba(251,191,36,0.2)",borderRadius:20,padding:"4px 12px",
+        cursor:"pointer",marginBottom:8,fontSize:10,color:"#f0b429",fontWeight:600}}>
+      🔔 {upcoming.length} upcoming corporate action{upcoming.length>1?"s":""} — tap to expand
+    </div>
+  );
   
   return (
     <div style={{background:"rgba(251,191,36,0.08)",border:"1px solid rgba(251,191,36,0.25)",borderRadius:10,
@@ -658,7 +672,10 @@ function CorpActionBanner({corpActions, allSyms}) {
           );
         })}
       </div>
-      <span style={{fontSize:9,color:"#3a4a6a",flexShrink:0}}>Click to dismiss</span>
+      <span style={{fontSize:9,color:"#3a4a6a",flexShrink:0}}>Click chip to dismiss</span>
+      <button onClick={function(){setCollapsed(true);}}
+        style={{background:"none",border:"none",cursor:"pointer",color:"#3a4a6a",fontSize:11,padding:"0 4px",flexShrink:0}}
+        title="Collapse">▲</button>
     </div>
   );
 }
@@ -1579,6 +1596,7 @@ function GlobalIndicesWidget() {
 
 
 function DailyDigest({priceVersion, livePrices, onStockClick}) {
+  const [gainMode, setGainMode] = React.useState("auto"); /* "auto"|"today"|"overall" */
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = MEMBER_HOLDINGS["ALL_FAMILY"].filter(h=>h&&h.val>0);
@@ -1653,7 +1671,9 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   }, [mems, totalVal]);
 
   /* Top 5 performers and losers — uses live chgPct (today) when available */
-  const hasLivePct = allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
+  const hasLivePct = gainMode==="today" ? true :
+    gainMode==="overall" ? false :
+    allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
   const withRet = allH.filter(function(h){return h.inv>5000&&h.val>0;});
 
   /* Normalise display names → NSE symbol to avoid duplicates ("NOCIL"/"Nocil Limited") */
@@ -1772,7 +1792,18 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
 
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}>{hasLivePct?"📈 Today's Gainers (Live)":"📈 Top Gainers"}</div>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}><span style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                  <span>{hasLivePct?"📈 Today's Gainers":"📈 Top Gainers"}</span>
+                  <span style={{display:"flex",background:"rgba(0,0,0,0.3)",borderRadius:6,overflow:"hidden",border:"1px solid #1d2545"}}>
+                    {[["auto","Auto"],["today","Today"],["overall","All-time"]].map(function(opt){
+                      var active = gainMode===opt[0];
+                      return <button key={opt[0]} onClick={function(e){e.stopPropagation();setGainMode(opt[0]);}}
+                        style={{background:active?"#1e3a5f":"transparent",color:active?"#7eb8ff":"#3a5a7a",
+                          border:"none",padding:"2px 7px",fontSize:8,fontWeight:active?700:500,cursor:"pointer",
+                          transition:"all 0.15s"}}>{opt[1]}</button>;
+                    })}
+                  </span>
+                </span></div>
           {top5.map((h,i)=>{
             var dispPct = hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0);
             var dispLabel = hasLivePct ? "today" : "overall";
@@ -7552,7 +7583,7 @@ function StockDetailPanel({ sym, onClose }) {
   const VIEWS = [{k:"overview",l:"Overview"},{k:"dividends",l:"Dividends"},{k:"pnl",l:"Realised P&L"},{k:"tax",l:"Tax Lots"}];
 
   return (
-    <div style={{position:"fixed",inset:0,background:"#00000088",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.7)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,overscrollBehavior:"contain"}}>
       <div style={{background:"#0a0e1e",border:"1px solid #1d2545",borderRadius:18,width:"100%",maxWidth:800,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}>
 
         {/* Header */}
@@ -9502,95 +9533,31 @@ function usePullToRefresh(onRefresh) {
 }
 
 
-function SectorAllocationChart({holdings}) {
-  var SECT_COLORS = {
-    "BFSI":"#7eb8ff","IT":"#a78bfa","PHARMA":"#34d399","FMCG":"#f0b429",
-    "AUTO":"#f87171","ENGG":"#fb923c","METL":"#60a5fa","INFRA":"#4ade80",
-    "CHEM":"#e879f9","ENRG":"#facc15","REALTY":"#38bdf8","OTHR":"#64748b",
-    "Other":"#64748b","TEXTILES":"#f472b6","Power":"#fbbf24",
-    "AUTO ANCILLARY":"#f87171","ENGINEERING & CAPITAL GOODS":"#fb923c",
-    "FINANCIAL SERVICES":"#7eb8ff","ENERGY":"#facc15","METALS":"#60a5fa",
-  };
-  var byS = {};
-  (holdings||[]).forEach(function(h){
-    if(!h.val||h.val<=0) return;
-    var s = h.sector||h._sector||"Other";
-    byS[s]=(byS[s]||0)+h.val;
-  });
-  var total = Object.values(byS).reduce(function(a,b){return a+b;},0);
-  if(!total) return null;
-  var sectors = Object.entries(byS).sort(function(a,b){return b[1]-a[1];});
-  var top = sectors.slice(0,8);
-  var otherVal = sectors.slice(8).reduce(function(a,b){return a+b[1];},0);
-  if(otherVal>0) top.push(["Other",otherVal]);
-  
-  /* Simple horizontal bar chart */
+function LiveClock() {
+  const [now, setNow] = React.useState(new Date());
+  React.useEffect(function() {
+    var t = setInterval(function(){ setNow(new Date()); }, 1000);
+    return function(){ clearInterval(t); };
+  }, []);
+  var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var day = days[now.getDay()];
+  var date = now.getDate();
+  var mon = months[now.getMonth()];
+  var yr = now.getFullYear();
+  var hh = String(now.getHours()).padStart(2,"0");
+  var mm = String(now.getMinutes()).padStart(2,"0");
+  var ss = String(now.getSeconds()).padStart(2,"0");
   return (
-    <div style={{background:"linear-gradient(155deg,#0d1122,#0a0e1e)",border:"1px solid #1d2545",
-      borderRadius:14,padding:"14px 18px",marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:"#4d5f87",textTransform:"uppercase",
-        letterSpacing:"0.08em",marginBottom:12}}>Sector Allocation</div>
-      {top.map(function(entry,i) {
-        var name=entry[0], val=entry[1];
-        var pct = total>0?(val/total*100):0;
-        var color = SECT_COLORS[name]||("#"+Math.abs(name.split("").reduce(function(h,c){return((h<<5)-h)+c.charCodeAt(0);},0)).toString(16).slice(0,6).padEnd(6,"0"));
-        return (
-          <div key={name} style={{marginBottom:6}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-              <span style={{fontSize:10,color:"#94a3b8",fontWeight:500}}>{name}</span>
-              <span style={{fontSize:10,color:"#c8d0e8",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>
-                {pct.toFixed(1)}%
-              </span>
-            </div>
-            <div style={{height:6,background:"rgba(255,255,255,0.05)",borderRadius:99,overflow:"hidden"}}>
-              <div style={{height:"100%",width:pct+"%",background:color,borderRadius:99,
-                transition:"width 0.8s cubic-bezier(0.4,0,0.2,1)"}}/>
-            </div>
-          </div>
-        );
-      })}
+    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",flexShrink:0,lineHeight:1.2}}>
+      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,
+        color:"#c8d0e8",letterSpacing:"0.04em"}}>
+        {hh}:{mm}<span style={{color:"#f0b429",fontWeight:800}}>:{ss}</span>
+      </span>
+      <span style={{fontSize:9,color:"#3a5a7a",fontWeight:500,letterSpacing:"0.03em"}}>
+        {day}, {date} {mon} {yr}
+      </span>
     </div>
-  );
-}
-
-
-function PDFExportButton({totalEq, totalMF, totalBank, totalMTF, members, livePrices}) {
-  var handleExport = function() {
-    var today = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
-    var totalNet = totalEq + totalMF + totalBank - totalMTF;
-    var snap = document.getElementById("print-snapshot");
-    if(snap) {
-      snap.innerHTML = `
-        <div style="font-family:Arial,sans-serif;color:#111;padding:20px">
-          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #1d2545;padding-bottom:12px;margin-bottom:16px">
-            <div>
-              <div style="font-size:22px;font-weight:900;color:#0a0e1e">Shah Family Wealth</div>
-              <div style="font-size:12px;color:#666">As on ${today}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:28px;font-weight:900;color:#1d4ed8">₹${(totalNet/1e7).toFixed(2)} Cr</div>
-              <div style="font-size:11px;color:#666">Net Worth (excl MTF)</div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-            ${[["Equity Portfolio","₹"+(totalEq/1e7).toFixed(2)+" Cr","#1d4ed8"],
-               ["Mutual Funds","₹"+(totalMF/1e5).toFixed(1)+" L","#059669"],
-               ["Bank Balances","₹"+(totalBank/1e5).toFixed(1)+" L","#d97706"],
-               ["MTF Outstanding","₹"+(totalMTF/1e5).toFixed(1)+" L","#dc2626"]]
-              .map(function(i){return '<div style="background:#f8fafc;border-radius:8px;padding:12px"><div style="font-size:10px;color:#666;margin-bottom:4px">'+i[0]+'</div><div style="font-size:18px;font-weight:800;color:'+i[2]+'">'+i[1]+'</div></div>';}).join("")}
-          </div>
-        </div>
-      `;
-    }
-    window.print();
-  };
-  return (
-    <button onClick={handleExport} title="Export PDF snapshot"
-      style={{background:"rgba(126,184,255,0.1)",border:"1px solid rgba(126,184,255,0.2)",
-        color:"#7eb8ff",borderRadius:8,padding:"5px 12px",cursor:"pointer",
-        fontSize:11,fontWeight:600,display:"flex",alignItems:"center",gap:5}}>
-      📄 Export PDF
-    </button>
   );
 }
 
@@ -10605,11 +10572,8 @@ function FamilyApp() {
             {TABS.map(t=>(
               <button key={t} className={`tb ${tab===t?"on":"off"}`} onClick={()=>setTab(t)}>{typeof isMobile!=="undefined"&&isMobile&&t.length>8?t.slice(0,7)+"…":t}</button>
             ))}
-            <PDFExportButton
-              totalEq={(function(){try{return (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){return h.val>0;}).reduce(function(s,h){return s+(h.val||0);},0);}catch(e){return 0;}})()}
-              totalMF={(function(){try{return Object.values(typeof MEMBER_MF_FOLIOS!=="undefined"?MEMBER_MF_FOLIOS:{}).reduce(function(s,a){return s+a.reduce(function(ss,f){return ss+(f.value||f.val||0);},0);},0);}catch(e){return 0;}})()}
-              totalBank={(function(){try{return (typeof BANK_ACCOUNTS!=="undefined"?BANK_ACCOUNTS:[]).reduce(function(s,a){return s+(a.balance||0);},0);}catch(e){return 0;}})()}
-              totalMTF={(function(){try{if(typeof MTF_OUTSTANDING_OVERRIDE!=="undefined"){var t=Object.values(MTF_OUTSTANDING_OVERRIDE).reduce(function(s,v){return s+(typeof v==="number"?v:0);},0);if(t>0)return t;}return 0;}catch(e){return 0;}})()} />
+            
+            <div style={{marginLeft:"auto",paddingRight:4,flexShrink:0}}><LiveClock/></div>
             <button onClick={function(){setShowFreshness(function(v){return !v;});}}
               title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
               style={{position:"relative",flexShrink:0,marginLeft:8,background:"none",border:"none",
@@ -10785,7 +10749,6 @@ function FamilyApp() {
       
 
       <CorpActionBanner corpActions={corpActions} allSyms={_corpAllSyms}/>
-      <div id="print-snapshot" className="print-only"/>
       {/* ── SIDEBAR OVERLAY ── */}
       {sidebarOpen&&(
         <div style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#07090f",borderRight:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0",boxShadow:"4px 0 24px #00000066"}}>
@@ -10831,7 +10794,6 @@ function FamilyApp() {
         <GlobalIndicesWidget/>
         
         <DailyDigest priceVersion={priceVersion} livePrices={livePrices} onStockClick={function(sym){setStockDetail(sym);}}/>
-        <SectorAllocationChart holdings={typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
           <M label="Equity" value={cr(totalStocks)} sub={_usingLive?"Live prices":"Loading…"} color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
           <M label="Mutual Funds" value={cr(totalMF)} sub="All members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
@@ -20781,97 +20743,7 @@ function LiveStocksTab({onStockClick}) {
       </div>
 
       {/* Stock detail drill-down */}
-      {stockDetail&&(
-        <div style={{background:"linear-gradient(155deg,#0f1a35,#0a0e1f)",border:"1px solid #3a6abf",borderRadius:14,padding:"16px",marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-            <div>
-              <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
-                <div style={{fontSize:20,fontWeight:800,color:"#e8eaf0"}}>{stockDetail.s}</div>
-                {stockDetail.cmp>0&&(
-                  <div style={{display:"flex",alignItems:"center",gap:6,background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,padding:"4px 12px"}}>
-                    <span style={{fontSize:9,color:"#3a4a6a"}}>CMP</span>
-                    <span style={{fontSize:18,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace",letterSpacing:"-0.02em"}}>₹{stockDetail.cmp.toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
-                    {stockDetail.chgPct!=null&&(
-                      <span style={{fontSize:11,fontWeight:700,color:stockDetail.chgPct>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>
-                        {stockDetail.chgPct>=0?"▲":"▼"}{Math.abs(stockDetail.chgPct).toFixed(2)}%
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div style={{display:"flex",gap:8,marginTop:4,flexWrap:"wrap",alignItems:"center"}}>
-                {(()=>{
-                  var symMap = typeof SYMBOL_MAP!=="undefined"?SYMBOL_MAP:{};
-                  var nseSym = symMap[stockDetail.s]||stockDetail.sym||null;
-                  /* Also reverse lookup */
-                  if(!nseSym){
-                    var revEntry = Object.entries(symMap).find(function(e){return e[1]===(stockDetail.s||stockDetail.sym);});
-                    if(revEntry) nseSym = revEntry[1];
-                  }
-                  return nseSym&&nseSym!==stockDetail.s?(
-                    <span style={{fontSize:9,background:"#1e3a5f",color:"#7eb8ff",padding:"2px 8px",borderRadius:4,fontFamily:"monospace",fontWeight:700}}>NSE: {nseSym}</span>
-                  ):null;
-                })()}
-                <span style={{fontSize:9,background:getSC(stockDetail.sector)+"22",color:getSC(stockDetail.sector),padding:"2px 7px",borderRadius:4}}>{stockDetail.sector}</span>
-                <span style={{fontSize:9,color:"#3a4a6a"}}>{stockDetail.memberCount} member{stockDetail.memberCount!==1?"s":""} · {stockDetail.holders.length} position{stockDetail.holders.length!==1?"s":""}</span>
-              </div>
-            </div>
-            <div style={{display:"flex",gap:10,alignItems:"center"}}>
-              <div style={{textAlign:"right"}}>
-                <div style={{fontSize:18,fontWeight:800,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace"}}>{cr(stockDetail.val)}</div>
-                <div style={{fontSize:11,color:stockDetail.plPct>=0?"#34d399":"#f87171",fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fPct(stockDetail.plPct)} · {cr(stockDetail.pl)}</div>
-              </div>
-              <button onClick={function(){ var _s=null; if(onStockClick)onStockClick(_s); }} style={{background:"none",border:"none",cursor:"pointer",color:"#3a4a6a",fontSize:20,padding:"0 4px"}}>×</button>
-            </div>
-          </div>
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-              <thead><tr style={{background:"#080a12"}}>{["Member","Custodian / Account","Qty","Avg Cost","CMP","Value","Unrealised P&L","Return"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Member"||h==="Custodian / Account"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
-              <tbody>
-                {stockDetail.holders.map((h,i)=>{
-                  const ret = h.inv>0?((h.val-h.inv)/h.inv*100):null;
-                  const mem = MEMBERS.filter(Boolean).find(function(m){return m.n===h.member;});
-                  const profile = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES[h.member]:null;
-                  const accCode = ((profile||{})[dematAccounts]||[].find(d=>d.broker===h.custodian)||{}).clientId||"";
-                  return (
-                    <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
-                      <td style={{padding:"9px 12px"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:7}}>
-                          <div style={{width:22,height:22,borderRadius:"50%",background:((mem&&mem.c)||"#7eb8ff"),display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff"}}>{(mem||{}).i||h.member[0]}</div>
-                          <div>
-                            <div style={{fontWeight:600,color:"#c8d0e8",fontSize:11}}>{h.member}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{padding:"9px 12px"}}>
-                        <div style={{fontSize:11,color:"#c8d0e8",fontWeight:600}}>{h.custodian}</div>
-                        {accCode&&<div style={{fontSize:9,color:"#3a5a7a",fontFamily:"'JetBrains Mono',monospace"}}>{accCode}</div>}
-                      </td>
-                      <td style={{padding:"9px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#a0aabb"}}>{h.qty!=null?h.qty.toLocaleString("en-IN"):"—"}</td>
-                      <td style={{padding:"9px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a"}}>{h.avg!=null?"₹"+h.avg.toFixed(2):"—"}</td>
-                      <td style={{padding:"9px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff"}}>{stockDetail.cmp>0?"₹"+stockDetail.cmp:"—"}</td>
-                      <td style={{padding:"9px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(h.val)}</td>
-                      <td style={{padding:"9px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:(h.unreal||0)>=0?"#34d399":"#f87171"}}>{h.inv>0?cr(h.unreal||h.val-h.inv):"—"}</td>
-                      <td style={{padding:"9px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:ret!=null&&ret>=0?"#34d399":"#f87171"}}>{ret!=null?fPct(ret):"—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
-                  <td colSpan={2} style={{padding:"8px 12px",fontWeight:700,color:"#3a4a6a",fontSize:10}}>TOTAL — {stockDetail.holders.length} positions</td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#a0aabb",fontWeight:700}}>{stockDetail.qty.toLocaleString("en-IN")}</td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a"}}>{stockDetail.inv>0?"₹"+(stockDetail.inv/stockDetail.qty).toFixed(2):"—"}</td>
-                  <td/>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#7eb8ff",fontSize:13}}>{cr(stockDetail.val)}</td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:stockDetail.pl>=0?"#34d399":"#f87171"}}>{cr(stockDetail.pl)}</td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:stockDetail.plPct>=0?"#34d399":"#f87171"}}>{fPct(stockDetail.plPct)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      )}
+      
 
       {/* Sub-nav */}
       <div style={{display:"flex",gap:7,marginBottom:14,flexWrap:"wrap"}}>
