@@ -1753,13 +1753,14 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                 onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
                 <div>
                   <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
-                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]} <span style={{color:"#1e3a20"}}>→ Stock List</span></div>
+                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                  {h.cmp>0&&<div style={{fontSize:9,color:"#5a7a9a",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:12,fontWeight:800,color:dispPct>=0?"#10b981":"#f87171",fontFamily:"monospace"}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
                   <div style={{fontSize:8,color:dispPct>=0?"#10b98199":"#f8717199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                   <div style={{display:"flex",gap:4,justifyContent:"flex-end",marginTop:3}}>
-                    {h.chgPct!=null&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
+                    {h.chgPct!=null&&!hasLivePct&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
                       background:h.chgPct>=0?"rgba(16,185,129,0.1)":"rgba(248,113,113,0.1)",
                       color:h.chgPct>=0?"#10b981":"#f87171",fontFamily:"monospace",fontWeight:600}}>
                       {h.chgPct>=0?"▲":"▼"}{Math.abs(h.chgPct).toFixed(1)}% today
@@ -7573,7 +7574,10 @@ function StockDetailPanel({ sym, onClose }) {
         {/* Header */}
         <div style={{padding:"18px 20px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"sticky",top:0,background:"#0a0e1e",zIndex:10}}>
           <div>
-            <div style={{fontSize:20,fontWeight:900,color:"#c8d0e8"}}>{sym}</div>
+            <div style={{fontSize:20,fontWeight:900,color:"#c8d0e8"}}>
+              {(typeof DISPLAY_NAME_MAP!=="undefined"&&DISPLAY_NAME_MAP[sym])||sym}
+            </div>
+            <div style={{fontSize:10,color:"#2a3a5a",fontFamily:"monospace",marginTop:1}}>{sym}</div>
             <div style={{display:"flex",gap:10,marginTop:4,flexWrap:"wrap"}}>
               {holdings.length > 0 && (
                 <span style={{fontSize:10,background:"#0f2a1a",color:"#34d399",padding:"2px 9px",borderRadius:5,fontWeight:700}}>
@@ -7581,8 +7585,8 @@ function StockDetailPanel({ sym, onClose }) {
                 </span>
               )}
               {cmp > 0 && (
-                <span style={{fontSize:10,color:"#3a5a7a",fontFamily:"monospace"}}>
-                  CMP ₹{cmp.toLocaleString("en-IN")}
+                <span style={{fontSize:16,fontWeight:800,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace",letterSpacing:"-0.01em"}}>
+                  ₹{cmp.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
                 </span>
               )}
               {chgPct != null && (
