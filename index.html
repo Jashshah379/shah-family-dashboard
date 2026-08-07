@@ -9598,7 +9598,7 @@ function FamilyApp() {
     (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).forEach(function(h){if(h.sym)syms.add(h.sym);});
     return syms;
   }, []);
-  const { actions: corpActions, caStatus } = useCorporateActions(Array.from(_allNSESymsCA));
+  const { actions: corpActions, caStatus, refresh: refreshCA } = useCorporateActions(Array.from(_allNSESymsCA));
   const { pulling, pullY, refreshing, THRESHOLD } = usePullToRefresh(React.useCallback(function() {
     return fetchPrices ? fetchPrices() : Promise.resolve();
   }, [fetchPrices]));
