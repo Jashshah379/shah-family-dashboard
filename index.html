@@ -9592,6 +9592,13 @@ function FamilyApp() {
   if (typeof window !== "undefined") window.HIDE_VALUES = hideValues;
   const { prices: livePrices, status: priceStatus, lastUpdate: priceLastUpdate, updatedCount: priceCount, fetchPrices, countdown: priceCountdown, mktStatus } = useLivePrices();
   const { navs: liveNavs, navStatus } = useLiveNAV();
+  /* Corp actions — used by CorporateActionsTab (banner removed) */
+  const _allNSESymsCA = React.useMemo(function(){
+    var syms = new Set();
+    (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).forEach(function(h){if(h.sym)syms.add(h.sym);});
+    return syms;
+  }, []);
+  const { actions: corpActions, caStatus } = useCorporateActions(_allNSESymsCA);
   const { pulling, pullY, refreshing, THRESHOLD } = usePullToRefresh(React.useCallback(function() {
     return fetchPrices ? fetchPrices() : Promise.resolve();
   }, [fetchPrices]));
