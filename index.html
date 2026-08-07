@@ -1799,19 +1799,24 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
             return (
               <div key={i}
                 onClick={function(){if(onStockClick) onStockClick(h.s);}}
-                style={{padding:"8px 14px",borderBottom:i<9?"1px solid #0d1f0d":"none",
-                  display:"flex",justifyContent:"space-between",alignItems:"center",
+                style={{padding:"9px 14px",borderBottom:i<9?"1px solid rgba(255,255,255,0.04)":"none",
+                  display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,
                   cursor:"pointer",transition:"background 0.12s"}}
-                onMouseEnter={function(e){e.currentTarget.style.background="#0d2a14";}}
+                onMouseEnter={function(e){e.currentTarget.style.background=dispPct>=0?"rgba(16,185,129,0.05)":"rgba(248,113,113,0.05)";}}
                 onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
-                <div>
-                  <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
-                  <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
+                {/* LEFT: rank + name + member */}
+                <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
+                  <div style={{fontSize:9,fontWeight:700,color:"#1e2d40",width:16,textAlign:"center",flexShrink:0}}>{i+1}</div>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.s}</div>
+                    <div style={{fontSize:8,color:"#3a4a6a",marginTop:1}}>{(h._member||"").split(" ")[0]}</div>
+                  </div>
                 </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:12,fontWeight:800,color:dispPct>=0?"#10b981":"#f87171",fontFamily:"monospace"}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
-                  {h.cmp>0&&<div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",fontFamily:"'JetBrains Mono',monospace"}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
-                  <div style={{fontSize:8,color:dispPct>=0?"#10b98199":"#f8717199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
+                {/* RIGHT: % + CMP + amount */}
+                <div style={{textAlign:"right",flexShrink:0,minWidth:90}}>
+                  <div style={{fontSize:13,fontWeight:800,color:dispPct>=0?"#10b981":"#f87171",fontFamily:"'JetBrains Mono',monospace",lineHeight:1.1}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
+                  {h.cmp>0&&<div style={{fontSize:10,fontWeight:600,color:"#7a9ab8",fontFamily:"'JetBrains Mono',monospace",marginTop:1}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
+                  <div style={{fontSize:8,color:"#4a6a4a",fontFamily:"monospace",marginTop:1}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                   <div style={{display:"flex",gap:4,justifyContent:"flex-end",marginTop:3}}>
                     {h.chgPct!=null&&!hasLivePct&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
                       background:h.chgPct>=0?"rgba(16,185,129,0.1)":"rgba(248,113,113,0.1)",
@@ -7505,7 +7510,7 @@ function BankStatementTab() {
    Shows when user searches a stock — family holdings,
    all dividends received, realised P&L history, tax lots
 ═══════════════════════════════════════════════════════ */
-function StockDetailPanel({ sym, onClose }) {
+function StockDetailPanel({ sym, onClose, livePrices }) {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"—";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+"Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+"L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [view, setView] = React.useState("overview");
   const [history, setHistory] = React.useState(null);
@@ -7563,7 +7568,10 @@ function StockDetailPanel({ sym, onClose }) {
   const totalQty = holdings.reduce((s,h)=>s+(h.qty||0),0);
   const totalPL  = totalVal - totalInv;
   const retPct   = totalInv > 0 ? (totalPL/totalInv*100) : 0;
-  const cmp      = holdings[0] ? (holdings[0].cmp||0) : 0;
+  /* Use live price if available, fall back to stored CMP */
+  var _liveSym = typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[sym] ? SYMBOL_MAP[sym] : sym;
+  var _livePrice = livePrices&&livePrices[_liveSym] ? livePrices[_liveSym].p : null;
+  const cmp = _livePrice || (holdings[0] ? (holdings[0].cmp||0) : 0);
 
   /* ── All dividends received for this stock ── */
   const ALL_DIVS = [
@@ -9719,7 +9727,49 @@ function FamilyApp() {
   /* ── Patch live prices into holdings data ─────────────────────────────── */
   const [manualCmp, setManualCmp] = React.useState({});
 
+  /* ── One-time CMP normalization on mount ──
+     For each NSE ticker, find the best (most recently uploaded) stored CMP
+     and apply it uniformly across all holdings of that stock.
+     This ensures consistent CMP before live prices load. */
   React.useEffect(function() {
+    var ft = typeof FAMILY_TOP!=="undefined" ? FAMILY_TOP : [];
+    var sm = typeof SYMBOL_MAP!=="undefined" ? SYMBOL_MAP : {};
+    /* Build best CMP map: ticker → {cmp, date} */
+    var bestCmp = {};
+    ft.forEach(function(h) {
+      if(!h.cmp||h.cmp<=0) return;
+      var ticker = sm[h.s] || h.sym || h.s;
+      /* Track the highest CMP per ticker (latest uploaded file usually has closest-to-current) */
+      if(!bestCmp[ticker] || h.cmp > bestCmp[ticker]) {
+        bestCmp[ticker] = h.cmp;
+      }
+    });
+    /* Apply best CMP to all holdings missing it or with stale lower values */
+    ft.forEach(function(h) {
+      var ticker = sm[h.s] || h.sym || h.s;
+      var best = bestCmp[ticker];
+      if(best && best > 0 && h.cmp !== best) {
+        h.cmp = best;
+        if(h.qty > 0) h.val = Math.round(best * h.qty);
+      }
+    });
+    /* Also normalize MEMBER_HOLDINGS */
+    if(typeof MEMBER_HOLDINGS!=="undefined") {
+      Object.values(MEMBER_HOLDINGS).forEach(function(arr) {
+        if(!Array.isArray(arr)) return;
+        arr.forEach(function(h) {
+          var ticker = sm[h.s] || h.sym || h.s;
+          var best = bestCmp[ticker];
+          if(best && best > 0 && h.cmp !== best) {
+            h.cmp = best;
+            if(h.qty > 0) h.val = Math.round(best * h.qty);
+          }
+        });
+      });
+    }
+  }, []); /* run once on mount */
+
+    React.useEffect(function() {
     if (!livePrices || Object.keys(livePrices).length === 0) return;
     var symMap = typeof SYMBOL_MAP !== "undefined" ? SYMBOL_MAP : {};
     var stockDb = typeof STOCK_MASTER_DB !== "undefined" ? STOCK_MASTER_DB : {};
@@ -9781,7 +9831,6 @@ function FamilyApp() {
     }
     /* Force re-render by updating a counter */
     setPriceVersion(function(v) { return v + 1; });
-    console.log("Live prices patched into holdings:", Object.keys(livePrices).length);
   }, [livePrices, manualCmp]);
 
   const [tab,setTab]=React.useState("Home");
@@ -9977,7 +10026,7 @@ function FamilyApp() {
     {stockDetail&&(()=>{
         var sym = typeof stockDetail === "string" ? stockDetail : (stockDetail.s||stockDetail.sym||"");
         if(!sym) return null;
-        return <StockDetailPanel key={sym} sym={sym} onClose={function(){setStockDetail(null);}}/>;
+        return <StockDetailPanel key={sym} sym={sym} livePrices={livePrices} onClose={function(){setStockDetail(null);}}/>;
     })()}
     {/* ── SIDEBAR OVERLAY (fixed, must be outside overflow container) ── */}
     {sidebarOpen&&<div onClick={function(){setSidebarOpen(false);}} style={{position:"fixed",inset:0,background:"#00000066",zIndex:999}}/>}
