@@ -1754,10 +1754,10 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                 <div>
                   <div style={{fontSize:10,fontWeight:600,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:130}}>{h.s}</div>
                   <div style={{fontSize:8,color:"#3a4a6a"}}>{(h._member||"").split(" ")[0]}</div>
-                  {h.cmp>0&&<div style={{fontSize:9,color:"#5a7a9a",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{fontSize:12,fontWeight:800,color:dispPct>=0?"#10b981":"#f87171",fontFamily:"monospace"}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
+                  {h.cmp>0&&<div style={{fontSize:10,fontWeight:700,color:"#c8d0e8",fontFamily:"'JetBrains Mono',monospace"}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
                   <div style={{fontSize:8,color:dispPct>=0?"#10b98199":"#f8717199",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
                   <div style={{display:"flex",gap:4,justifyContent:"flex-end",marginTop:3}}>
                     {h.chgPct!=null&&!hasLivePct&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
