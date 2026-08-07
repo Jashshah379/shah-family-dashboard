@@ -7646,11 +7646,24 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                   HELD · {totalQty.toLocaleString("en-IN")} shares
                 </span>
               )}
-              {cmp > 0 && (
-                <span style={{fontSize:16,fontWeight:800,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace",letterSpacing:"-0.01em"}}>
-                  ₹{cmp.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
-                </span>
-              )}
+              {cmp > 0 && (() => {
+                var isLive = _livePrice && _livePrice > 0;
+                return (
+                  <span style={{display:"inline-flex",alignItems:"center",gap:6,
+                    background:"rgba(126,184,255,0.07)",border:"1px solid rgba(126,184,255,0.15)",
+                    borderRadius:8,padding:"4px 12px"}}>
+                    <span style={{fontSize:15,fontWeight:800,color:"#e8eaf0",
+                      fontFamily:"'JetBrains Mono',monospace",letterSpacing:"-0.01em"}}>
+                      ₹{cmp.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
+                    </span>
+                    <span style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:4,
+                      background:isLive?"rgba(52,211,153,0.15)":"rgba(251,191,36,0.12)",
+                      color:isLive?"#34d399":"#f0b429",letterSpacing:"0.04em"}}>
+                      {isLive?"● LIVE":"◌ STORED"}
+                    </span>
+                  </span>
+                );
+              })()}
               {chgPct != null && (
                 <span style={{fontSize:10,fontWeight:700,fontFamily:"monospace",
                   color:chgPct>=0?"#34d399":"#f87171",
@@ -7761,8 +7774,9 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                     </tbody>
                     {holdings.length > 1 && (
                       <tfoot><tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
-                        <td colSpan={3} style={{padding:"7px 12px",color:"#3a4a6a",fontSize:10}}>TOTAL · {holdings.length} accounts</td>
-                        <td colSpan={2}/>
+                        <td colSpan={3} style={{padding:"7px 12px",color:"#3a4a6a",fontSize:10}}>TOTAL · {holdings.length} account{holdings.length>1?"s":""}</td>
+                        <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#c8d0e8"}}>{totalQty.toLocaleString("en-IN")}</td>
+                        <td/>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalVal)}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:totalPL>=0?"#34d399":"#f87171"}}>{cr(totalPL)}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:retPct>=0?"#34d399":"#f87171"}}>{(retPct>=0?"+":"")+retPct.toFixed(1)}%</td>
