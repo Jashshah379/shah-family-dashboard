@@ -1545,7 +1545,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
         var idx = MODES.indexOf(cur);
         return MODES[(idx+1) % MODES.length];
       });
-    }, 8000);
+    }, 25000);
     return function(){ clearInterval(t); };
   }, [autoRotate]);
 
@@ -1816,7 +1816,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                 <div style={{textAlign:"right",flexShrink:0,minWidth:80}}>
                   <div style={{fontSize:12,fontWeight:800,color:"#10b981",fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
                   {h.cmp>0&&<div style={{fontSize:9,color:"#2a5a3a",fontFamily:"'JetBrains Mono',monospace"}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
-                  <div style={{fontSize:8,color:"#1a4a2a",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
+                  <div style={{fontSize:8,color:"#1a4a2a",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt):""}</div>
                   <div style={{display:"flex",gap:4,justifyContent:"flex-end",marginTop:3}}>
                     {h.chgPct!=null&&!hasLivePct&&<span style={{fontSize:7,padding:"1px 5px",borderRadius:3,
                       background:h.chgPct>=0?"rgba(16,185,129,0.1)":"rgba(248,113,113,0.1)",
@@ -1838,7 +1838,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
         {/* Losers */}
         <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:14,overflow:"hidden",display:"flex",flexDirection:"column"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>{gainMode==="1W"?"📉 1-Week Losers":gainMode==="1M"?"📉 1-Month Losers":gainMode==="52W"?"📉 52-Week Losers":hasLivePct?"📉 Today's Losers":"📉 Under Pressure"}</div>
-          {bot5.map((h,i)=>{
+          <div key={gainMode+"l"} style={{animation:"fadeUp 0.3s ease"}}>{bot5.map((h,i)=>{
             var _histR = (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? getHistRet(h,gainMode) : null;
             var dispPct = _histR!=null ? _histR : (hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0));
             var dispLabel = _histR!=null ? gainMode : (hasLivePct ? "today" : "overall");
@@ -1860,16 +1860,15 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                 </div>
                 <div style={{textAlign:"right",flexShrink:0,minWidth:80}}>
                   <div style={{fontSize:12,fontWeight:800,color:"#f87171",fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{dispPct>=0?"▲":"▼"}{Math.abs(dispPct||0).toFixed(2)}%</div>
-                  {h.cmp>0&&<div style={{fontSize:9,color:"#5a2a2a",fontFamily:"'JetBrains Mono',monospace"}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
-                  <div style={{fontSize:8,color:"#4a1a1a",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt)+" "+dispLabel:dispLabel}</div>
+                  {h.cmp>0&&<div style={{fontSize:9,color:"#8a5a5a",fontFamily:"'JetBrains Mono',monospace"}}>₹{h.cmp.toLocaleString("en-IN")}</div>}
+                  <div style={{fontSize:8,color:"#7a3a3a",fontFamily:"monospace"}}>{dispAmt!=null&&dispAmt!==0?(dispAmt>=0?"+":"")+cr(dispAmt):""}</div>
                 </div>
               </div>
             );
           })}
+          </div>
         </div>
       </div>
-
-
       {/* ══ QUICK ACTIONS ══ */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
         {[
@@ -7634,8 +7633,8 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   const VIEWS = [{k:"overview",l:"Overview"},{k:"dividends",l:"Dividends"},{k:"pnl",l:"Realised P&L"},{k:"tax",l:"Tax Lots"}];
 
   return (
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.7)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,overscrollBehavior:"contain"}}>
-      <div style={{background:"#0a0e1e",border:"1px solid #1d2545",borderRadius:18,width:"100%",maxWidth:800,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.7)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16,overscrollBehavior:"contain"}} onClick={function(){onClose();}}>
+      <div style={{background:"#0a0e1e",border:"1px solid #1d2545",borderRadius:18,width:"100%",maxWidth:800,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 80px #00000099"}} onClick={function(e){e.stopPropagation();}}>
 
         {/* Header */}
         <div style={{padding:"18px 20px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"sticky",top:0,background:"#0a0e1e",zIndex:10}}>
