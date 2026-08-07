@@ -1532,7 +1532,42 @@ function GlobalIndicesWidget() {
 
 
 function DailyDigest({priceVersion, livePrices, onStockClick}) {
-  const [gainMode, setGainMode] = React.useState("auto"); /* "auto"|"today"|"overall" */
+  const MODES = ["auto","today","1W","1M","52W","overall"];
+  const [gainMode, setGainMode] = React.useState("auto");
+  const [autoRotate, setAutoRotate] = React.useState(true);
+  const pauseTimer = React.useRef(null);
+
+  /* Auto-rotate every 8s, pause for 20s after manual tap */
+  React.useEffect(function() {
+    if(!autoRotate) return;
+    var t = setInterval(function() {
+      setGainMode(function(cur) {
+        var idx = MODES.indexOf(cur);
+        return MODES[(idx+1) % MODES.length];
+      });
+    }, 8000);
+    return function(){ clearInterval(t); };
+  }, [autoRotate]);
+
+  var handleModeClick = function(mode) {
+    setGainMode(mode);
+    setAutoRotate(false);
+    if(pauseTimer.current) clearTimeout(pauseTimer.current);
+    pauseTimer.current = setTimeout(function(){ setAutoRotate(true); }, 20000);
+  };
+  const [histReturns, setHistReturns] = React.useState({});
+  const [histLoading, setHistLoading] = React.useState(false);
+  const WORKER = "https://noisy-sea-5936.jashshah379.workers.dev";
+  React.useEffect(function() {
+    var allH = (typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]).filter(function(h){return h.sym&&h.val>0;});
+    var syms = [...new Set(allH.map(function(h){return h.sym;}))].slice(0,60);
+    if(!syms.length) return;
+    setHistLoading(true);
+    fetch(WORKER + "/history/batch?syms=" + syms.join(","))
+      .then(function(r){return r.json();})
+      .then(function(d){setHistReturns(d||{});setHistLoading(false);})
+      .catch(function(){setHistLoading(false);});
+  }, []);
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = MEMBER_HOLDINGS["ALL_FAMILY"].filter(h=>h&&h.val>0);
@@ -1607,8 +1642,8 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   }, [mems, totalVal]);
 
   /* Top 5 performers and losers — uses live chgPct (today) when available */
-  const hasLivePct = gainMode==="today" ? true :
-    gainMode==="overall" ? false :
+  const hasLivePct = (gainMode==="today") ? true :
+    (gainMode==="overall"||gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? false :
     allH.some(function(h){return h.chgPct!=null&&h.chgPct!==0;});
   const withRet = allH.filter(function(h){return h.inv>5000&&h.val>0;});
 
@@ -1631,16 +1666,31 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
     }
   });
 
+  var getHistRet = function(h, mode) {
+    var sym = h.sym || h.s;
+    var r = histReturns[sym];
+    if(!r) return null;
+    return r[mode==="1W"?"1W":mode==="1M"?"1M":"52W"];
+  };
+
   const top5 = Object.values(_seenG)
-    .filter(function(h){return hasLivePct?h.chgPct>0:(h.val>h.inv);})
+    .filter(function(h){
+      if(gainMode==="1W"||gainMode==="1M"||gainMode==="52W") { var r=getHistRet(h,gainMode); return r!=null&&r>0; }
+      return hasLivePct?h.chgPct>0:(h.val>h.inv);
+    })
     .sort(function(a,b){
+      if(gainMode==="1W"||gainMode==="1M"||gainMode==="52W") { return (getHistRet(b,gainMode)||0)-(getHistRet(a,gainMode)||0); }
       return hasLivePct ? (b.chgPct-a.chgPct) : (((b.val-b.inv)/b.inv)-((a.val-a.inv)/a.inv));
     }).slice(0,10);
 
   const bot5 = Object.values(_seenL)
-    .filter(function(h){return hasLivePct?h.chgPct<0:(h.val<h.inv);})
+    .filter(function(h){
+      if(gainMode==="1W"||gainMode==="1M"||gainMode==="52W") { var r=getHistRet(h,gainMode); return r!=null&&r<0; }
+      return hasLivePct?h.chgPct<0:(h.val<h.inv);
+    })
     .sort(function(a,b){
-      return hasLivePct ? (a.chgPct-b.chgPct) : (((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv));
+      return (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? ((getHistRet(a,gainMode)||0)-(getHistRet(b,gainMode)||0)) :
+      hasLivePct ? (a.chgPct-b.chgPct) : (((a.val-a.inv)/a.inv)-((b.val-b.inv)/b.inv));
     }).slice(0,10);
 
   /* Member wealth */
@@ -1713,7 +1763,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                 <span style={{display:"flex",alignItems:"center",gap:4,background:totalDayPL>=0?"#10b98115":"#ef444415",borderRadius:6,padding:"3px 10px",border:`1px solid ${totalDayPL>=0?"#10b98133":"#ef444433"}`}}>
                   <span style={{fontSize:8,color:"#8899bb"}}>Today</span>
                   <span style={{fontSize:11,fontWeight:800,color:totalDayPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalDayPL>=0?"+":""}{cr(totalDayPL)}</span>
-                </span>
+                  </span>
               )}
             </div>
           </div>
@@ -1728,21 +1778,24 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
         {/* Gainers */}
         <div style={{background:"linear-gradient(155deg,#0a1a0f,#0d1020)",border:"1px solid #1a3a1a",borderRadius:14,overflow:"hidden",display:"flex",flexDirection:"column"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #1a3a1a",fontSize:10,fontWeight:700,color:"#10b981"}}><span style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
-                  <span>{hasLivePct?"📈 Today's Gainers":"📈 Top Gainers"}</span>
-                  <span style={{display:"flex",background:"rgba(0,0,0,0.3)",borderRadius:6,overflow:"hidden",border:"1px solid #1d2545"}}>
-                    {[["auto","Auto"],["today","Today"],["overall","All-time"]].map(function(opt){
+                  <span>{gainMode==="1W"?"📈 1-Week Gainers":gainMode==="1M"?"📈 1-Month Gainers":gainMode==="52W"?"📈 52-Week Gainers":hasLivePct?"📈 Today's Gainers":"📈 Top Gainers"}</span>
+                  <span style={{display:"flex",alignItems:"center",gap:4}}>
+                    {autoRotate&&<span style={{width:5,height:5,borderRadius:"50%",background:"#34d399",display:"inline-block",animation:"pulse 2s infinite",flexShrink:0}} title="Auto-rotating every 8s"/>}
+                    <span style={{display:"flex",background:"rgba(0,0,0,0.3)",borderRadius:6,overflow:"hidden",border:"1px solid #1d2545"}}>
+                    {[["auto","Auto"],["today","Today"],["1W","1W"],["1M","1M"],["52W","52W"],["overall","All-time"]].map(function(opt){
                       var active = gainMode===opt[0];
-                      return <button key={opt[0]} onClick={function(e){e.stopPropagation();setGainMode(opt[0]);}}
+                      return <button key={opt[0]} onClick={function(e){e.stopPropagation();handleModeClick(opt[0]);}}
                         style={{background:active?"#1e3a5f":"transparent",color:active?"#7eb8ff":"#3a5a7a",
                           border:"none",padding:"2px 7px",fontSize:8,fontWeight:active?700:500,cursor:"pointer",
                           transition:"all 0.15s"}}>{opt[1]}</button>;
                     })}
                   </span>
-                </span></div>
+                </span></span></div>
           {top5.map((h,i)=>{
-            var dispPct = hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0);
-            var dispLabel = hasLivePct ? "today" : "overall";
-            var dispAmt = hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv);
+            var _histR = (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? getHistRet(h,gainMode) : null;
+            var dispPct = _histR!=null ? _histR : (hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0));
+            var dispLabel = _histR!=null ? gainMode : (hasLivePct ? "today" : "overall");
+            var dispAmt = _histR!=null ? null : (hasLivePct ? (h.cmp&&h.qty?(h.chgPct/100*h.cmp*h.qty):h.dayPL) : (h.val-h.inv));
             return (
               <div key={i}
                 onClick={function(){if(onStockClick) onStockClick(h.s);}}
