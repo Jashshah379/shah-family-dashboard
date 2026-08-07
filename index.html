@@ -20030,7 +20030,10 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                               <div style={{fontSize:7,color:"#64748b",marginTop:3,display:"inline-block",background:"rgba(100,116,139,0.12)",borderRadius:3,padding:"1px 5px",letterSpacing:"0.05em",textTransform:"uppercase"}}>{r.custodian}</div>
                             </td>
                             <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#64748b",fontSize:10}}>{r.qty>0?r.qty.toLocaleString("en-IN"):"—"}</td>
-                            <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#b8872a",fontSize:9}}>{r.avg>0?"₹"+r.avg.toFixed(2):"—"}</td>
+                            <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontSize:9}}>
+                              {r.cmp>0&&<div style={{color:"#c8d0e8",fontWeight:600}}>₹{r.cmp.toLocaleString("en-IN")}</div>}
+                              {r.avg>0&&<div style={{color:"#64748b",fontSize:8}}>avg ₹{r.avg.toFixed(0)}</div>}
+                            </td>
                             <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#64748b",fontSize:10}}>{r.inv>0?cr(r.inv):"—"}</td>
                             <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#94a3b8",fontSize:10}}>{cr(r.val)}</td>
                             <td style={{padding:"5px 8px"}}/>
@@ -20564,7 +20567,7 @@ function LiveStocksTab({onStockClick}) {
       if(!m[h.s]) m[h.s]={s:h.s,val:0,inv:0,qty:0,sector:h.sector||"Other",holders:[],cmp:h.cmp||0,avg:0};
       m[h.s].val+=h.val||0; m[h.s].inv+=h.inv||0; m[h.s].qty+=(h.qty||0);
       m[h.s].cmp=h.cmp||m[h.s].cmp;
-      if(h._member) m[h.s].holders.push({member:h._member,custodian:h._custodian,qty:h.qty,avg:h.avg,val:h.val,inv:h.inv,unreal:h.unreal});
+      if(h._member) m[h.s].holders.push({member:h._member,custodian:h._custodian,qty:h.qty,avg:h.avg,cmp:h.cmp,val:h.val,inv:h.inv,unreal:h.unreal,mtf:h._mtf,mtfQty:h._mtfQty});
     });
     return Object.values(m).map(s=>({...s,pl:s.val-s.inv,plPct:s.inv>0?(s.val-s.inv)/s.inv*100:0,memberCount:[...new Set(s.holders.map(h=>h.member))].length}));
   },[]);
