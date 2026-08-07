@@ -9649,8 +9649,6 @@ function FamilyApp() {
       });
     return [...syms];
   }, []);
-  const { actions: corpActions, caStatus, refresh: refreshCA } = useCorporateActions(_allNSESyms);
-
   const { items: marketNewsItems, status: marketNewsStatus, lastUpdate: marketNewsLastUpdate, refresh: refreshMarketNews } = useMarketNews();
 
   /* ── Patch live prices into holdings data ─────────────────────────────── */
@@ -10757,7 +10755,7 @@ function FamilyApp() {
       {/* ── Manual CMP Floating Action Button ── */}
       
 
-      <CorpActionBanner corpActions={corpActions} allSyms={_corpAllSyms}/>
+      
       {/* ── SIDEBAR OVERLAY ── */}
       {sidebarOpen&&(
         <div style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#07090f",borderRight:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0",boxShadow:"4px 0 24px #00000066"}}>
