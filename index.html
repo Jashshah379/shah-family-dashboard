@@ -11645,7 +11645,7 @@ function FamilyApp() {
       {tab==="__REMOVED_PORTFOLIO__"&&<PortfolioDetailTab/>}
       {tab==="Stock List"&&<AllHoldingsTab livePrices={livePrices} priceStatus={priceStatus} priceVersion={priceVersion} jumpStock={jumpStock} onJumpConsumed={function(){setJumpStock(null);}} onStockClick={function(sym){setStockDetail(sym);}}/>}
       {tab==="MTF"&&<MTFTab/>}
-      {tab==="Master Ledger"&&<MasterLedgerTab/>}
+      {tab==="Summary"&&<AccountSummaryTab/>}
       {tab==="Corp Actions"&&<CorporateActionsTab/>}
       {tab==="Holding Period"&&<HoldingPeriodTab/>}
       {tab==="Mutual Funds"&&<MutualFundsTab/>}
@@ -16809,7 +16809,7 @@ const SIDEBAR_SECTIONS = [
   {title:"Portfolio", tabs:["Trend","Meeting Mode"]},
   {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Profiles","Estate","Changelog"]},
 ];
-const TABS = ["Home","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Ledger","MTF","Master Ledger","Advisors"];
+const TABS = ["Home","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Ledger","MTF","Summary","Advisors"];
 const Panel = ({children, title, style}) => (
   <div style={{background:"linear-gradient(155deg,#10142a 0%,#0c1020 100%)",
     border:"1px solid #1c2440",borderRadius:16,padding:"18px 20px",marginBottom:14,
@@ -22648,96 +22648,57 @@ const FD_BONDS = {
 
 
 
-/* ═══════════════════════════ MASTER LEDGER (SUSHIL RECONCILIATION) TAB */
-/* ── Sushil Financial master ledger snapshot (manually pasted by Jash) ────
-   Reference values as reported by Sushil Financial's back-office ledger.
-   Update `asOf` and `rows` whenever a fresh statement is shared. ────────── */
-const SUSHIL_LEDGER_SNAPSHOT = {
-  asOf: "2026-08-07",
-  ultimateValue: 764172052,
-  actualValue:   703560418,
-  newInvestment: -60611634,
-  rows: [
-    {code:"C-31",        name:"Chetan Shah HUF",                 member:"Chetan Shah HUF", value:58534374,  dashKey:"C-31"},
-    {code:"M-34",         name:"Maya C Shah",                     member:"Maya Shah",       value:5359584,   dashKey:"M-34"},
-    {code:"R-124",        name:"Rasiklal Shah",                   member:"Rasiklal Shah",   value:64697141,  dashKey:"R-124"},
-    {code:"R-246",        name:"Riya Shah",                       member:"Riya Shah",       value:23833892,  dashKey:"R-246"},
-    {code:"R-75",         name:"Rasiklal Shah HUF",                member:"Rasiklal HUF",    value:84708367,  dashKey:"R-75"},
-    {code:"V-129",        name:"Vasumati Shah (Sushil)",           member:"Vasumati Shah",   value:59145808,  dashKey:"V-129"},
-    {code:"V-60",         name:"Chetan Shah (V-60)",               member:"Chetan Shah",     value:327580,    dashKey:"V-60"},
-    {code:"A-46",         name:"Asha Shah",                       member:"Asha Shah",       value:53763643,  dashKey:"A-46"},
-    {code:"P-151",        name:"Praful Shah",                     member:"Praful Shah",     value:949534,    dashKey:"P-151"},
-    {code:"P-71",         name:"Praful Shah HUF",                  member:"Praful Shah HUF", value:40723432,  dashKey:"P-71"},
-    {code:"AMIT-ICICI",   name:"Amit Gandhi HUF (ICICI Direct)",   member:"Amit Gandhi HUF", value:23942328,  dashKey:"AMIT-ICICI"},
-    {code:"VR-ICICI",     name:"Vasumati Shah (ICICI-RP)",         member:"Vasumati Shah",   value:129692648, dashKey:"VR-ICICI"},
-    {code:"PR-INCRED",    name:"Praful Shah HUF (InCred)",         member:"Praful Shah HUF", value:11800000,  dashKey:"PR-INCRED"},
-    {code:"CR-IIFL",      name:"Chetan Shah (IIFL)",               member:"Chetan Shah",     value:2395577,   dashKey:"CR-IIFL"},
-    {code:"RM-ICICI",     name:"Rasiklal Shah (ICICI Direct)",     member:"Rasiklal Shah",   value:64928537,  dashKey:"RM-ICICI"},
-    {code:"RMHUF-ICICI",  name:"Rasiklal Shah HUF (ICICI Direct)", member:"Rasiklal HUF",    value:71301516,  dashKey:"RMHUF-ICICI"},
-    {code:"RM-LKP",       name:"Rasiklal Shah (LKP Securities)",   member:"Rasiklal Shah",   value:103561,    dashKey:"RM-LKP"},
-    {code:"MC-ICICI",     name:"Maya Shah (ICICI Direct)",         member:"Maya Shah",       value:6839348,   dashKey:"MC-ICICI"},
-    {code:"AARYA-ICICI",  name:"Aarya Shah (ICICI Direct)",        member:"Aarya Shah",      value:713963,    dashKey:"AARYA-ICICI"},
-    {code:"JS-ICICI",     name:"Jash Shah (ICICI Direct)",         member:"Jash Shah",       value:38638,     dashKey:"JS-ICICI"},
-    {code:"ZERO-CR",      name:"Chetan Shah (Zerodha)",            member:"Chetan Shah",     value:3225680,   invested:3695000,  dashKey:"ZERO-CR"},
-    {code:"ZERO-MC",      name:"Maya Shah (Zerodha)",              member:"Maya Shah",       value:101540,    invested:750000,   dashKey:"ZERO-MC"},
-    {code:"ZERO-RS",      name:"Riya Shah (Zerodha)",              member:"Riya Shah",       value:869183,    invested:329000,   dashKey:"ZERO-RS"},
-    {code:"ZERO-JS",      name:"Jash Shah (Zerodha)",              member:"Jash Shah",       value:50630896,  invested:3800000,  dashKey:"ZERO-JS"},
-    {code:"ZERO-VRS",     name:"Vasumati Shah (Zerodha)",          member:"Vasumati Shah",   value:3642084,   invested:2616165,  dashKey:"ZERO-VRS"},
-    {code:"ZERO-KS",      name:"Karishma Shah (Zerodha)",          member:"Karishma Shah",   value:1903198,   invested:550000,   dashKey:"ZERO-KS"},
-  ],
-};
+/* ═══════════════════════════ ACCOUNT SUMMARY TAB */
+/* Structural map of every sub-account we hold a dedicated holdings array
+   for. No external reference numbers here — every value is computed live
+   from the same arrays that power the rest of the dashboard. */
+const ACCOUNT_SUMMARY_DEFS = [
+  {code:"C-31",        name:"Chetan Shah HUF (Sushil)",          member:"Chetan Shah HUF", custodian:"Sushil Financial", getArr:()=>typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[]},
+  {code:"M-34",         name:"Maya Shah (Sushil)",                 member:"Maya Shah",       custodian:"Sushil Financial", getArr:()=>typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:[]},
+  {code:"R-124",        name:"Rasiklal Shah (Sushil)",             member:"Rasiklal Shah",   custodian:"Sushil Financial", getArr:()=>typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[]},
+  {code:"R-75",         name:"Rasiklal Shah HUF (Sushil)",         member:"Rasiklal HUF",    custodian:"Sushil Financial", getArr:()=>typeof RASIKLAL_HUF_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_HUF_SUSHIL_HOLDINGS:[]},
+  {code:"V-129",        name:"Vasumati Shah (Sushil)",             member:"Vasumati Shah",   custodian:"Sushil Financial", getArr:()=>typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[]},
+  {code:"V-60",         name:"Chetan Shah — V60 (Sushil)",         member:"Chetan Shah",     custodian:"Sushil Financial", getArr:()=>typeof V60_SUSHIL_HOLDINGS!=="undefined"?V60_SUSHIL_HOLDINGS:[]},
+  {code:"A-46",         name:"Asha Shah (Sushil)",                 member:"Asha Shah",       custodian:"Sushil Financial", getArr:()=>typeof ASHA_SUSHIL_HOLDINGS!=="undefined"?ASHA_SUSHIL_HOLDINGS:[]},
+  {code:"P-151",        name:"Praful Shah (Sushil)",               member:"Praful Shah",     custodian:"Sushil Financial", getArr:()=>typeof P151_SUSHIL_HOLDINGS!=="undefined"?P151_SUSHIL_HOLDINGS:[]},
+  {code:"P-71",         name:"Praful Shah HUF (Sushil)",           member:"Praful Shah HUF", custodian:"Sushil Financial", getArr:()=>typeof P71_SUSHIL_HOLDINGS!=="undefined"?P71_SUSHIL_HOLDINGS:[]},
+  {code:"AMIT-ICICI",   name:"Amit Gandhi HUF (ICICI Direct)",     member:"Amit Gandhi HUF", custodian:"ICICI Direct",     getArr:()=>typeof AMIT_HUF_ICICI_HOLDINGS!=="undefined"?AMIT_HUF_ICICI_HOLDINGS:[]},
+  {code:"VR-ICICI",     name:"Vasumati Shah (ICICI Direct)",       member:"Vasumati Shah",   custodian:"ICICI Direct",     getArr:()=>typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[]},
+  {code:"PR-INCRED",    name:"Praful Shah HUF (InCred)",           member:"Praful Shah HUF", custodian:"InCred PMS",       getArr:()=>typeof PRAFUL_HUF_INCRED_HOLDINGS!=="undefined"?PRAFUL_HUF_INCRED_HOLDINGS:[]},
+  {code:"CR-IIFL",      name:"Chetan Shah (Zerodha)",              member:"Chetan Shah",     custodian:"Zerodha",          getArr:()=>typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[]},
+  {code:"RM-ICICI",     name:"Rasiklal Shah (ICICI Direct)",       member:"Rasiklal Shah",   custodian:"ICICI Direct",     getArr:()=>typeof RASIKLAL_ICICI_NEW_HOLDINGS!=="undefined"?RASIKLAL_ICICI_NEW_HOLDINGS:[]},
+  {code:"RMHUF-ICICI",  name:"Rasiklal Shah HUF (ICICI Direct)",   member:"Rasiklal HUF",    custodian:"ICICI Direct",     getArr:()=>typeof RASIKLAL_HUF_ICICI_HOLDINGS!=="undefined"?RASIKLAL_HUF_ICICI_HOLDINGS:[]},
+  {code:"AARYA-ICICI",  name:"Aarya Shah (ICICI Direct)",          member:"Aarya Shah",      custodian:"ICICI Direct",     getArr:()=>typeof AARYA_HOLDINGS!=="undefined"?AARYA_HOLDINGS:[]},
+  {code:"JS-ICICI",     name:"Jash Shah (ICICI Direct)",           member:"Jash Shah",       custodian:"ICICI Direct",     getArr:()=>typeof JASH_ICICI_HOLDINGS!=="undefined"?JASH_ICICI_HOLDINGS:[]},
+  {code:"ZERO-JS",      name:"Jash Shah (Zerodha)",                member:"Jash Shah",       custodian:"Zerodha",          getArr:()=>typeof JASH_PORTFOLIO_HOLDINGS!=="undefined"?JASH_PORTFOLIO_HOLDINGS:[]},
+  {code:"ZERO-VRS",     name:"Vasumati Shah (Zerodha)",            member:"Vasumati Shah",   custodian:"Zerodha",          getArr:()=>typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[]},
+  {code:"ZERO-KS",      name:"Karishma Shah (Zerodha)",            member:"Karishma Shah",   custodian:"Zerodha",          getArr:()=>typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[]},
+  {code:"RAKESH-ICICI", name:"Rakesh Bhansali HUF (ICICI Direct)", member:"Rakesh Bhansali HUF", custodian:"ICICI Direct", getArr:()=>typeof RAKESH_HUF_HOLDINGS!=="undefined"?RAKESH_HUF_HOLDINGS:[]},
+];
 
-function MasterLedgerTab() {
+function AccountSummaryTab() {
   const sumField = (arr, field) => (arr||[]).reduce((s,r)=>s+(Number(r[field])||0), 0);
 
-  /* Map each Sushil ledger code to a dashboard-computed value, using this
-     file's actual per-account holdings arrays (checked against MEMBER_HOLDINGS
-     wiring so nothing here is double-counted or dead/unused code). */
-  const dashboardValues = {
-    "C-31":        sumField(typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[], "val"),
-    "M-34":        sumField(typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:[], "val"),
-    "R-124":       sumField(typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[], "val"),
-    "R-75":        sumField(typeof RASIKLAL_HUF_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_HUF_SUSHIL_HOLDINGS:[], "val"),
-    "V-129":       sumField(typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[], "val"),
-    "V-60":        sumField(typeof V60_SUSHIL_HOLDINGS!=="undefined"?V60_SUSHIL_HOLDINGS:[], "val"),
-    "A-46":        sumField(typeof ASHA_SUSHIL_HOLDINGS!=="undefined"?ASHA_SUSHIL_HOLDINGS:[], "val"),
-    "P-151":       sumField(typeof P151_SUSHIL_HOLDINGS!=="undefined"?P151_SUSHIL_HOLDINGS:[], "val"),
-    "P-71":        sumField(typeof P71_SUSHIL_HOLDINGS!=="undefined"?P71_SUSHIL_HOLDINGS:[], "val"),
-    "AMIT-ICICI":  sumField(typeof AMIT_HUF_ICICI_HOLDINGS!=="undefined"?AMIT_HUF_ICICI_HOLDINGS:[], "val"),
-    "VR-ICICI":    sumField(typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[], "val"),
-    "PR-INCRED":   sumField(typeof PRAFUL_HUF_INCRED_HOLDINGS!=="undefined"?PRAFUL_HUF_INCRED_HOLDINGS:[], "val"),
-    "CR-IIFL":     sumField(typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[], "val"),
-    "RM-ICICI":    sumField(typeof RASIKLAL_ICICI_NEW_HOLDINGS!=="undefined"?RASIKLAL_ICICI_NEW_HOLDINGS:[], "val"),
-    "RMHUF-ICICI": sumField(typeof RASIKLAL_HUF_ICICI_HOLDINGS!=="undefined"?RASIKLAL_HUF_ICICI_HOLDINGS:[], "val"),
-    "AARYA-ICICI": sumField(typeof AARYA_HOLDINGS!=="undefined"?AARYA_HOLDINGS:[], "val"),
-    "JS-ICICI":    sumField(typeof JASH_ICICI_HOLDINGS!=="undefined"?JASH_ICICI_HOLDINGS:[], "val"),
-    "ZERO-VRS":    sumField(typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[], "val"),
-    "ZERO-KS":     sumField(typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], "val"),
-  };
-
-  const rows = SUSHIL_LEDGER_SNAPSHOT.rows.map(r=>{
-    const dash = dashboardValues[r.code];
-    const hasData = dash!==undefined && dash!==0;
-    const diff = hasData ? dash - r.value : null;
-    const diffPct = hasData && r.value ? (diff/r.value*100) : null;
-    return {...r, dash: hasData?dash:null, diff, diffPct};
+  const rows = ACCOUNT_SUMMARY_DEFS.map(d=>{
+    const arr = d.getArr();
+    const val = sumField(arr, "val");
+    return {...d, value: val, count: (arr||[]).length};
   });
-
-  const trackedDashTotal = rows.reduce((s,r)=>s+(r.dash||0),0);
-  const trackedLedgerTotal = rows.filter(r=>r.dash!==null).reduce((s,r)=>s+r.value,0);
-  const ledgerGrandTotal = SUSHIL_LEDGER_SNAPSHOT.rows.reduce((s,r)=>s+r.value,0);
 
   const [sortKey,setSortKey]=React.useState("value");
   const [sortDir,setSortDir]=React.useState(-1);
-  const sorted = [...rows].sort((a,b)=>{
-    const av=a[sortKey], bv=b[sortKey];
-    if(av==null&&bv==null) return 0;
-    if(av==null) return 1;
-    if(bv==null) return -1;
-    return (av-bv)*sortDir;
-  });
+  const sorted = [...rows].sort((a,b)=>(a[sortKey]-b[sortKey])*sortDir);
   const onSort = k => { if(sortKey===k) setSortDir(d=>-d); else { setSortKey(k); setSortDir(-1); } };
   const arrow = k => sortKey===k ? (sortDir>0?" ▲":" ▼") : "";
+
+  const grandTotal = rows.reduce((s,r)=>s+r.value,0);
+
+  /* Member-level rollup, straight from MEMBERS (includes bank + MF, not just stocks) */
+  const memberRows = (typeof SAFE_MEMBERS!=="undefined"?SAFE_MEMBERS:MEMBERS)
+    .filter(m=>m && !m._isFamily)
+    .map(m=>({name:m.n, stocks:m.stocks||0, mf:m.mf||0, bank:m.bank||0, total:m.total||0}))
+    .sort((a,b)=>b.total-a.total);
+  const memberGrandTotal = memberRows.reduce((s,m)=>s+m.total,0);
 
   const th = {padding:"8px 10px",textAlign:"right",fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:1,color:S.mt,borderBottom:"1px solid "+S.bd,cursor:"pointer",whiteSpace:"nowrap"};
   const thL = {...th, textAlign:"left"};
@@ -22746,63 +22707,77 @@ function MasterLedgerTab() {
 
   return (
     <div>
-      <Panel title={"Master Ledger — Account Summary (Sushil statement as of "+SUSHIL_LEDGER_SNAPSHOT.asOf+")"}>
+      <Panel title="Account Summary — By Sub-Account">
         <div style={{fontSize:11,color:S.mt,marginBottom:12,lineHeight:1.6}}>
-          Every sub-account across custodians, matched against the corresponding dashboard holdings total where we track it at that granularity.
-          Accounts without a dedicated holdings array show only the Sushil figure — those are folded into a member's blended total elsewhere in the dashboard.
+          Every sub-account the dashboard tracks with a dedicated holdings array, computed live from current data. Stock-count and value shown per account, sorted by value.
         </div>
         <MG items={[
-          {l:"Ledger Total (all rows)", v:cr(ledgerGrandTotal), s:"Sum of every row below"},
-          {l:"Ledger Total (tracked rows)", v:cr(trackedLedgerTotal), s:"Rows we have dashboard data for"},
-          {l:"Dashboard Total (tracked rows)", v:cr(trackedDashTotal), s:"Same rows, dashboard-computed", ac:S.bl},
-          {l:"Tracked Diff", v:cr(trackedDashTotal-trackedLedgerTotal), s:((trackedDashTotal-trackedLedgerTotal)>=0?"+":"")+((trackedLedgerTotal)?((trackedDashTotal-trackedLedgerTotal)/trackedLedgerTotal*100).toFixed(1):"0")+"%", pos:trackedDashTotal>=trackedLedgerTotal, neg:trackedDashTotal<trackedLedgerTotal},
-          {l:"Ultimate Value (statement)", v:cr(SUSHIL_LEDGER_SNAPSHOT.ultimateValue), s:"Header figure from statement"},
-          {l:"Actual Value (statement)", v:cr(SUSHIL_LEDGER_SNAPSHOT.actualValue), s:"After new-investment adj."},
+          {l:"Total Across Accounts", v:cr(grandTotal), s:rows.length+" accounts tracked"},
+          {l:"Largest Account", v:sorted.length?sorted[0].name:"—", s:sorted.length?cr(sorted[0].value):""},
         ]}/>
         <div style={{overflowX:"auto",marginTop:8}}>
           <table style={{width:"100%",borderCollapse:"collapse"}}>
             <thead><tr style={{background:S.sf}}>
               <th style={thL} onClick={()=>onSort("name")}>Account{arrow("name")}</th>
               <th style={thL} onClick={()=>onSort("code")}>Code{arrow("code")}</th>
-              <th style={th} onClick={()=>onSort("value")}>Sushil Ledger{arrow("value")}</th>
-              <th style={th} onClick={()=>onSort("dash")}>Dashboard{arrow("dash")}</th>
-              <th style={th} onClick={()=>onSort("diff")}>Diff{arrow("diff")}</th>
-              <th style={th} onClick={()=>onSort("diffPct")}>Diff %{arrow("diffPct")}</th>
+              <th style={thL} onClick={()=>onSort("custodian")}>Custodian{arrow("custodian")}</th>
+              <th style={th} onClick={()=>onSort("count")}>Stocks{arrow("count")}</th>
+              <th style={th} onClick={()=>onSort("value")}>Value{arrow("value")}</th>
             </tr></thead>
             <tbody>
               {sorted.map((r,i)=>(
                 <tr key={i}>
                   <td style={tdL}>{r.name}</td>
                   <td style={{...tdL,fontFamily:"'JetBrains Mono',monospace",color:S.mt,fontSize:11}}>{r.code}</td>
-                  <td style={td}>{cr(r.value)}</td>
-                  <td style={{...td,color:r.dash!==null?S.tx:S.mt}}>{r.dash!==null?cr(r.dash):"— (blended)"}</td>
-                  <td style={{...td,color:r.diff==null?S.mt:pc(r.diff)}}>{r.diff==null?"—":(r.diff>=0?"+":"")+cr(r.diff)}</td>
-                  <td style={{...td,color:r.diffPct==null?S.mt:pc(r.diffPct)}}>{r.diffPct==null?"—":(r.diffPct>=0?"+":"")+r.diffPct.toFixed(1)+"%"}</td>
+                  <td style={tdL}>{r.custodian}</td>
+                  <td style={td}>{r.count}</td>
+                  <td style={{...td,color:r.value>0?S.tx:S.mt}}>{r.value>0?cr(r.value):"₹0"}</td>
                 </tr>
               ))}
               <tr>
-                <td style={{...tdL,fontWeight:700}}>New Investment (adj.)</td>
+                <td style={{...tdL,fontWeight:700}}>Total</td>
                 <td style={tdL}>—</td>
-                <td style={{...td,fontWeight:700,color:S.rd}}>{cr(SUSHIL_LEDGER_SNAPSHOT.newInvestment)}</td>
-                <td style={td}>—</td><td style={td}>—</td><td style={td}>—</td>
-              </tr>
-              <tr>
-                <td style={{...tdL,fontWeight:700}}>Total (all rows)</td>
                 <td style={tdL}>—</td>
-                <td style={{...td,fontWeight:700}}>{cr(ledgerGrandTotal)}</td>
-                <td style={{...td,fontWeight:700}}>{cr(trackedDashTotal)}</td>
-                <td style={td}>—</td><td style={td}>—</td>
+                <td style={{...td,fontWeight:700}}>{rows.reduce((s,r)=>s+r.count,0)}</td>
+                <td style={{...td,fontWeight:700}}>{cr(grandTotal)}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </Panel>
-      <Panel title="Notes on this reconciliation">
-        <div style={{fontSize:11,color:S.mt,lineHeight:1.8}}>
-          • Rows marked "— (blended)" aren't tracked as a separate sub-account array in the dashboard — their value lives inside that member's combined total on the Members tab instead.<br/>
-          • Diffs above a few percent are usually stale CMPs (holdings arrays are only as fresh as the last upload) rather than data errors — concentrated large-cap positions move the total the most, so check those first.<br/>
-          • <b>AMIT-ICICI</b> shows ₹0 on the dashboard — the underlying holdings array has quantities but no prices/cost basis populated. Needs a fresh upload.<br/>
-          • <b>RM-ICICI</b> and <b>VR-ICICI</b> are the two largest gaps (dashboard well above Sushil's figures) — worth confirming those uploads reflect the same account scope, or whether Sushil's figures are running behind.
+
+      <Panel title="Account Summary — By Family Member">
+        <div style={{fontSize:11,color:S.mt,marginBottom:12,lineHeight:1.6}}>
+          Blended totals per member (stocks + mutual funds + bank), straight from the Members tab data — this is the figure that also drives the family net-worth number.
+        </div>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
+            <thead><tr style={{background:S.sf}}>
+              <th style={thL}>Member</th>
+              <th style={th}>Stocks</th>
+              <th style={th}>Mutual Funds</th>
+              <th style={th}>Bank</th>
+              <th style={th}>Total</th>
+            </tr></thead>
+            <tbody>
+              {memberRows.map((m,i)=>(
+                <tr key={i}>
+                  <td style={tdL}>{m.name}</td>
+                  <td style={td}>{cr(m.stocks)}</td>
+                  <td style={td}>{cr(m.mf)}</td>
+                  <td style={td}>{cr(m.bank)}</td>
+                  <td style={{...td,fontWeight:700}}>{cr(m.total)}</td>
+                </tr>
+              ))}
+              <tr>
+                <td style={{...tdL,fontWeight:700}}>Total (All Family)</td>
+                <td style={td}>{cr(memberRows.reduce((s,m)=>s+m.stocks,0))}</td>
+                <td style={td}>{cr(memberRows.reduce((s,m)=>s+m.mf,0))}</td>
+                <td style={td}>{cr(memberRows.reduce((s,m)=>s+m.bank,0))}</td>
+                <td style={{...td,fontWeight:700}}>{cr(memberGrandTotal)}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </Panel>
     </div>
