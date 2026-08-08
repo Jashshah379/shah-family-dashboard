@@ -7561,14 +7561,16 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   };
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   var chgPct   = holdings.length > 0 ? (holdings[0].chgPct!=null?holdings[0].chgPct:null) : null;
-  var chgAmt = null;
-  if(holdings.length > 0) {
+  /* Read chgAmt from live prices first (most reliable source) */
+  var _lpData = livePrices && livePrices[_liveSym];
+  var chgAmt = (_lpData && _lpData.c != null) ? _lpData.c : null;
+  /* Fallback: holding stored value */
+  if(chgAmt == null && holdings.length > 0) {
     var _h0 = holdings[0];
     if(_h0.chg != null && _h0.chg !== 0) chgAmt = _h0.chg;
-    else if(_h0.chgAmt != null) chgAmt = _h0.chgAmt;
-    else if(_h0.dayChg != null) chgAmt = _h0.dayChg;
+    else if(_h0.chgAmt != null && _h0.chgAmt !== 0) chgAmt = _h0.chgAmt;
   }
-  /* Compute from live cmp + pct if still null */
+  /* Final fallback: compute from cmp * pct */
   if(chgAmt == null && chgPct != null && cmp > 0) {
     chgAmt = Math.round(cmp * chgPct / 100 * 100) / 100;
   }
