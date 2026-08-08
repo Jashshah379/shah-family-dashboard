@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0;overscroll-behavior-y:contain}
@@ -821,7 +822,6 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh, cou
           {isLive?"LIVE":isLoading?"Updating…":isError?"Offline":"Connecting…"}
         </span>
         {isLive&&<span style={{color:"#2a3a5a"}}>{total} prices</span>}
-        {lastUpdate&&<span style={{color:"#2a3a5a"}}>· {lastUpdate}</span>}
       </div>
 
       {/* Countdown — only during market hours */}
@@ -14395,10 +14395,12 @@ var INTEGRITY_REPORT = (function() {
 
 
 
-/* MTF_SUMMARY — computed LIVE from holdings flagged mtf:true across FAMILY_TOP.
-   "Funding" = cost basis of MTF-held shares (the ICICI-funded portion).
-   "Portfolio" = current value of those same shares at CMP (gross exposure).
-   "Own capital" = total invested (inv) on those positions — what the family actually put in. */
+/* MTF_SUMMARY — funding is sourced from MTF_OUTSTANDING_OVERRIDE (real, broker-confirmed
+   loan balances), NOT recomputed from per-position data. Per-position `mtfVal` (the field
+   meant to hold each holding's actual borrowed amount) is never populated anywhere in this
+   file, so summing it used to silently fall back to full market value — overstating the
+   family's MTF debt by ~2x. "Portfolio" and "own capital" below are still computed live from
+   holdings (those fields — cmp/qty/inv — are always populated, so no fallback risk there). */
 /* ── MTF outstanding from daily interest statements (26-Jun-2026) ── */
 var MTF_OUTSTANDING_OVERRIDE = {
   "Rasiklal Shah":   20563037,
@@ -14411,24 +14413,23 @@ var MTF_OUTSTANDING_OVERRIDE = {
 var MTF_SUMMARY = (function() {
   var rows = (typeof FAMILY_TOP !== "undefined" ? FAMILY_TOP : []).filter(function(h){ return h && h.mtf; });
   var byAccount = {};
-  var totalFunding = 0, totalPortfolioAtCmp = 0, totalOwnCapital = 0;
+  var totalPortfolioAtCmp = 0, totalOwnCapital = 0;
   rows.forEach(function(h) {
     var key = (h._member || "Unknown") + "|" + (h._custodian || "");
-    if (!byAccount[key]) byAccount[key] = {name: h._member, clientId: h._custodian, funding: 0, portfolio: 0};
-    var fundedVal = h.mtfVal != null ? h.mtfVal : (h.val || 0);
+    if (!byAccount[key]) byAccount[key] = {name: h._member, clientId: h._custodian, funding: MTF_OUTSTANDING_OVERRIDE[h._member] || null, portfolio: 0};
     var cmpVal = (h.cmp && h.qty) ? h.cmp * (h.mtfQty || h.qty) : (h.val || 0);
-    byAccount[key].funding += fundedVal;
     byAccount[key].portfolio += cmpVal;
-    totalFunding += fundedVal;
     totalPortfolioAtCmp += cmpVal;
     totalOwnCapital += (h.inv || 0);
   });
+  var totalFunding = Object.values(MTF_OUTSTANDING_OVERRIDE).reduce(function(s,v){return s+(typeof v==="number"?v:0);}, 0);
   return {
-    total_funding: totalFunding,
+    total_funding: totalFunding,          /* real, curated — matches the Home tab tile */
+    total_funding_confirmed_accounts: Object.keys(MTF_OUTSTANDING_OVERRIDE),
     total_portfolio: totalPortfolioAtCmp,
     own_capital: totalOwnCapital,
     rate_annual: 18,
-    accounts: Object.values(byAccount),
+    accounts: Object.values(byAccount),   /* .funding is null for accounts with no confirmed loan figure */
   };
 })();
 
@@ -19274,26 +19275,127 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
     return sign+"₹"+Math.round(abs).toLocaleString("en-IN");
   };
 
-  /* ── Export helpers ── */
-  var exportToCSV = function(rows, filename) {
-    var headers = ["Stock","NSE Symbol","Member","Broker","Qty","Avg Cost","CMP","Invested","Current Value","P&L","Return %"];
-    var csvRows = [headers.join(",")];
+  /* ── Export helpers ──
+     Exports a real .xlsx workbook (via SheetJS) with two sheets:
+       "Holdings" — one row per member×custodian position (detail)
+       "Summary"  — per-stock totals (qty, invested, value, P&L) + per-account totals
+     Falls back to a flat CSV if the xlsx library failed to load for any reason. */
+  var buildSummaryRows = function(rows) {
+    /* Per-stock aggregation */
+    var byStock = {};
     rows.forEach(function(r) {
-      var pl = (r.val||0)-(r.inv||0);
-      var ret = r.inv>0?(pl/r.inv*100):0;
-      csvRows.push([
-        '"'+(r.sym||"")+ '"', '"'+(r.nse||r.sym||"")+ '"',
-        '"'+(r.member||"")+ '"', '"'+(r.custodian||"")+ '"',
-        r.qty||0, r.avg||0, r.cmp||0,
-        Math.round(r.inv||0), Math.round(r.val||0),
-        Math.round(pl), ret.toFixed(2)+"%"
-      ].join(","));
+      var key = r.sym || r.displayName || "Unknown";
+      if (!byStock[key]) byStock[key] = {name: r.displayName || r.sym || "Unknown", sym: r.sym || "", qty: 0, inv: 0, val: 0};
+      byStock[key].qty += (r.qty || 0);
+      byStock[key].inv += (r.inv || 0);
+      byStock[key].val += (r.val || 0);
     });
-    var blob = new Blob([csvRows.join("\n")], {type:"text/csv"});
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
+    var stockRows = Object.values(byStock).map(function(s) {
+      var pl = s.val - s.inv;
+      var avgCost = s.qty > 0 ? s.inv / s.qty : 0;
+      return {
+        "Stock": s.name, "NSE Symbol": s.sym, "Total Qty": s.qty,
+        "Weighted Avg Cost": Math.round(avgCost * 100) / 100,
+        "Total Invested": Math.round(s.inv), "Total Current Value": Math.round(s.val),
+        "Total P&L": Math.round(pl), "Return %": s.inv > 0 ? (pl / s.inv * 100).toFixed(2) + "%" : "—",
+      };
+    }).sort(function(a, b) { return b["Total Current Value"] - a["Total Current Value"]; });
+
+    /* Per-account (member × custodian) aggregation */
+    var byAccount = {};
+    rows.forEach(function(r) {
+      var key = (r.member || "Unknown") + " — " + (r.custodian || "Unknown");
+      if (!byAccount[key]) byAccount[key] = {member: r.member || "Unknown", custodian: r.custodian || "Unknown", stocks: 0, qty: 0, inv: 0, val: 0};
+      byAccount[key].stocks += 1;
+      byAccount[key].qty += (r.qty || 0);
+      byAccount[key].inv += (r.inv || 0);
+      byAccount[key].val += (r.val || 0);
+    });
+    var accountRows = Object.values(byAccount).map(function(a) {
+      var pl = a.val - a.inv;
+      return {
+        "Member": a.member, "Custodian": a.custodian, "Stocks Held": a.stocks,
+        "Total Qty": a.qty, "Total Invested": Math.round(a.inv),
+        "Total Current Value": Math.round(a.val), "Total P&L": Math.round(pl),
+        "Return %": a.inv > 0 ? (pl / a.inv * 100).toFixed(2) + "%" : "—",
+      };
+    }).sort(function(a, b) { return b["Total Current Value"] - a["Total Current Value"]; });
+
+    var grandInv = rows.reduce(function(s, r) { return s + (r.inv || 0); }, 0);
+    var grandVal = rows.reduce(function(s, r) { return s + (r.val || 0); }, 0);
+    var grandQty = rows.reduce(function(s, r) { return s + (r.qty || 0); }, 0);
+
+    return {stockRows: stockRows, accountRows: accountRows, grandInv: grandInv, grandVal: grandVal, grandQty: grandQty};
+  };
+
+  var exportToCSV = function(rows, filename) {
+    var xlsxName = filename.replace(/\.csv$/i, ".xlsx");
+    if (typeof XLSX === "undefined") {
+      /* Fallback: flat CSV, detail only */
+      var headers = ["Stock","NSE Symbol","Member","Broker","Qty","Avg Cost","CMP","Invested","Current Value","P&L","Return %"];
+      var csvRows = [headers.join(",")];
+      rows.forEach(function(r) {
+        var pl = (r.val||0)-(r.inv||0);
+        var ret = r.inv>0?(pl/r.inv*100):0;
+        csvRows.push([
+          '"'+(r.displayName||r.sym||"")+ '"', '"'+(r.sym||"")+ '"',
+          '"'+(r.member||"")+ '"', '"'+(r.custodian||"")+ '"',
+          r.qty||0, r.avg||0, r.cmp||0,
+          Math.round(r.inv||0), Math.round(r.val||0),
+          Math.round(pl), ret.toFixed(2)+"%"
+        ].join(","));
+      });
+      var blob = new Blob([csvRows.join("\n")], {type:"text/csv"});
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      return;
+    }
+
+    var detailRows = rows.map(function(r) {
+      var pl = (r.val||0)-(r.inv||0);
+      var ret = r.inv>0?(pl/r.inv*100):null;
+      return {
+        "Stock": r.displayName || r.sym || "",
+        "NSE Symbol": r.sym || "",
+        "Member": r.member || "",
+        "Broker": r.custodian || "",
+        "Qty": r.qty || 0,
+        "Avg Cost": r.avg || 0,
+        "CMP": r.cmp || 0,
+        "Invested": Math.round(r.inv||0),
+        "Current Value": Math.round(r.val||0),
+        "P&L": Math.round(pl),
+        "Return %": ret!=null ? ret.toFixed(2)+"%" : "—",
+      };
+    });
+
+    var summary = buildSummaryRows(rows);
+    var aoa = [];
+    aoa.push(["TOTALS"]);
+    aoa.push(["Total Stocks", summary.stockRows.length, "", "Total Qty", summary.grandQty]);
+    aoa.push(["Total Invested", Math.round(summary.grandInv), "", "Total Current Value", Math.round(summary.grandVal)]);
+    aoa.push(["Total P&L", Math.round(summary.grandVal-summary.grandInv), "", "Return %", summary.grandInv>0?((summary.grandVal-summary.grandInv)/summary.grandInv*100).toFixed(2)+"%":"—"]);
+    aoa.push([]);
+    aoa.push(["BY STOCK"]);
+    aoa.push(["Stock","NSE Symbol","Total Qty","Weighted Avg Cost","Total Invested","Total Current Value","Total P&L","Return %"]);
+    summary.stockRows.forEach(function(s) {
+      aoa.push([s["Stock"], s["NSE Symbol"], s["Total Qty"], s["Weighted Avg Cost"], s["Total Invested"], s["Total Current Value"], s["Total P&L"], s["Return %"]]);
+    });
+    aoa.push([]);
+    aoa.push(["BY ACCOUNT"]);
+    aoa.push(["Member","Custodian","Stocks Held","Total Qty","Total Invested","Total Current Value","Total P&L","Return %"]);
+    summary.accountRows.forEach(function(a) {
+      aoa.push([a["Member"], a["Custodian"], a["Stocks Held"], a["Total Qty"], a["Total Invested"], a["Total Current Value"], a["Total P&L"], a["Return %"]]);
+    });
+
+    var wb = XLSX.utils.book_new();
+    var wsSummary = XLSX.utils.aoa_to_sheet(aoa);
+    var wsDetail = XLSX.utils.json_to_sheet(detailRows);
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+    XLSX.utils.book_append_sheet(wb, wsDetail, "Holdings");
+    XLSX.writeFile(wb, xlsxName);
   };
 
   var exportToPrint = function(rows, title) {
@@ -19935,11 +20037,13 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                         background:isOpen?"#111827":gi%2===0?"transparent":"#080a12"}}
                       onMouseEnter={function(e){if(!isOpen)e.currentTarget.style.background="#0d1320";}}
                       onMouseLeave={function(e){if(!isOpen)e.currentTarget.style.background=gi%2===0?"transparent":"#080a12";}}>
-                      <td style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;return n;});}}>
-                      {selectionMode&&(
+                      <td style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();if(!selectionMode)setSelectionMode(true);setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;return n;});}}>
+                      {selectionMode?(
                         <div style={{width:16,height:16,border:"2px solid "+(selectedStocks[g.sym]?"#3b82f6":"#4a5a7a"),borderRadius:4,background:selectedStocks[g.sym]?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                           {selectedStocks[g.sym]&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1,animation:"checkPop 0.25s cubic-bezier(.34,1.56,.64,1)"}}>✓</span>}
                         </div>
+                      ):(
+                        <div style={{width:16,height:16,border:"2px solid #2a3550",borderRadius:4,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none",opacity:0.5}}/>
                       )}
                     </td>
                       <td style={{padding:"7px 10px",overflow:"hidden"}}>
