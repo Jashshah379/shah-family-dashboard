@@ -19233,7 +19233,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
   const [srchOpen, setSrchOpen] = React.useState(false); /* dropdown open */
   const [srchTyped, setSrchTyped] = React.useState(""); /* what user actually typed */
   const srchRef = React.useRef(null); /* input ref for setSelectionRange */
-  const [colWidths, setColWidths] = React.useState({sym:220,totalQty:80,avgCmp:90,totalInv:100,totalVal:110,totalDayPL:90,totalPL:100,ret:80});
+  const [colWidths, setColWidths] = React.useState({sym:220,totalQty:70,avg:85,cmp:85,totalInv:95,totalVal:95,totalDayPL:80,totalPL:90,ret:75});
   const resizing = React.useRef(null);
   const [selectedStocks, setSelectedStocks] = React.useState({});
   const [selectionMode, setSelectionMode] = React.useState(false);
@@ -19445,13 +19445,14 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
     });
     Object.values(map).forEach(g => {
       if(g.cmpCount > 0) g.avgCmp = g.avgCmp / g.cmpCount;
+      g.weightedAvg = g.totalQty > 0 ? g.totalInv / g.totalQty : 0;
       g.ret = g.totalInv > 0 ? (g.totalPL / g.totalInv * 100) : null;
     });
     const groups = Object.values(map);
     const strCols = ["sym"];
     const col = sortCol || "totalVal";
     // map flat col names to group col names
-    const colMap = {val:"totalVal",inv:"totalInv",pl:"totalPL",qty:"totalQty",cmp:"avgCmp"};
+    const colMap = {val:"totalVal",inv:"totalInv",pl:"totalPL",qty:"totalQty",cmp:"avgCmp",avg:"weightedAvg"};
     const gcol = colMap[col] || col;
     groups.sort((a,b) => {
       const av = a[gcol], bv = b[gcol];
@@ -19880,7 +19881,8 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                   <col style={{width:36}}/>
                   <col style={{width:colWidths.sym}}/>
                   <col style={{width:colWidths.totalQty}}/>
-                  <col style={{width:colWidths.avgCmp}}/>
+                  <col style={{width:colWidths.avg}}/>
+                  <col style={{width:colWidths.cmp}}/>
                   <col style={{width:colWidths.totalInv}}/>
                   <col style={{width:colWidths.totalVal}}/>
                   <col style={{width:colWidths.totalDayPL}}/>
@@ -19899,7 +19901,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                     )}
                   </th>
 
-                  {[["sym","Stock",false],["totalQty","Qty",true],["avgCmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
+                  {[["sym","Stock",false],["totalQty","Qty",true],["avg","Avg",true],["cmp","CMP",true],["totalInv","Invested",true],["totalVal","Value",true],["totalDayPL","Day P/L",true],["totalPL","P/L",true],["ret","Return %",true]].map(([col,label,r])=>(
                     <th key={col} style={{padding:"6px 8px",textAlign:r?"right":"left",
                       color:sortCol===col?"#7eb8ff":"#3a4a6a",fontWeight:700,fontSize:9,
                       borderBottom:"1px solid #1e2540",textTransform:"uppercase",
@@ -19965,10 +19967,12 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#e8eaf0",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {g.totalQty>0?g.totalQty.toLocaleString("en-IN"):"—"}
                       </td>
+                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a6a20",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                        {g.weightedAvg>0?"₹"+g.weightedAvg.toFixed(2):"—"}
+                      </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {g.avgCmp>0?"₹"+g.avgCmp.toFixed(2):"—"}
-                      </td>
-                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                      </td>                      <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#3a4a6a",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {cr(g.totalInv)}
                       </td>
                       <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
@@ -20027,9 +20031,11 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                               <div style={{fontSize:7,color:"#64748b",marginTop:3,display:"inline-block",background:"rgba(100,116,139,0.12)",borderRadius:3,padding:"1px 5px",letterSpacing:"0.05em",textTransform:"uppercase"}}>{r.custodian}</div>
                             </td>
                             <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#64748b",fontSize:10}}>{r.qty>0?r.qty.toLocaleString("en-IN"):"—"}</td>
-                            <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontSize:9}}>
-                              {r.cmp>0&&<div style={{color:"#c8d0e8",fontWeight:600}}>₹{r.cmp.toLocaleString("en-IN")}</div>}
-                              {r.avg>0&&<div style={{color:"#64748b",fontSize:8}}>avg ₹{r.avg.toFixed(0)}</div>}
+                            <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#7a9ab8"}}>
+                              {r.avg>0?"₹"+r.avg.toFixed(2):"—"}
+                            </td>
+                            <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#c8d0e8",fontWeight:600}}>
+                              {r.cmp>0?"₹"+r.cmp.toLocaleString("en-IN"):"—"}
                             </td>
                             <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#64748b",fontSize:10}}>{r.inv>0?cr(r.inv):"—"}</td>
                             <td style={{padding:"4px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:"#94a3b8",fontSize:10}}>{cr(r.val)}</td>
