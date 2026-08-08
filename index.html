@@ -7561,8 +7561,14 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   };
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   var chgPct   = holdings.length > 0 ? (holdings[0].chgPct!=null?holdings[0].chgPct:null) : null;
-  var chgAmt   = holdings.length > 0 ? (holdings[0].chg||holdings[0].chgAmt||holdings[0].dayChg||null) : null;
-  /* If no stored change amount, compute from live price data */
+  var chgAmt = null;
+  if(holdings.length > 0) {
+    var _h0 = holdings[0];
+    if(_h0.chg != null && _h0.chg !== 0) chgAmt = _h0.chg;
+    else if(_h0.chgAmt != null) chgAmt = _h0.chgAmt;
+    else if(_h0.dayChg != null) chgAmt = _h0.dayChg;
+  }
+  /* Compute from live cmp + pct if still null */
   if(chgAmt == null && chgPct != null && cmp > 0) {
     chgAmt = Math.round(cmp * chgPct / 100 * 100) / 100;
   }
@@ -7758,8 +7764,8 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                       <tfoot><tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
                         <td colSpan={2} style={{padding:"7px 12px",color:"#3a4a6a",fontSize:10}}>TOTAL · {holdings.length} account{holdings.length>1?"s":""}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#c8d0e8"}}>{totalQty.toLocaleString("en-IN")}</td>
-                        <td/>
-                        <td/>
+                        <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#8a6a20",fontSize:10}}>{totalInv>0&&totalQty>0?"₹"+(totalInv/totalQty).toFixed(2):"—"}</td>
+                        <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#3a5a7a",fontWeight:600}}>{cmp>0?"₹"+cmp.toLocaleString("en-IN"):"—"}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalVal)}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:totalPL>=0?"#34d399":"#f87171"}}>{cr(totalPL)}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:retPct>=0?"#34d399":"#f87171"}}>{(retPct>=0?"+":"")+retPct.toFixed(1)}%</td>
