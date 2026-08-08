@@ -7669,9 +7669,17 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                 {chgPct>=0?"▲":"▼"}{Math.abs(chgPct).toFixed(2)}%
               </span>
             )}
-            <span style={{width:1,height:16,background:"#1d2545",flexShrink:0}}/>
-            {totalQty>0&&<span style={{fontSize:9,color:"#4a6a7a"}}><span style={{color:"#7eb8ff",fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{totalQty.toLocaleString("en-IN")}</span> shares</span>}
-            {totalInv>0&&totalQty>0&&<span style={{fontSize:9,color:"#4a6a7a"}}>avg <span style={{color:"#c8a000",fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>₹{(totalInv/totalQty).toFixed(2)}</span></span>}
+            <span style={{width:1,height:14,background:"#1d2545",flexShrink:0,margin:"0 2px"}}/>
+            {totalQty>0&&(
+              <span style={{fontSize:9,color:"#4a6a7a"}}>
+                <span style={{color:"#7eb8ff",fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{totalQty.toLocaleString("en-IN")}</span> shares
+              </span>
+            )}
+            {totalInv>0&&totalQty>0&&(
+              <span style={{fontSize:9,color:"#4a6a7a"}}>
+                · avg <span style={{color:"#c8a000",fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>₹{(totalInv/totalQty).toFixed(2)}</span>
+              </span>
+            )}
             {holdings.length===0&&<span style={{fontSize:9,background:"#1a1020",color:"#9a5a7a",padding:"2px 9px",borderRadius:5,fontWeight:600}}>Not currently held</span>}
           </div>
         </div>
@@ -7703,8 +7711,6 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                     {l:"Unrealised P&L",v:cr(totalPL),c:totalPL>=0?"#34d399":"#f87171"},
                     {l:"Return %",v:(retPct>=0?"+":"")+retPct.toFixed(1)+"%",c:retPct>=0?"#34d399":"#f87171"},
                     {l:"Dividends Received",v:cr(totalDivReceived),c:"#f0b429"},
-                    {l:"Yield on Cost",v:yoc>0?yoc.toFixed(2)+"%":"—",c:"#f0b429"},
-                    {l:"Realised P&L",v:realisedTrades.length>0?cr(totalRealised):"—",c:totalRealised>=0?"#34d399":"#f87171"},
                   ].map(({l,v,c})=>(
                     <div key={l} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:10,padding:"10px 12px"}}>
                       <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",marginBottom:3}}>{l}</div>
