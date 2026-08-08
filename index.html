@@ -7561,7 +7561,11 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   };
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   var chgPct   = holdings.length > 0 ? (holdings[0].chgPct!=null?holdings[0].chgPct:null) : null;
-  var chgAmt   = holdings.length > 0 ? (holdings[0].chgAmt||holdings[0].dayChg||null) : null;
+  var chgAmt   = holdings.length > 0 ? (holdings[0].chg||holdings[0].chgAmt||holdings[0].dayChg||null) : null;
+  /* If no stored change amount, compute from live price data */
+  if(chgAmt == null && chgPct != null && cmp > 0) {
+    chgAmt = Math.round(cmp * chgPct / 100 * 100) / 100;
+  }
   var prevClose= holdings.length > 0 ? (holdings[0].prevClose||null) : null;
   const totalInv = holdings.reduce((s,h)=>s+(h.inv||0),0);
   const totalQty = holdings.reduce((s,h)=>s+(h.qty||0),0);
@@ -7752,8 +7756,9 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                     </tbody>
                     {holdings.length > 1 && (
                       <tfoot><tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
-                        <td colSpan={3} style={{padding:"7px 12px",color:"#3a4a6a",fontSize:10}}>TOTAL · {holdings.length} account{holdings.length>1?"s":""}</td>
+                        <td colSpan={2} style={{padding:"7px 12px",color:"#3a4a6a",fontSize:10}}>TOTAL · {holdings.length} account{holdings.length>1?"s":""}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#c8d0e8"}}>{totalQty.toLocaleString("en-IN")}</td>
+                        <td/>
                         <td/>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalVal)}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:totalPL>=0?"#34d399":"#f87171"}}>{cr(totalPL)}</td>
