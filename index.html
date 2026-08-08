@@ -343,6 +343,7 @@ window.onload = function() {
 </script>
 <script type="text/plain" id="jsx">
 
+
 /* ── _eq: live equity helper — defined first so all components can use it ──
    Computes CMP-based value from MEMBER_HOLDINGS on each call.
    Falls back to m.stocks if MEMBER_HOLDINGS not yet loaded. */
@@ -1875,24 +1876,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
           </div>
         </div>
       </div>
-      {/* ══ QUICK ACTIONS ══ */}
-      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-        {[
-          {l:"📋 Holdings",tab:"Stock List"},
-          {l:"💰 P&L",tab:"P&L"},
-          {l:"🏦 Bank",tab:"Bank"},
-          {l:"💼 Funds",tab:"Mutual Funds"},
-          {l:"⚠️ MTF",tab:"MTF"},
-          {l:"🎯 What-If",tab:"What-If"},
-          {l:"👥 Advisors",tab:"Advisors"},
-          {l:"📂 Upload",tab:"Upload"},
-        ].map(({l,tab})=>(
-          <button key={tab} onClick={()=>window._setDashTab&&window._setDashTab(tab)}
-            style={{padding:"7px 14px",borderRadius:20,border:"1px solid #1d2545",background:"linear-gradient(155deg,#11152c,#0d1020)",color:"#8899bb",fontSize:10,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}}>
-            {l}
-          </button>
-        ))}
-      </div>
+      
     </div>
   );
 }
@@ -7117,7 +7101,7 @@ function LedgerTab() {
 
       {/* ── Add/Edit Entry Modal ── */}
       {showForm&&(
-        <div className="anim-fade" style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw))"}}
+        <div className="anim-fade" style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.8)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:16,overscrollBehavior:"contain"}}
           onClick={function(e){if(e.target===e.currentTarget){setShowForm(false);setEditingId(null);}}}>
           <div className="anim-scale-in" style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:420,marginTop:"min(60px,8vh)",boxShadow:"0 24px 80px #00000099"}}>
             <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -19885,7 +19869,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
             })}
           </div>
 
-          <div style={{overflowX:"auto",overflowY:"auto",maxHeight:"calc(100vh - 130px)",WebkitOverflowScrolling:"touch"}}>
+          <div style={{overflowX:"auto",overflowY:"auto",maxHeight:"calc(100vh - 100px)",WebkitOverflowScrolling:"touch"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
                 <colgroup>
                   <col style={{width:36}}/>
@@ -20101,7 +20085,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
           </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed"}}>
-              <thead style={{position:"sticky",top:0,zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.8)",willChange:"transform"}}>
+              <thead style={{position:"sticky",top:0,zIndex:10,boxShadow:"0 8px 20px rgba(0,0,0,0.9)",willChange:"transform",isolation:"isolate"}}>
                 {groupBy==="stock" ? (
                   /* Grouped view: 10 cols matching grouped data rows */
                   <tr style={{background:"#080b18"}}>
