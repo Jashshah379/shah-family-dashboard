@@ -10213,10 +10213,6 @@ function FamilyApp() {
                 cursor:"pointer"}} title="Go to Overview">
                 Shah Family Finance
               </div>
-              <div style={{fontSize:10,color:"#46557a",fontFamily:"'JetBrains Mono',monospace",
-                background:"#11162e",border:"1px solid #1c2440",borderRadius:8,padding:"3px 10px"}}>
-                {new Date().toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})}
-              </div>
             </div>
           <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}><span style={{color:"#34d399",marginRight:4}}>●</span>Live · {new Date().getFullYear()} · {MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).length} members · ₹{(grandTotal/1e7).toFixed(1)} Cr</div>
         </div>
@@ -20038,12 +20034,10 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                       onMouseEnter={function(e){if(!isOpen)e.currentTarget.style.background="#0d1320";}}
                       onMouseLeave={function(e){if(!isOpen)e.currentTarget.style.background=gi%2===0?"transparent":"#080a12";}}>
                       <td style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle",background:selectedStocks[g.sym]?"#0d1a2e":"transparent"}} onClick={function(e){e.stopPropagation();if(!selectionMode)setSelectionMode(true);setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;return n;});}}>
-                      {selectionMode?(
+                      {selectionMode&&(
                         <div style={{width:16,height:16,border:"2px solid "+(selectedStocks[g.sym]?"#3b82f6":"#4a5a7a"),borderRadius:4,background:selectedStocks[g.sym]?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                           {selectedStocks[g.sym]&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1,animation:"checkPop 0.25s cubic-bezier(.34,1.56,.64,1)"}}>✓</span>}
                         </div>
-                      ):(
-                        <div style={{width:16,height:16,border:"2px solid #2a3550",borderRadius:4,background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none",opacity:0.5}}/>
                       )}
                     </td>
                       <td style={{padding:"7px 10px",overflow:"hidden"}}>
