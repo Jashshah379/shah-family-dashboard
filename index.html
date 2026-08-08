@@ -10627,41 +10627,6 @@ function FamilyApp() {
 
       
       {/* ── SIDEBAR OVERLAY ── */}
-      {sidebarOpen&&(
-        <div style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#07090f",borderRight:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0",boxShadow:"4px 0 24px #00000066"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px 12px",borderBottom:"1px solid #1d2545",marginBottom:8}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>More Tabs</div>
-            <button onClick={()=>setSidebarOpen(false)} style={{background:"none",border:"none",color:"#3a4a6a",fontSize:18,cursor:"pointer",padding:4}}>✕</button>
-          </div>
-          {SIDEBAR_SECTIONS.map(sec=>(
-            <div key={sec.title} style={{marginBottom:4}}>
-              <button onClick={()=>toggleSection(sec.title)} style={{
-                width:"100%",padding:"8px 16px",background:"none",border:"none",
-                cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                color:"#3a4a6a",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em"
-              }}>
-                <span>{sec.title}</span>
-                <span style={{fontSize:9}}>{expandedSections[sec.title]?"▲":"▼"}</span>
-              </button>
-              {expandedSections[sec.title]&&(
-                <div style={{paddingLeft:8,paddingRight:8}}>
-                  {sec.tabs.map(t=>(
-                    <button key={t} onClick={()=>setTabAndClose(t)} style={{
-                      width:"100%",padding:"8px 12px",borderRadius:8,border:"none",
-                      cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:tab===t?700:400,
-                      background:tab===t?"#1e3a5f":"transparent",
-                      color:tab===t?"#7eb8ff":"#8899bb",
-                      marginBottom:2,transition:"all 0.1s"
-                    }}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
       {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:"fixed",inset:0,background:"#00000066",zIndex:999}}/>}
 
       {/* - OVERVIEW - */}
@@ -16804,12 +16769,12 @@ const CHETAN_DEMAT   = null;
 const BONDS          = [];
 const UTI_NIFTY      = null;
 const SIDEBAR_SECTIONS = [
-  {title:"Analytics", tabs:["Insights","Tax","MTF","XIRR"]},
+  {title:"Analytics", tabs:["Insights","Tax","XIRR"]},
   {title:"Planning",  tabs:["Rebalance","SIP Tracker","Goals","What-If","Corp Actions","PPF"]},
   {title:"Portfolio", tabs:["Trend","Meeting Mode"]},
   {title:"Tools",     tabs:["Search","Upload","Watchlist","Stock Notes","Profiles","Estate","Changelog"]},
 ];
-const TABS = ["Home","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Ledger","Advisors"];
+const TABS = ["Home","Stock List","Members","Bank","Mutual Funds","P&L","Tax","Ledger","MTF","Advisors"];
 const Panel = ({children, title, style}) => (
   <div style={{background:"linear-gradient(155deg,#10142a 0%,#0c1020 100%)",
     border:"1px solid #1c2440",borderRadius:16,padding:"18px 20px",marginBottom:14,
