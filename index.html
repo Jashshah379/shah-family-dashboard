@@ -12141,7 +12141,7 @@ const MEMBERS = [
   {n:"All Family",     i:"AF",c:"#e8eaf0",stocks:619940000, mf:21900000,  bank:27700000, _isFamily:true,
    cas:"All Family",broker:null,icici:null,holdingsRef:"ALL_FAMILY",custodian:["All accounts"],
    casApr26:855945651,casTrend:[{m:"May'25",v:800000000},{m:"Jun'25",v:820000000},{m:"Jul'25",v:810000000},{m:"Aug'25",v:830000000},{m:"Sep'25",v:840000000},{m:"Oct'25",v:850000000},{m:"Nov'25",v:845000000},{m:"Dec'25",v:855000000},{m:"Jan'26",v:860000000},{m:"Feb'26",v:855000000},{m:"Mar'26",v:852000000},{m:"Apr'26",v:855945651}]},
-  {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:222189650, mf:1175446, bank:1072905,
+  {n:"Vasumati Shah",  i:"VS",c:"#3266ad",stocks:222044313, mf:1175446, bank:1072905,
    cas:"Vasumati Shah",broker:null,icici:null,holdingsRef:"V129",
    custodian:["Sushil Financial","ICICI Direct","Zerodha"],casApr26:232585964,
    casTrend:[{m:"May'25",v:220000000},{m:"Jun'25",v:225000000},{m:"Oct'25",v:228000000},{m:"Apr'26",v:232585964}]},
@@ -12174,15 +12174,15 @@ const MEMBERS = [
    cas:"Amit Gandhi HUF",broker:null,icici:null,holdingsRef:"AMIT_HUF",
    custodian:["ICICI Direct"],casApr26:20513125,
    casTrend:[{m:"May'25",v:19000000},{m:"Apr'26",v:20513125}]},
-  {n:"Maya Shah",      i:"MY",c:"#e24b4a",stocks:6833492,  mf:990902,  bank:33632,
+  {n:"Maya Shah",      i:"MY",c:"#e24b4a",stocks:6932712,  mf:990902,  bank:33632,
    cas:"Maya Shah",   broker:null,icici:null,holdingsRef:"MAYA_SUSHIL",
-   custodian:["Sushil Financial (JD0M34)","ICICI Direct"],casApr26:15416584,
+   custodian:["Sushil Financial (JD0M34)","ICICI Direct","Zerodha"],casApr26:15416584,
    casTrend:[{m:"May'25",v:13000000},{m:"Apr'26",v:15416584}]},
-  {n:"Chetan Shah",    i:"CS",c:"#9977dd",stocks:3400000,   mf:761846,  bank:1773072,
+  {n:"Chetan Shah",    i:"CS",c:"#9977dd",stocks:3483360,   mf:761846,  bank:1773072,
    cas:"Chetan Shah", broker:null,icici:null,holdingsRef:"CHETAN",
    custodian:["Zerodha","Sushil Financial"],casApr26:10743001,
    casTrend:[{m:"May'25",v:9500000},{m:"Apr'26",v:10743001}]},
-  {n:"Karishma Shah",  i:"KS",c:"#06b6d4",stocks:1943758,   mf:0,        bank:185644,
+  {n:"Karishma Shah",  i:"KS",c:"#06b6d4",stocks:1899479,   mf:0,        bank:185644,
    cas:"Karishma Shah",broker:null,icici:null,holdingsRef:"KARI",
    custodian:["Zerodha (DWL506)"],casApr26:1898102,
    casTrend:[{m:"Apr'26",v:1898102}]},
@@ -12691,9 +12691,9 @@ var RASIKLAL_ICICI_NEW_HOLDINGS = [
   {s:"Gujarat Fluorochem",sym:"GUJFLU",qty:1800,avg:3781.53,cmp:4518.1,val:8132580.0,inv:6806754.0,unreal:1325826.0},
   {s:"Sammaan Capital",sym:"INDHO",qty:15700,avg:174.91,cmp:163.17,val:2561769.0,inv:2746087.0,unreal:-184318.0},
   {s:"Info Edge (India)",sym:"INFEDG",qty:600,avg:981.84,cmp:1225.3,val:735180.0,inv:589104.0,unreal:146076.0},
-  {s:"Inox Wind",sym:"INOWIN",qty:58000,avg:84.08,cmp:78.0,val:4524000.0,inv:4876640.0,unreal:-352640.0},
+  {s:"Inox Wind",sym:"INOXWIND",qty:58000,avg:84.08,cmp:78.0,val:4524000.0,inv:4876640.0,unreal:-352640.0},
   {s:"Ion Exchange India",sym:"IONEXC",qty:2790,avg:407.64,cmp:371.6,val:1036764.0,inv:1137315.6,unreal:-100551.6},
-  {s:"Jaiprakash Power Ventures",sym:"JAIPOW",qty:54000,avg:20.62,cmp:17.94,val:968760.0,inv:1113480.0,unreal:-144720.0},
+  {s:"Jaiprakash Power Ventures",sym:"JPPOWER",qty:54000,avg:20.62,cmp:17.94,val:968760.0,inv:1113480.0,unreal:-144720.0},
   {s:"Jk Tyre And Industries",sym:"JKTYRE",qty:1800,avg:405.31,cmp:394.9,val:710820.0,inv:729558.0,unreal:-18738.0},
   {s:"JSW Steel",sym:"JSWSTE",qty:1600,avg:1250.76,cmp:1299.5,val:2079200.0,inv:2001216.0,unreal:77984.0},
   {s:"Just Dial",sym:"JUSDIA",qty:220,avg:1015.81,cmp:683.3,val:150326.0,inv:223478.2,unreal:-73152.2},
@@ -13148,23 +13148,21 @@ const JASH_SUMMARY = {
   netPL:14281424,xirr:18.4,
 };
 
+/* Vasumati Shah — Zerodha, Aug 2026 */
 const VASUMATI_ZERODHA_HOLDINGS = [
-  {s:"Adani Total Gas",sym:"ATGL",qty:930.0,avg:733.84,cmp:733.45,val:677552,inv:682471,unreal:-4921,sector:"ENERGY"},
-  {s:"DCX Systems",sym:"DCXINDIA",qty:2500.0,avg:171.89,cmp:204.32,val:510800,inv:429725,unreal:81069,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"Elite Consultants",sym:"ELITECON",qty:780.0,avg:31.01,cmp:28.52,val:22246,inv:24188,unreal:-1945,sector:"TRADING"},
-  {s:"Gujarat Pipavav Port",sym:"GPPL",qty:1530.0,avg:155.06,cmp:154.94,val:234396,inv:237242,unreal:-2851,sector:"LOGISTICS"},
-  {s:"HUDCO",sym:"HUDCO",qty:108.0,avg:221.06,cmp:208.8,val:22550,inv:23874,unreal:-1324,sector:"FINANCIAL SERVICES"},
-  {s:"Indiabulls Real Estate",sym:"IBREALEST",qty:270.0,avg:18.28,cmp:26.51,val:7158,inv:4936,unreal:2222,sector:"RETAIL"},
-  {s:"Inox Wind",sym:"INOXWIND",qty:900.0,avg:99.85,cmp:90.87,val:81783,inv:89865,unreal:-8082,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"Jio Financial Services",sym:"JIOFIN",qty:360.0,avg:239.0,cmp:263.05,val:88056,inv:86040,unreal:2016,sector:"FINANCIAL SERVICES"},
-  {s:"Jaiprakash Power Ventures",sym:"JPPOWER",qty:14510.0,avg:18.97,cmp:18.85,val:262196,inv:275255,unreal:-13094,sector:"ENERGY"},
-  {s:"Kaynes Technology India",sym:"KAYNES",qty:35.0,avg:3276.06,cmp:3255.5,val:113942,inv:114662,unreal:-720,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"Lloyds Engineering Works",sym:"LLOYDSENGG",qty:600.0,avg:73.07,cmp:92.45,val:52104,inv:43842,unreal:8262,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"Paradeep Phosphates",sym:"PARADEEP",qty:900.0,avg:135.62,cmp:140.33,val:122598,inv:122058,unreal:542,sector:"FERTILIZERS"},
-  {s:"Religare Enterprises",sym:"RELIGARE",qty:238.0,avg:243.43,cmp:262.65,val:60440,inv:57936,unreal:2505,sector:"FINANCIAL SERVICES"},
-  {s:"Salasar Techno Engineering",sym:"SALASAR",qty:6000.0,avg:7.24,cmp:7.08,val:42480,inv:43440,unreal:-960,sector:"ENGINEERING & CAPITAL GOODS"},
-  {s:"Trigyn Technologies",sym:"TRIGYN",qty:1300.0,avg:59.75,cmp:58.12,val:74100,inv:77675,unreal:-3573,sector:"SOFTWARE SERVICES"},
-  {s:"Walchandnagar Industries",sym:"WCL",qty:990.0,avg:229.63,cmp:312.45,val:309326,inv:227334,unreal:81990,sector:"ENGINEERING & CAPITAL GOODS"},
+  {s:"DCW",sym:"DCW",qty:1500.0,avg:51.21,cmp:46.90,val:70350.00,inv:76817.78,unreal:-6467.78},
+  {s:"Elitecon International",sym:"ELITECON",qty:780.0,avg:31.01,cmp:17.27,val:13470.60,inv:24190.52,unreal:-10719.92},
+  {s:"Indiabulls Real Estate",sym:"IBREALEST",qty:270.0,avg:18.28,cmp:29.12,val:7862.40,inv:4935.60,unreal:2926.80},
+  {s:"Inox Wind",sym:"INOXWIND",qty:900.0,avg:99.85,cmp:74.51,val:67059.00,inv:89865.00,unreal:-22806.00},
+  {s:"Jaiprakash Power Ventures",sym:"JPPOWER",qty:14510.0,avg:18.97,cmp:17.83,val:258713.30,inv:275289.80,unreal:-16576.50},
+  {s:"Lloyds Engineering Works",sym:"LLOYDSENGG",qty:600.0,avg:73.07,cmp:95.89,val:57534.00,inv:43842.00,unreal:13692.00},
+  {s:"MTAR Technologies",sym:"MTARTECH",qty:132.0,avg:7047.51,cmp:6890.00,val:909480.00,inv:930271.45,unreal:-20791.45},
+  {s:"Salasar Techno Engineering",sym:"SALASAR",qty:6000.0,avg:7.24,cmp:5.85,val:35100.00,inv:43440.00,unreal:-8340.00},
+  {s:"Shish Industries",sym:"SHIIND",qty:11200.0,avg:11.20,cmp:11.82,val:132384.00,inv:125427.45,unreal:6956.55},
+  {s:"Syrma SGS Technology",sym:"SYRMA",qty:228.0,avg:1390.87,cmp:1517.60,val:346012.80,inv:317118.80,unreal:28894.00},
+  {s:"Trigyn Technologies",sym:"TRIGYN",qty:2800.0,avg:56.70,cmp:53.77,val:150556.00,inv:158752.64,unreal:-8196.64},
+  {s:"Vedanta Oil & Gas",sym:"VOGL",qty:6300.0,avg:39.80,cmp:39.89,val:251307.00,inv:250736.03,unreal:570.97},
+  {s:"Walchandnagar Industries",sym:"WCL",qty:990.0,avg:229.63,cmp:238.95,val:236560.50,inv:227335.68,unreal:9224.82},
 ];
 
 const INCRED_HOLDINGS = [
@@ -13266,16 +13264,15 @@ var ASHA_SUSHIL_HOLDINGS = [
   {s:"Yes Bank",sym:"YESBANK",qty:1000,avg:12.0,cmp:23.89,val:22860.0,inv:12000.0,unreal:10860.0}
 ];
 
+/* Chetan Shah — Zerodha, Aug 2026 */
 const CHETAN_HOLDINGS = [
-  {s:"Genesys International", qty:3222,avg:550.00,cmp:274.85,val:885245,inv:1771000,unreal:-885755},
-  {s:"DCX Systems",           qty:1200,avg:236.00,cmp:193.85,val:232620,inv:283200,unreal:-50580},
-  {s:"Tata Power",            qty:500, avg:60.00, cmp:409.20,val:204600,inv:30000, unreal:174600},
-  {s:"Vodafone Idea",         qty:5000,avg:12.00, cmp:14.95, val:74750, inv:60000, unreal:14750},
-  {s:"State Bank of India",                   qty:150, avg:300.00,cmp:977.70,val:146655,inv:45000, unreal:101655},
-  {s:"HFCL",                  qty:2000,avg:83.00, cmp:187.23,val:374460,inv:166000,unreal:208460},
-  {s:"Navin Fluorine",        qty:50,  avg:3500.00,cmp:7032.50,val:351625,inv:175000,unreal:176625},
-  {s:"Inox Wind",             qty:1000,avg:60.00, cmp:86.79, val:86790, inv:60000, unreal:26790},
-  {s:"Trent",             qty:30,  avg:800.00,cmp:2774.20,val:83226,inv:24000, unreal:59226},
+  {s:"CDSL",sym:"CDSL",qty:630,avg:1683.79,cmp:1339.00,val:843570.00,inv:1060785.35,unreal:-217215.35},
+  {s:"DCX Systems",sym:"DCXINDIA",qty:2220,avg:212.01,cmp:180.30,val:400266.00,inv:470668.45,unreal:-70402.45},
+  {s:"Genesys International",sym:"GENESYS",qty:3792,avg:599.22,cmp:224.10,val:849787.20,inv:2272234.16,unreal:-1422446.96},
+  {s:"Genesys International - Rights Entitlement",sym:"GENESYS",qty:2275,avg:0,cmp:0,val:0,inv:0,unreal:0},
+  {s:"Lloyds Engineering Works",sym:"LLOYDSENGG",qty:990,avg:74.41,cmp:95.89,val:94931.10,inv:73662.90,unreal:21268.20},
+  {s:"MTAR Technologies",sym:"MTARTECH",qty:108,avg:7291.45,cmp:6890.00,val:744120.00,inv:787476.50,unreal:-43356.50},
+  {s:"Trigyn Technologies",sym:"TRIGYN",qty:4059,avg:58.08,cmp:53.77,val:218252.43,inv:235745.87,unreal:-17493.44},
 ];
 
 const AARYA_HOLDINGS = [
@@ -13464,6 +13461,11 @@ var MAYA_ICICI_HOLDINGS = [
   {s:"Nelco",sym:"NELCO",qty:156,avg:1000.37,cmp:958.9,val:149588.4,inv:156057.72,unreal:-6469.32},
   {s:"SpiceJet",sym:"SPICEJET",qty:10008,avg:65.97,cmp:12.2,val:122097.6,inv:660227.76,unreal:-538130.16},
   {s:"Waaree Energies",sym:"WAAENE",qty:65,avg:2887.14,cmp:2717.0,val:176605.0,inv:187664.1,unreal:-11059.1},
+];
+
+/* Maya Shah — Zerodha, Aug 2026 */
+var MAYA_ZERODHA_HOLDINGS = [
+  {s:"GFL",sym:"GFLLIMITED",qty:2000,avg:92.16,cmp:49.61,val:99220.00,inv:184320.00,unreal:-85100.00},
 ];
 
 
@@ -13846,19 +13848,19 @@ const R75_BOND_HOLDINGS = [
 
 /* KARI_HOLDINGS — Karishma Shah Zerodha (data not yet uploaded) */
 const KARI_HOLDINGS = [
-  {s:"Acutas Software Solutions",sym:"ACUTAAS",qty:274,avg:620.54,cmp:3282.8,val:899487.2,inv:170026.85,unreal:729460.35},
-  {s:"Ajmera Realty",sym:"AJMERA",qty:750,avg:226.0,cmp:129.85,val:92887.5,inv:169500.0,unreal:-76612.5},
-  {s:"Ambuja Cements",sym:"AMBUJACEM",qty:1101,avg:381.14,cmp:443.55,val:487743.0,inv:419630.0,unreal:68113.0},
-  {s:"BCL Industries",sym:"BCLIND",qty:100,avg:51.95,cmp:37.0,val:3700.0,inv:5195.0,unreal:-1495.0},
-  {s:"Bharat Forge",sym:"BHARATFORG",qty:19,avg:996.65,cmp:2197.1,val:41744.9,inv:18936.35,unreal:22808.55},
-  {s:"Cyient",sym:"CYIENT",qty:1,avg:1469.05,cmp:864.55,val:864.55,inv:1469.05,unreal:-604.5},
-  {s:"HDFC Bank",sym:"HDFCBANK",qty:2,avg:826.13,cmp:784.9,val:1470.0,inv:1652.26,unreal:-182.26},
-  {s:"Ion Exchange",sym:"IONEXCHANG",qty:1,avg:401.3,cmp:415.7,val:415.7,inv:401.3,unreal:14.4},
-  {s:"Orient Paper",sym:"ORIENTPPR",qty:750,avg:43.8,cmp:18.88,val:14160.0,inv:32850.0,unreal:-18690.0},
-  {s:"Religare Enterprises",sym:"RELIGARE",qty:1,avg:179.35,cmp:262.65,val:256.6,inv:179.35,unreal:77.25},
-  {s:"Tata Motors CMP",sym:"TMCV",qty:1,avg:178.79,cmp:450.2,val:450.2,inv:178.79,unreal:271.41},
-  {s:"Tata Motors",sym:"TMPV",qty:1,avg:395.16,cmp:452.55,val:349.8,inv:395.16,unreal:-45.36},
-  {s:"Waaree Energies",sym:"WAAREEENER",qty:135,avg:1503.0,cmp:2686.4,val:361530.0,inv:202905.0,unreal:158625.0}
+  {s:"Acutaas Chemicals",sym:"ACUTAAS",qty:274,avg:620.54,cmp:3286.15,val:900405.10,inv:170026.85,unreal:730378.25},
+  {s:"Ajmera Realty",sym:"AJMERA",qty:750,avg:226.00,cmp:123.66,val:92745.00,inv:169500.00,unreal:-76755.00},
+  {s:"Ambuja Cements",sym:"AMBUJACEM",qty:1101,avg:381.13,cmp:431.80,val:475411.80,inv:419630.00,unreal:55781.80},
+  {s:"BCL Industries",sym:"BCLIND",qty:100,avg:51.95,cmp:37.48,val:3748.00,inv:5195.00,unreal:-1447.00},
+  {s:"Bharat Forge",sym:"BHARATFORG",qty:19,avg:996.65,cmp:2265.00,val:43035.00,inv:18936.35,unreal:24098.65},
+  {s:"Cyient",sym:"CYIENT",qty:1,avg:1469.05,cmp:859.00,val:859.00,inv:1469.05,unreal:-610.05},
+  {s:"HDFC Bank",sym:"HDFCBANK",qty:2,avg:826.13,cmp:733.35,val:1466.70,inv:1652.26,unreal:-185.56},
+  {s:"Ion Exchange",sym:"IONEXCHANG",qty:1,avg:401.30,cmp:387.20,val:387.20,inv:401.30,unreal:-14.10},
+  {s:"Orient Paper",sym:"ORIENTPPR",qty:750,avg:43.80,cmp:17.71,val:13282.50,inv:32850.00,unreal:-19567.50},
+  {s:"Religare Enterprises",sym:"RELIGARE",qty:1,avg:179.35,cmp:229.70,val:229.70,inv:179.35,unreal:50.35},
+  {s:"Tata Motors CMP",sym:"TMCV",qty:1,avg:178.79,cmp:455.15,val:455.15,inv:178.79,unreal:276.36},
+  {s:"Tata Motors",sym:"TMPV",qty:1,avg:395.16,cmp:348.35,val:348.35,inv:395.16,unreal:-46.81},
+  {s:"Waaree Energies",sym:"WAAREEENER",qty:135,avg:1503.0,cmp:2719.30,val:367105.50,inv:202905.0,unreal:164200.50}
 ];
 
 /* ── STOCK_MASTER_DB — canonical name lookup ── */
@@ -14136,6 +14138,7 @@ const DATA_FRESHNESS = {
 
   "RASIKLAL_ICICI_NEW": { member:"Rasiklal Shah",       custodian:"ICICI Direct (8511215472)",       lastUpdated:"2026-08-08", source:"ICICI PortFolioEqtSummary" },
   "MAYA_ICICI":          { member:"Maya Shah",           custodian:"ICICI Direct (8511215472)",       lastUpdated:"2026-08-08", source:"ICICI PortFolioEqtSummary" },
+  "MAYA_ZERODHA":        { member:"Maya Shah",           custodian:"Zerodha",                          lastUpdated:"2026-08-09", source:"Zerodha Holdings" },
   "C31_SUSHIL":         { member:"Chetan Shah HUF",     custodian:"Sushil Financial",       lastUpdated:"2026-08-04", source:"Sushil ConsolidatedHolding" },
   "ASHA_SUSHIL":        { member:"Asha Shah",           custodian:"Sushil Financial",       lastUpdated:"2026-08-04", source:"Sushil ConsolidatedHolding" },
   "M34_SUSHIL":         { member:"Maya Shah",           custodian:"Sushil Financial",       lastUpdated:"2026-08-04", source:"Sushil ConsolidatedHolding" },
@@ -14148,7 +14151,9 @@ const DATA_FRESHNESS = {
   "MTF_VASUMATI":       { member:"Vasumati Shah",       custodian:"ICICI MTF",              lastUpdated:"2026-08-03", source:"LAS open positions" },
   "MTF_AMIT_HUF":       { member:"Amit Gandhi HUF",    custodian:"ICICI MTF",              lastUpdated:"2026-08-03", source:"Daily interest statement" },
   "BANK_ALL":           { member:"All Members",         custodian:"HDFC Bank",              lastUpdated:"2026-08-03", source:"Bank portal" },
-  "KARI_ZERODHA":       { member:"Karishma Shah",       custodian:"Zerodha",               lastUpdated:"2026-08-05", source:"Zerodha Holdings" },
+  "KARI_ZERODHA":       { member:"Karishma Shah",       custodian:"Zerodha",               lastUpdated:"2026-08-09", source:"Zerodha Holdings" },
+  "CHETAN_ZERODHA":     { member:"Chetan Shah",         custodian:"Zerodha",               lastUpdated:"2026-08-09", source:"Zerodha Holdings" },
+  "VASUMATI_ZERODHA":   { member:"Vasumati Shah",       custodian:"Zerodha",               lastUpdated:"2026-08-09", source:"Zerodha Holdings" },
   "RAKESH_HUF":         { member:"Rakesh Bhansali HUF", custodian:"Sushil Financial (R292)", lastUpdated:"2026-08-03", source:"Sushil StockHolding CSV" },
 };
 var FAMILY_TOP = (function() {
@@ -14178,7 +14183,7 @@ var FAMILY_TOP = (function() {
     {arr: typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[],    m:"Chetan Shah HUF",  c:"Sushil Financial"},
     {arr: typeof C31_BOND_HOLDINGS!=="undefined"?C31_BOND_HOLDINGS:[],        m:"Chetan Shah HUF",  c:"Sushil Financial"},
     /* ── Chetan Shah ── */
-    {arr: typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[],            m:"Chetan Shah",      c:"Sushil Financial"},
+    {arr: typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[],            m:"Chetan Shah",      c:"Zerodha"},
     {arr: typeof V60_SUSHIL_HOLDINGS!=="undefined"?V60_SUSHIL_HOLDINGS:[],    m:"Chetan Shah",      c:"Sushil Financial"},
     
     /* ── Asha Shah ── */
@@ -14188,6 +14193,7 @@ var FAMILY_TOP = (function() {
     {arr: typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:[],    m:"Maya Shah",        c:"Sushil Financial"},
     {arr: typeof M34_BOND_HOLDINGS!=="undefined"?M34_BOND_HOLDINGS:[],        m:"Maya Shah",        c:"Sushil Financial"},
     {arr: typeof MAYA_ICICI_HOLDINGS!=="undefined"?MAYA_ICICI_HOLDINGS:[],    m:"Maya Shah",        c:"ICICI Direct"},
+    {arr: typeof MAYA_ZERODHA_HOLDINGS!=="undefined"?MAYA_ZERODHA_HOLDINGS:[], m:"Maya Shah",        c:"Zerodha"},
     /* ── Praful Shah HUF ── */
     {arr: typeof PRAFUL_HUF_SUSHIL!=="undefined"?PRAFUL_HUF_SUSHIL:[],       m:"Praful Shah HUF",  c:"Sushil Financial"},
     {arr: typeof P71_BOND_HOLDINGS!=="undefined"?P71_BOND_HOLDINGS:[],        m:"Praful Shah HUF",  c:"Sushil Financial"},
@@ -14455,7 +14461,7 @@ var AMIT_HUF_ICICI_HOLDINGS = [
   {s:"Idfban",sym:"IDFBAN",qty:1310,avg:78.28,cmp:84.62,val:110852.2,inv:102546.8,unreal:8305.4},
   {s:"Inowin",sym:"INOXWIND",qty:1200,avg:95.12,cmp:78.0,val:93600.0,inv:114144.0,unreal:-20544.0},
   {s:"Jaibal",sym:"JAIBALAJI",qty:1345,avg:70.57,cmp:65.61,val:88245.45,inv:94916.65,unreal:-6671.2},
-  {s:"Jaipow",sym:"JPPOWER",qty:7200,avg:19.21,cmp:17.94,val:129168.0,inv:138312.0,unreal:-9144.0},
+  {s:"Jaiprakash Power Ventures",sym:"JPPOWER",qty:7200,avg:19.21,cmp:17.94,val:129168.0,inv:138312.0,unreal:-9144.0},
   {s:"Jio Financial Services",sym:"JIOFIN",qty:450,avg:243.05,cmp:256.8,val:115560.0,inv:109372.5,unreal:6187.5},
   {s:"Kewkir",sym:"KKCL",qty:2000,avg:507.86,cmp:513.5,val:1027000.0,inv:1015720.0,unreal:11280.0},
   {s:"Kiolim",sym:"KIOLIM",qty:100,avg:233.79,cmp:391.75,val:39175.0,inv:23379.0,unreal:15796.0},
@@ -14512,10 +14518,11 @@ const MEMBER_HOLDINGS = {
   "MAYA_SUSHIL":[
     ..._tag(typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
     ..._tag(typeof MAYA_ICICI_HOLDINGS!=="undefined"?MAYA_ICICI_HOLDINGS:[],       "Maya Shah",       "ICICI Direct"),
+    ..._tag(typeof MAYA_ZERODHA_HOLDINGS!=="undefined"?MAYA_ZERODHA_HOLDINGS:[],   "Maya Shah",       "Zerodha"),
   ],
   "CHETAN": [
     ..._tag(CHETAN_HOLDINGS,            "Chetan Shah", "Zerodha"),
-    ..._tag(typeof CHETAN_V60_SUSHIL_HOLDINGS!=="undefined"?CHETAN_V60_SUSHIL_HOLDINGS:[], "Chetan Shah", "Sushil Financial"),
+    ..._tag(typeof V60_SUSHIL_HOLDINGS!=="undefined"?V60_SUSHIL_HOLDINGS:[], "Chetan Shah", "Sushil Financial"),
   ],
   "JASH":  _tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah",      "Zerodha"),
   
@@ -22730,6 +22737,7 @@ const ACCOUNT_SUMMARY_DEFS = [
   {code:"C-31",        name:"Chetan Shah HUF (Sushil)",          member:"Chetan Shah HUF", custodian:"Sushil Financial", getArr:()=>typeof C31_SUSHIL_HOLDINGS!=="undefined"?C31_SUSHIL_HOLDINGS:[], freshKey:"C31_SUSHIL"},
   {code:"M-34",         name:"Maya Shah (Sushil)",                 member:"Maya Shah",       custodian:"Sushil Financial", getArr:()=>typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:[], freshKey:"M34_SUSHIL"},
   {code:"MC-ICICI",     name:"Maya Shah (ICICI Direct)",           member:"Maya Shah",       custodian:"ICICI Direct",     getArr:()=>typeof MAYA_ICICI_HOLDINGS!=="undefined"?MAYA_ICICI_HOLDINGS:[], freshKey:"MAYA_ICICI"},
+  {code:"ZERO-MC",      name:"Maya Shah (Zerodha)",                member:"Maya Shah",       custodian:"Zerodha",          getArr:()=>typeof MAYA_ZERODHA_HOLDINGS!=="undefined"?MAYA_ZERODHA_HOLDINGS:[], freshKey:"MAYA_ZERODHA"},
   {code:"R-124",        name:"Rasiklal Shah (Sushil)",             member:"Rasiklal Shah",   custodian:"Sushil Financial", getArr:()=>typeof R124_SUSHIL_HOLDINGS!=="undefined"?R124_SUSHIL_HOLDINGS:[], freshKey:"R124_SUSHIL"},
   {code:"R-75",         name:"Rasiklal Shah HUF (Sushil)",         member:"Rasiklal HUF",    custodian:"Sushil Financial", getArr:()=>typeof RASIKLAL_HUF_SUSHIL_HOLDINGS!=="undefined"?RASIKLAL_HUF_SUSHIL_HOLDINGS:[], freshKey:"RASIKLAL_HUF_SUSHIL"},
   {code:"V-129",        name:"Vasumati Shah (Sushil)",             member:"Vasumati Shah",   custodian:"Sushil Financial", getArr:()=>typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[], freshKey:"V129_SUSHIL"},
@@ -22740,13 +22748,13 @@ const ACCOUNT_SUMMARY_DEFS = [
   {code:"AMIT-ICICI",   name:"Amit Gandhi HUF (ICICI Direct)",     member:"Amit Gandhi HUF", custodian:"ICICI Direct",     getArr:()=>typeof AMIT_HUF_ICICI_HOLDINGS!=="undefined"?AMIT_HUF_ICICI_HOLDINGS:[], freshKey:"AMIT_HUF_ICICI"},
   {code:"VR-ICICI",     name:"Vasumati Shah (ICICI Direct)",       member:"Vasumati Shah",   custodian:"ICICI Direct",     getArr:()=>typeof VASUMATI_ICICI_HOLDINGS!=="undefined"?VASUMATI_ICICI_HOLDINGS:[], freshKey:"VASUMATI_ICICI"},
   {code:"PR-INCRED",    name:"Praful Shah HUF (InCred)",           member:"Praful Shah HUF", custodian:"InCred PMS",       getArr:()=>typeof PRAFUL_HUF_INCRED_HOLDINGS!=="undefined"?PRAFUL_HUF_INCRED_HOLDINGS:[], freshKey:"PRAFUL_HUF_INCRED"},
-  {code:"CR-IIFL",      name:"Chetan Shah (Zerodha)",              member:"Chetan Shah",     custodian:"Zerodha",          getArr:()=>typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[]},
+  {code:"CR-IIFL",      name:"Chetan Shah (Zerodha)",              member:"Chetan Shah",     custodian:"Zerodha",          getArr:()=>typeof CHETAN_HOLDINGS!=="undefined"?CHETAN_HOLDINGS:[], freshKey:"CHETAN_ZERODHA"},
   {code:"RM-ICICI",     name:"Rasiklal Shah (ICICI Direct)",       member:"Rasiklal Shah",   custodian:"ICICI Direct",     getArr:()=>typeof RASIKLAL_ICICI_NEW_HOLDINGS!=="undefined"?RASIKLAL_ICICI_NEW_HOLDINGS:[], freshKey:"RASIKLAL_ICICI_NEW"},
   {code:"RMHUF-ICICI",  name:"Rasiklal Shah HUF (ICICI Direct)",   member:"Rasiklal HUF",    custodian:"ICICI Direct",     getArr:()=>typeof RASIKLAL_HUF_ICICI_HOLDINGS!=="undefined"?RASIKLAL_HUF_ICICI_HOLDINGS:[], freshKey:"RASIKLAL_HUF_ICICI"},
   {code:"AARYA-ICICI",  name:"Aarya Shah (ICICI Direct)",          member:"Aarya Shah",      custodian:"ICICI Direct",     getArr:()=>typeof AARYA_HOLDINGS!=="undefined"?AARYA_HOLDINGS:[]},
   {code:"JS-ICICI",     name:"Jash Shah (ICICI Direct)",           member:"Jash Shah",       custodian:"ICICI Direct",     getArr:()=>typeof JASH_ICICI_HOLDINGS!=="undefined"?JASH_ICICI_HOLDINGS:[]},
   {code:"ZERO-JS",      name:"Jash Shah (Zerodha)",                member:"Jash Shah",       custodian:"Zerodha",          getArr:()=>typeof JASH_PORTFOLIO_HOLDINGS!=="undefined"?JASH_PORTFOLIO_HOLDINGS:[]},
-  {code:"ZERO-VRS",     name:"Vasumati Shah (Zerodha)",            member:"Vasumati Shah",   custodian:"Zerodha",          getArr:()=>typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[]},
+  {code:"ZERO-VRS",     name:"Vasumati Shah (Zerodha)",            member:"Vasumati Shah",   custodian:"Zerodha",          getArr:()=>typeof VASUMATI_ZERODHA_HOLDINGS!=="undefined"?VASUMATI_ZERODHA_HOLDINGS:[], freshKey:"VASUMATI_ZERODHA"},
   {code:"ZERO-KS",      name:"Karishma Shah (Zerodha)",            member:"Karishma Shah",   custodian:"Zerodha",          getArr:()=>typeof KARI_HOLDINGS!=="undefined"?KARI_HOLDINGS:[], freshKey:"KARI_ZERODHA"},
   {code:"RAKESH-ICICI", name:"Rakesh Bhansali HUF (ICICI Direct)", member:"Rakesh Bhansali HUF", custodian:"ICICI Direct", getArr:()=>typeof RAKESH_HUF_HOLDINGS!=="undefined"?RAKESH_HUF_HOLDINGS:[], freshKey:"RAKESH_HUF"},
 ];
