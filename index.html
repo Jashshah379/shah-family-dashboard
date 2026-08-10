@@ -9955,6 +9955,25 @@ function FamilyApp() {
   /* ── Live Price Coverage ── */
   const [showCoverage, setShowCoverage] = React.useState(false);
   const [coverageView, setCoverageView] = React.useState("stale"); /* "live" | "stale" */
+  /* Lock background scroll while the popup is open so it can't visually drift when the page scrolls */
+  React.useEffect(function(){
+    if(!showCoverage) return;
+    var prevOverflow = document.body.style.overflow;
+    var prevPosition = document.body.style.position;
+    var prevTop = document.body.style.top;
+    var scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = "-" + scrollY + "px";
+    document.body.style.width = "100%";
+    return function(){
+      document.body.style.overflow = prevOverflow;
+      document.body.style.position = prevPosition;
+      document.body.style.top = prevTop;
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [showCoverage]);
   var NON_EQUITY_SYMBOLS = new Set([
     "BILNCD2021-N3","GOLDBEES-E","GOLDCASE-E","JUNIORBEES","NIFTYBEES","PSUBNKBEES",
     "LIQUIDBEES-F","SGBDE31III-GB","SGBFEB32IV-GB","SGBJUN31I-GB","INE2J8701016",
