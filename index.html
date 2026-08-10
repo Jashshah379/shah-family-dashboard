@@ -7479,6 +7479,9 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   const [view, setView] = React.useState("overview");
   const [history, setHistory] = React.useState(null);
   const [histLoading, setHistLoading] = React.useState(false);
+  const [holdSortKey, setHoldSortKey] = React.useState(null);
+  const [holdSortDir, setHoldSortDir] = React.useState(-1);
+  const onHoldSort = function(k){ if(holdSortKey===k) setHoldSortDir(function(d){return -d;}); else { setHoldSortKey(k); setHoldSortDir(-1); } };
   const WORKER = "https://noisy-sea-5936.jashshah379.workers.dev";
   React.useEffect(function() {
     if(!sym) return;
@@ -7777,13 +7780,40 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
               )}
 
               {/* Who holds it */}
-              {holdings.length > 0 && (
+              {holdings.length > 0 && (()=>{
+                var HOLD_SORT_KEYS = {
+                  "Member": function(h){ return h._member||""; },
+                  "Custodian": function(h){ return h._custodian||""; },
+                  "Qty": function(h){ return h.qty||0; },
+                  "Avg": function(h){ return h.avg||0; },
+                  "CMP": function(h){ return h.cmp||0; },
+                  "Value": function(h){ return h.val||0; },
+                  "Day P&L": function(h){ return (h.chg||0)*(h.qty||0); },
+                  "P&L": function(h){ return (h.val||0)-(h.inv||0); },
+                  "Return": function(h){ return h.inv>0?(((h.val||0)-(h.inv||0))/h.inv*100):0; },
+                };
+                var sortedHoldings = holdings.slice();
+                if(holdSortKey && HOLD_SORT_KEYS[holdSortKey]){
+                  var extract = HOLD_SORT_KEYS[holdSortKey];
+                  sortedHoldings.sort(function(a,b){
+                    var av=extract(a), bv=extract(b);
+                    if(typeof av==="string") return av.localeCompare(bv)*holdSortDir*-1;
+                    return (av-bv)*holdSortDir*-1;
+                  });
+                }
+                return (
                 <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
                   <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Family Holdings</div>
+                  <div style={{overflowX:"auto"}}>
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-                    <thead><tr style={{background:"#080a12"}}>{["Member","Custodian","Qty","Avg","CMP","Value","Day P&L","P&L","Return"].map(h=><th key={h} style={{padding:"6px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
+                    <thead><tr style={{background:"#080a12"}}>{["Member","Custodian","Qty","Avg","CMP","Value","Day P&L","P&L","Return"].map(h=>(
+                      <th key={h} onClick={function(){onHoldSort(h);}}
+                        style={{padding:"6px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:holdSortKey===h?"#7eb8ff":"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}>
+                        {h}{holdSortKey===h?(holdSortDir>0?" ▲":" ▼"):""}
+                      </th>
+                    ))}</tr></thead>
                     <tbody>
-                      {holdings.map((h,i)=>{
+                      {sortedHoldings.map((h,i)=>{
                         const pl = h.val - h.inv;
                         const ret = h.inv>0?(pl/h.inv*100):0;
                         const dayPL = (h.chg||0) * (h.qty||0);
@@ -7821,8 +7851,10 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                       </tr></tfoot>
                     )}
                   </table>
+                  </div>
                 </div>
-              )}
+                );
+              })()}
 
               {holdings.length === 0 && realisedTrades.length === 0 && totalDivReceived === 0 && (
                 <div style={{padding:"40px",textAlign:"center",color:"#3a4a6a",fontSize:12}}>
