@@ -16,7 +16,11 @@
 body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0;overscroll-behavior-y:contain}
 #loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;
   justify-content:center;background:radial-gradient(ellipse 80% 50% at 50% -10%,
-  #141b3a,#0a0e1f 50%,#070a16);gap:14px;text-align:center;padding:20px}
+  #141b3a,#0a0e1f 50%,#070a16);gap:14px;text-align:center;padding:20px;
+  transition:opacity 0.35s cubic-bezier(.4,0,.2,1);position:absolute;inset:0;z-index:10000}
+#loading.fade-out{opacity:0;pointer-events:none}
+#root{opacity:0;transition:opacity 0.4s cubic-bezier(.4,0,.2,1) 0.05s}
+#root.mounted{opacity:1}
 .spin{width:32px;height:32px;border:3px solid #1d2545;border-top-color:#7eb8ff;
   border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -27,6 +31,16 @@ body{background:#070a16;font-family:system-ui,sans-serif;color:#e8eaf0;overscrol
 body { overscroll-behavior-y:contain; -webkit-text-size-adjust:100%; }
 button { cursor:pointer; -webkit-appearance:none; }
 input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iOS */
+
+/* ── Respect reduced-motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── Performance ── */
 .stock-row { contain: layout style; }
@@ -291,8 +305,16 @@ window.onload = function() {
     catch(e) { throw new Error('Runtime: '+e.message); }
     var App = window.AppWithLock || window.FamilyApp;
     if (!App) throw new Error('App not found');
-    document.getElementById('loading').style.display='none';
     ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    /* Crossfade: fade the splash out and the app in, rather than an abrupt swap */
+    requestAnimationFrame(function() {
+      document.getElementById('root').classList.add('mounted');
+      document.getElementById('loading').classList.add('fade-out');
+      setTimeout(function() {
+        var el = document.getElementById('loading');
+        if (el) el.style.display = 'none';
+      }, 400);
+    });
   } catch(e) { showError(e.message); }
 };
 </script>
@@ -1673,7 +1695,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
       <div style={{width:"100%",marginTop:14}}>
         <div style={{height:7,borderRadius:4,overflow:"hidden",display:"flex",gap:1,marginBottom:8}}>
           {assets.map(function(a,i){
-            return <div key={i} style={{width:(a.v/assetTotal*100)+"%",background:a.c,transition:"width 0.6s ease"}}/>;
+            return <div key={i} style={{width:(a.v/assetTotal*100)+"%",background:a.c,transition:"width 0.6s cubic-bezier(.16,1,.3,1)"}}/>;
           })}
         </div>
         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
@@ -1742,7 +1764,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                       return <button key={opt[0]} onClick={function(e){e.stopPropagation();handleModeClick(opt[0]);}}
                         style={{background:active?"#1e3a5f":"transparent",color:active?"#7eb8ff":"#3a5a7a",
                           border:"none",padding:"2px 7px",fontSize:8,fontWeight:active?700:500,cursor:"pointer",
-                          transition:"all 0.15s"}}>{opt[1]}</button>;
+                          transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>{opt[1]}</button>;
                     })}
                   </span>
                 </span></span></div>
@@ -1758,7 +1780,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                   padding:"8px 14px",
                   borderBottom:i<9?"1px solid rgba(16,185,129,0.08)":"none",
                   display:"flex",justifyContent:"space-between",alignItems:"center",
-                  cursor:"pointer",transition:"background 0.12s"
+                  cursor:"pointer",transition:"background 0.12s cubic-bezier(.4,0,.2,1)"
                 }}
                 onMouseEnter={function(e){e.currentTarget.style.background="rgba(16,185,129,0.06)"}}
                 onMouseLeave={function(e){e.currentTarget.style.background="transparent"}}>
@@ -1801,7 +1823,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                   padding:"8px 14px",
                   borderBottom:i<9?"1px solid rgba(248,113,113,0.08)":"none",
                   display:"flex",justifyContent:"space-between",alignItems:"center",
-                  cursor:"pointer",transition:"background 0.12s"
+                  cursor:"pointer",transition:"background 0.12s cubic-bezier(.4,0,.2,1)"
                 }}
                 onMouseEnter={function(e){e.currentTarget.style.background="rgba(248,113,113,0.06)"}}
                 onMouseLeave={function(e){e.currentTarget.style.background="transparent"}}>
@@ -6865,7 +6887,7 @@ function LedgerTab() {
                       <tr key={r.k}
                         onClick={function(){ setCalcSel(function(s){ var n={...s}; n[r.k]=!n[r.k]; return n; }); }}
                         style={{borderBottom:"1px solid #0d1020",cursor:"pointer",opacity:hasDdata?1:0.4,
-                          background:isSelected?"#0d1428":"transparent",transition:"background 0.1s"}}
+                          background:isSelected?"#0d1428":"transparent",transition:"background 0.1s cubic-bezier(.4,0,.2,1)"}}
                         title={r.help}>
                         <td style={{padding:"8px 8px",textAlign:"center"}}>
                           <div style={{width:14,height:14,borderRadius:3,border:"1px solid "+(isSelected?r.color:"#2a3a5a"),
@@ -8233,7 +8255,7 @@ function AdvisorTrackerTab() {
           <div key={adv.id} onClick={()=>{setSelectedAdvisor(adv.id);setView("advisor");}}
             style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:`1px solid ${adv.count>0?adv.color+"44":"#1d2545"}`,
               borderLeft:`3px solid ${adv.count>0?adv.color:"#1d2545"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",
-              display:"flex",alignItems:"center",gap:12,transition:"all 0.15s",flexWrap:"wrap"}}>
+              display:"flex",alignItems:"center",gap:12,transition:"all 0.15s cubic-bezier(.4,0,.2,1)",flexWrap:"wrap"}}>
 
             {/* Rank */}
             {adv.count>0&&<div style={{fontSize:18,fontWeight:900,color:"#1d2545",width:24,textAlign:"center",flexShrink:0}}>#{i+1}</div>}
@@ -8729,7 +8751,7 @@ function MutualFundsTab() {
           style={{background:showAllMF?"linear-gradient(135deg,#1e3a5f,#162040)":"linear-gradient(155deg,#0a1a0f,#0d1020)",
             border:showAllMF?"1px solid #3b82f6":"1px solid #1a3a1a",
             borderRadius:12,padding:"14px",cursor:"pointer",marginBottom:8,
-            boxShadow:showAllMF?"0 0 0 2px #3b82f622":"none",transition:"all 0.15s"}}>
+            boxShadow:showAllMF?"0 0 0 2px #3b82f622":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
             <div style={{width:28,height:28,borderRadius:"50%",background:"#10b981",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",flexShrink:0}}>AF</div>
             <div>
@@ -9351,7 +9373,7 @@ function MembersTab({onStockClick}) {
                                     onMouseEnter={function(e){if(!isExpanded)e.currentTarget.style.background="#11152c";}}
                                     onMouseLeave={function(e){if(!isExpanded)e.currentTarget.style.background=i%2===0?"transparent":"#080a12";}}>
                                     <td style={{padding:"7px 12px",color:"#c8d0e8",fontWeight:500}}>
-                                      <span style={{display:"inline-block",width:12,fontSize:9,color:"#3a4a6a",transform:isExpanded?"rotate(90deg)":"none",transition:"transform 0.15s"}}>▶</span>
+                                      <span style={{display:"inline-block",width:12,fontSize:9,color:"#3a4a6a",transform:isExpanded?"rotate(90deg)":"none",transition:"transform 0.15s cubic-bezier(.4,0,.2,1)"}}>▶</span>
                                       {s.scheme}
                                     </td>
                                     <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#8899bb"}}>{cr(invested)}</td>
@@ -10013,7 +10035,7 @@ function FamilyApp() {
                       width:"100%",padding:"10px 12px",marginBottom:2,background:tab===t?"rgba(126,184,255,0.08)":"none",
                       border:"none",borderRadius:8,cursor:"pointer",textAlign:"left",
                       color:tab===t?"#7eb8ff":"#8899bb",fontSize:12,fontWeight:tab===t?700:500,
-                      transition:"all 0.12s"
+                      transition:"all 0.12s cubic-bezier(.4,0,.2,1)"
                     }}>{t}</button>
                   );})}
                 </div>
@@ -10024,10 +10046,10 @@ function FamilyApp() {
     )}
     <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"translateY(0)",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
       {/* ── PULL TO REFRESH INDICATOR ── */}
-      {(pulling||refreshing)&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",zIndex:600,display:"flex",alignItems:"center",gap:8,background:"rgba(15,20,40,0.95)",border:"1px solid rgba(99,102,241,0.3)",borderRadius:20,padding:"6px 14px",fontSize:11,color:"#7eb8ff",backdropFilter:"blur(8px)",transition:"opacity 0.2s"}}>
+      {(pulling||refreshing)&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",zIndex:600,display:"flex",alignItems:"center",gap:8,background:"rgba(15,20,40,0.95)",border:"1px solid rgba(99,102,241,0.3)",borderRadius:20,padding:"6px 14px",fontSize:11,color:"#7eb8ff",backdropFilter:"blur(8px)",transition:"opacity 0.2s cubic-bezier(.4,0,.2,1)"}}>
         {refreshing
           ? <><span style={{display:"inline-block",width:12,height:12,border:"2px solid #3b4fd8",borderTopColor:"#7eb8ff",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/><span>Refreshing…</span></>
-          : <><span style={{fontSize:14,transform:pullY>=THRESHOLD?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s",display:"inline-block"}}>↓</span><span>{pullY>=THRESHOLD?"Release to refresh":"Pull to refresh"}</span></>
+          : <><span style={{fontSize:14,transform:pullY>=THRESHOLD?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s cubic-bezier(.4,0,.2,1)",display:"inline-block"}}>↓</span><span>{pullY>=THRESHOLD?"Release to refresh":"Pull to refresh"}</span></>
         }
       </div>}
 
@@ -10440,7 +10462,7 @@ function FamilyApp() {
               title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
               style={{position:"relative",flexShrink:0,marginLeft:8,background:"none",border:"none",
                 cursor:"pointer",padding:11,display:"flex",alignItems:"center",justifyContent:"center",
-                minWidth:40,minHeight:40,borderRadius:8,transition:"background 0.15s"}}
+                minWidth:40,minHeight:40,borderRadius:8,transition:"background 0.15s cubic-bezier(.4,0,.2,1)"}}
               onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
               onMouseLeave={function(e){e.currentTarget.style.background="none";}}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={(dataIntegrityWarnings.length>0||staleCount>0)?"#f0b429":"#5a6a8a"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -10542,13 +10564,13 @@ function FamilyApp() {
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
           <div onClick={function(){setCoverageView("live");}}
             style={{background:"#0a1a0f",border:"1px solid "+(coverageView==="live"?"#34d399":"#1a3a20"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
-              boxShadow:coverageView==="live"?"0 0 0 2px #34d39933":"none",transition:"all 0.15s"}}>
+              boxShadow:coverageView==="live"?"0 0 0 2px #34d39933":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
             <div style={{fontSize:20,fontWeight:900,color:"#34d399",fontFamily:"monospace"}}>{priceCoverage.liveCount}</div>
             <div style={{fontSize:9,color:coverageView==="live"?"#34d399":"#3a4a6a",marginTop:2,fontWeight:coverageView==="live"?700:400}}>Live</div>
           </div>
           <div onClick={function(){setCoverageView("stale");}}
             style={{background:"#1a1500",border:"1px solid "+(coverageView==="stale"?"#f0b429":"#3a2a00"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
-              boxShadow:coverageView==="stale"?"0 0 0 2px #f0b42933":"none",transition:"all 0.15s"}}>
+              boxShadow:coverageView==="stale"?"0 0 0 2px #f0b42933":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
             <div style={{fontSize:20,fontWeight:900,color:"#f0b429",fontFamily:"monospace"}}>{priceCoverage.staleCount}</div>
             <div style={{fontSize:9,color:coverageView==="stale"?"#f0b429":"#3a4a6a",marginTop:2,fontWeight:coverageView==="stale"?700:400}}>Stale / No Feed</div>
           </div>
@@ -11737,7 +11759,7 @@ function PinLockScreen({ onUnlock }) {
             width:16, height:16, borderRadius:"50%",
             background: pin.length > i ? (error?"#f87171":"#7eb8ff") : "transparent",
             border: `2px solid ${pin.length > i ? (error?"#f87171":"#7eb8ff") : "#2a3a5a"}`,
-            transition:"all 0.15s",
+            transition:"all 0.15s cubic-bezier(.4,0,.2,1)",
           }}/>
         ))}
       </div>
@@ -11761,7 +11783,7 @@ function PinLockScreen({ onUnlock }) {
               fontSize: d === "⌫" ? 20 : 22,
               fontWeight: 600,
               cursor: d ? "pointer" : "default",
-              transition:"all 0.1s",
+              transition:"all 0.1s cubic-bezier(.4,0,.2,1)",
               fontFamily:"'Inter',system-ui,sans-serif",
               opacity: locked ? 0.4 : 1,
             }}>
@@ -12063,7 +12085,7 @@ const M = ({label, value, sub, color="#e8eaf0", onClick}) => (
   <div onClick={onClick} style={{background:"linear-gradient(155deg,#131830 0%,#0e1224 100%)",
     border:"1px solid #1e2848",borderRadius:14,padding:"15px 17px",
     boxShadow:"0 2px 16px #00000033, inset 0 1px 0 #ffffff06",
-    transition:"all .2s",position:"relative",overflow:"hidden",cursor:onClick?"pointer":"default"}}>
+    transition:"all 0.2s cubic-bezier(.4,0,.2,1)",position:"relative",overflow:"hidden",cursor:onClick?"pointer":"default"}}>
     <div style={{position:"absolute",top:0,left:0,right:0,height:2,
       background:`linear-gradient(90deg,transparent,${color}55,transparent)`}}/>
     <div style={{fontSize:9.5,color:"#4a5a85",marginBottom:6,textTransform:"uppercase",
@@ -16941,7 +16963,7 @@ function PortfolioApp(){
                       cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:tab===t?700:400,
                       background:tab===t?"#1e3a5f":"transparent",
                       color:tab===t?"#7eb8ff":"#8899bb",
-                      marginBottom:2,transition:"all 0.1s"
+                      marginBottom:2,transition:"all 0.1s cubic-bezier(.4,0,.2,1)"
                     }}>
                       {t}
                     </button>
@@ -18235,7 +18257,7 @@ function PortfolioDetailTab() {
           <div key={p.id} onClick={()=>setSelPerson(p.id)} style={{
             background:selPerson===p.id?"#0f1a2e":"#0a0d14",
             border:`1px solid ${selPerson===p.id?p.color:"#1e2a40"}`,
-            borderRadius:10,padding:"12px 14px",cursor:"pointer",transition:"all .15s",
+            borderRadius:10,padding:"12px 14px",cursor:"pointer",transition:"all 0.15s cubic-bezier(.4,0,.2,1)",
           }}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
               <div style={{width:28,height:28,borderRadius:"50%",background:p.color+"33",color:p.color,
@@ -19501,7 +19523,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
         color:sortCol===col?"#7eb8ff":"#3a4a6a",fontWeight:700,fontSize:9,
         borderBottom:"1px solid #1e2540",cursor:"pointer",userSelect:"none",
         textTransform:"uppercase",letterSpacing:"0.04em",whiteSpace:"nowrap",
-        transition:"color .15s"}}>
+        transition:"color 0.15s cubic-bezier(.4,0,.2,1)"}}>
       {label}{sortCol===col?(sortDir<0?" ↓":" ↑"):" ⇅"}
     </th>
   );};
@@ -19746,7 +19768,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                       style={{background:up?"#071a0f":"#1a0707",
                       border:"1px solid "+(up?"#0d3320":"#331010"),borderRadius:8,
                       padding:"4px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:1,
-                      cursor:"pointer",transition:"opacity 0.12s"}}
+                      cursor:"pointer",transition:"opacity 0.12s cubic-bezier(.4,0,.2,1)"}}
                       onMouseEnter={function(e){e.currentTarget.style.opacity="0.75";}}
                       onMouseLeave={function(e){e.currentTarget.style.opacity="1";}}>
                       <div style={{fontSize:10,fontWeight:700,color:"#e8eaf0"}}>{m.sym}</div>
@@ -19773,7 +19795,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
               const plPct = g.totalInv>0?((g.totalPL/g.totalInv)*100):null;
               return (
                 <div key={g.custodian} style={{background:"linear-gradient(155deg,#11152c 0%,#0d1122 100%)",border:"1px solid #1d2545",borderRadius:14,padding:"13px 14px",
-                  cursor:"pointer",transition:"border .15s"}}
+                  cursor:"pointer",transition:"border 0.15s cubic-bezier(.4,0,.2,1)"}}
                   onClick={()=>{setFilterCustodian(g.custodian);setGroupBy("none");}}>
                   <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0",marginBottom:4}}>{g.custodian}</div>
                   <div style={{fontSize:9,color:"#3a4a6a",marginBottom:8}}>{g.stocks} stocks · {g.members.size} member{g.members.size>1?"s":""}</div>
@@ -19919,7 +19941,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                       <span onMouseDown={function(e){startResize(col,e);}}
                         style={{position:"absolute",right:0,top:0,bottom:0,width:6,cursor:"col-resize",
                           background:"transparent",borderRight:"2px solid #1d2545",opacity:0,
-                          transition:"opacity 0.15s"}}
+                          transition:"opacity 0.15s cubic-bezier(.4,0,.2,1)"}}
                         onMouseEnter={function(e){e.target.style.opacity=1;}}
                         onMouseLeave={function(e){e.target.style.opacity=0;}}/>
                     </th>
@@ -20315,7 +20337,7 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
             style={{padding:"8px 14px",borderRadius:10,cursor:"pointer",textAlign:"left",
               border:"1px solid "+(activeSource===k?"#3a6abf":"#1d2545"),
               background:activeSource===k?"linear-gradient(135deg,#1c3260,#16294e)":"transparent",
-              color:activeSource===k?"#7eb8ff":"#46557a",transition:"all .15s"}}>
+              color:activeSource===k?"#7eb8ff":"#46557a",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
             <div style={{fontWeight:700,fontSize:11}}>{l}</div>
             <div style={{fontSize:9,marginTop:2,opacity:0.8}}>{count} stocks · {sub}</div>
           </button>
@@ -20536,11 +20558,11 @@ function LiveIndicesWidget() {
           return (
             <div key={item.l} style={{flexShrink:0,minWidth:82}}>
               <div style={{fontSize:8,color:"#2a3a5a",marginBottom:2}}>{item.l}</div>
-              <div style={{fontSize:13,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:d?(isUp?"#34d399":"#f87171"):"#1d2535"}}>
+              <div className={d?"anim-fade":""} style={{fontSize:13,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",color:d?(isUp?"#34d399":"#f87171"):"#1d2535"}}>
                 {fmt(d, item.fx)}
               </div>
               {d&&d.pct!=null&&(
-                <div style={{fontSize:9,color:isUp?"#10b981":"#ef4444",fontFamily:"monospace"}}>
+                <div className="anim-fade" style={{fontSize:9,color:isUp?"#10b981":"#ef4444",fontFamily:"monospace"}}>
                   {isUp?"▲":"▼"}{Math.abs(d.pct).toFixed(2)}%
                 </div>
               )}
@@ -20931,7 +20953,7 @@ function InsightsTab() {
       {/* Sub-nav */}
       <div style={{display:"flex",gap:7,marginBottom:18,flexWrap:"wrap"}}>
         {subBtns.map(b=>(
-          <button key={b.k} onClick={()=>setIView(b.k)} style={{padding:"6px 14px",borderRadius:8,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:iView===b.k?"#1e3a5f":"#111827",color:iView===b.k?"#7eb8ff":"#3a4a6a",transition:"all 0.15s"}}>
+          <button key={b.k} onClick={()=>setIView(b.k)} style={{padding:"6px 14px",borderRadius:8,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:iView===b.k?"#1e3a5f":"#111827",color:iView===b.k?"#7eb8ff":"#3a4a6a",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
             {b.l}{b.k==="alerts"&&alerts.length>0?<span style={{marginLeft:5,background:"#ef4444",color:"#fff",borderRadius:"50%",padding:"1px 5px",fontSize:9}}>{alerts.length}</span>:null}
           </button>
         ))}
@@ -21832,7 +21854,7 @@ function ProfilesTab() {
           const accs = (p.dematAccounts||[]).length;
           const total = memberWealth(m);
           return (
-            <div key={m.n} onClick={()=>setSelMem(m.n)} style={{background:selMem===m.n?"#1a2a4a":"linear-gradient(155deg,#11152c,#0d1122)",border:selMem===m.n?"1px solid #3a6abf":"1px solid #1d2545",borderRadius:10,padding:"10px 12px",cursor:"pointer",transition:"all 0.15s"}}>
+            <div key={m.n} onClick={()=>setSelMem(m.n)} style={{background:selMem===m.n?"#1a2a4a":"linear-gradient(155deg,#11152c,#0d1122)",border:selMem===m.n?"1px solid #3a6abf":"1px solid #1d2545",borderRadius:10,padding:"10px 12px",cursor:"pointer",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                 <div style={{width:28,height:28,borderRadius:"50%",background:m.c||"#7eb8ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{m.i}</div>
                 <div>
