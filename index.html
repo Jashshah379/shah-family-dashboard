@@ -20124,6 +20124,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                     {stockGroups.reduce((s,g)=>s+g.totalQty,0).toLocaleString("en-IN")}
                   </td>
                   <td style={{padding:"7px 8px"}}/>
+                  <td style={{padding:"7px 8px"}}/>
                   <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#8a9bc4",fontSize:10}}> 
                     {cr(stockGroups.reduce((s,g)=>s+g.totalInv,0))}
                   </td>
