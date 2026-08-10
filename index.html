@@ -9955,23 +9955,17 @@ function FamilyApp() {
   /* ── Live Price Coverage ── */
   const [showCoverage, setShowCoverage] = React.useState(false);
   const [coverageView, setCoverageView] = React.useState("stale"); /* "live" | "stale" */
-  /* Lock background scroll while the popup is open so it can't visually drift when the page scrolls */
+  /* Lock background scroll while the popup is open — simple overflow:hidden only,
+     no position/top offset trick, so there's no visual snap when it closes. */
   React.useEffect(function(){
     if(!showCoverage) return;
-    var prevOverflow = document.body.style.overflow;
-    var prevPosition = document.body.style.position;
-    var prevTop = document.body.style.top;
-    var scrollY = window.scrollY;
+    var prevHtmlOverflow = document.documentElement.style.overflow;
+    var prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = "-" + scrollY + "px";
-    document.body.style.width = "100%";
     return function(){
-      document.body.style.overflow = prevOverflow;
-      document.body.style.position = prevPosition;
-      document.body.style.top = prevTop;
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
     };
   }, [showCoverage]);
   var NON_EQUITY_SYMBOLS = new Set([
@@ -10638,9 +10632,10 @@ function FamilyApp() {
 
       {/* Live Price Coverage Panel */}
 {showCoverage&&(
-  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",justifyContent:"center",overflowY:"auto",padding:"max(8px,min(24px,3vw)) max(8px,min(24px,3vw)) calc(max(8px,min(24px,3vw)) + env(safe-area-inset-bottom)) max(8px,min(24px,3vw))"}}
+  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"max(8px,min(24px,3vw)) max(8px,min(24px,3vw)) calc(max(8px,min(24px,3vw)) + env(safe-area-inset-bottom)) max(8px,min(24px,3vw))",overscrollBehavior:"contain"}}
     onClick={function(e){if(e.target===e.currentTarget)setShowCoverage(false);}}>
-    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,margin:"auto",boxShadow:"0 24px 80px #00000099"}}>
+    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
+      onClick={function(e){e.stopPropagation();}}>
       <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
           <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📡 Live Price Coverage</div>
