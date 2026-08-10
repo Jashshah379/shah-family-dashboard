@@ -885,8 +885,8 @@ function EstatePlanningTab() {
     <div style={{paddingBottom:24}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:9,marginBottom:14}}>
         {[
-          {l:"Senior Generation",v:cr(realMembers.filter(function(m){return m&&m.n&&seniorGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)),c:"#7eb8ff",s:"to be passed on"},
-          {l:"Next Generation",v:cr(realMembers.filter(function(m){return m&&m.n&&nextGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0)),c:"#a78bfa",s:"already in next gen names"},
+          {l:"Senior Generation",v:cr(realMembers.filter(function(m){return m&&m.n&&seniorGen.includes(m.n);}).reduce((s,m)=>s+_eq(m)+(m.mf||0),0)),c:"#7eb8ff",s:"to be passed on"},
+          {l:"Next Generation",v:cr(realMembers.filter(function(m){return m&&m.n&&nextGen.includes(m.n);}).reduce((s,m)=>s+_eq(m)+(m.mf||0),0)),c:"#a78bfa",s:"already in next gen names"},
           {l:"HUF Accounts",v:hufAccounts.length,c:"#f0b429",s:"Hindu Undivided Family"},
           {l:"Accounts with Nominees",v:Object.values(profiles).filter(p=>p&&p.nominee).length,c:"#34d399",s:"of"+Object.keys(profiles).length+" total"},
         ].map(({l,v,c,s})=>(
@@ -907,7 +907,7 @@ function EstatePlanningTab() {
             {items.map(m=>(
               <div key={m.n} style={{display:"flex",justifyContent:"space-between",marginBottom:6,paddingBottom:6,borderBottom:"1px solid #0f1525"}}>
                 <span style={{fontSize:11,color:"#c8d0e8"}}>{m.n}</span>
-                <span style={{fontSize:11,color:c,fontFamily:"monospace",fontWeight:600}}>{cr((m.stocks||0)+(m.mf||0))}</span>
+                <span style={{fontSize:11,color:c,fontFamily:"monospace",fontWeight:600}}>{cr(_eq(m)+(m.mf||0))}</span>
               </div>
             ))}
             {items.length===0&&<div style={{fontSize:10,color:"#2a3a50"}}>None</div>}
@@ -935,7 +935,7 @@ function EstatePlanningTab() {
                       <span style={{color:"#c8d0e8",fontWeight:600}}>{m.n}</span>
                     </div>
                   </td>
-                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff"}}>{cr((m.stocks||0)+(m.mf||0))}</td>
+                  <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff"}}>{cr(_eq(m)+(m.mf||0))}</td>
                   <td style={{padding:"8px 12px",color:hasNominee?"#c8d0e8":"#f87171"}}>{nominee||"⚠ NOT SET"}</td>
                   <td style={{padding:"8px 12px",textAlign:"right"}}><span style={{fontSize:9,background:hasNominee?"#0f2a1a":"#2a0f0f",color:hasNominee?"#34d399":"#f87171",padding:"2px 7px",borderRadius:4,fontWeight:700}}>{hasNominee?"✓ Set":"Missing"}</span></td>
                 </tr>
@@ -21003,8 +21003,8 @@ function InsightsTab() {
   /* ── Generational split ── */
   const seniorGen = ["Vasumati Shah","Rasiklal Shah","Rasiklal HUF","Asha Shah","Maya Shah","Praful Shah HUF","Praful Shah"];
   const nextGen   = ["Jash Shah","Karishma Shah","Aarya Shah","Chetan Shah","Chetan Shah HUF","Amit Gandhi HUF"];
-  const seniorWealth = realMembers.filter(function(m){return m&&m.n&&seniorGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
-  const nextWealth   = realMembers.filter(function(m){return m&&m.n&&nextGen.includes(m.n);}).reduce((s,m)=>s+(m.stocks||0)+(m.mf||0),0);
+  const seniorWealth = realMembers.filter(function(m){return m&&m.n&&seniorGen.includes(m.n);}).reduce((s,m)=>s+_eq(m)+(m.mf||0),0);
+  const nextWealth   = realMembers.filter(function(m){return m&&m.n&&nextGen.includes(m.n);}).reduce((s,m)=>s+_eq(m)+(m.mf||0),0);
 
   /* ── Benchmark data (Nifty 50 approximate annual returns) ── */
   const niftyReturns = [{y:"FY20",r:-26},{y:"FY21",r:71},{y:"FY22",r:18},{y:"FY23",r:-4},{y:"FY24",r:29},{y:"FY25",r:5}];
@@ -21265,7 +21265,7 @@ function InsightsTab() {
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead><tr style={{background:"#0a0e1e"}}>{["#","Member","Equity","MF","Total","% of Family"].map(h=><th key={h} style={{padding:"7px 12px",textAlign:h==="Member"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
               <tbody>
-                {[...realMembers].sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0))).map((m,i)=>{
+                {[...realMembers].sort((a,b)=>(_eq(b)+(b.mf||0))-(_eq(a)+(a.mf||0))).map((m,i)=>{
                   const mv=_eq(m)+(m.mf||0);
                   const pct=totalWealth>0?(mv/totalWealth*100):0;
                   const isNext=nextGen.includes(m.n);
@@ -21279,7 +21279,7 @@ function InsightsTab() {
                           <span style={{fontSize:8,color:isNext?"#a78bfa":"#3a5a7a",background:isNext?"#1a1040":"#0a1525",padding:"1px 5px",borderRadius:4}}>{isNext?"Next Gen":"Senior"}</span>
                         </div>
                       </td>
-                      <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10}}>{cr(m.stocks||0)}</td>
+                      <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#7eb8ff",fontSize:10}}>{cr(_eq(m))}</td>
                       <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#34d399",fontSize:10}}>{cr(m.mf||0)}</td>
                       <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(mv)}</td>
                       <td style={{padding:"8px 12px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#f0b429"}}>{pct.toFixed(1)}%</td>
@@ -22168,7 +22168,7 @@ function NetWorthReportTab() {
 
   /* Per-member current breakdown */
   const memberData = MEMBERS.filter(m=>!m._isFamily&&(_eq(m)>0||m.mf>0))
-    .sort((a,b)=>((b.stocks||0)+(b.mf||0))-((a.stocks||0)+(a.mf||0)));
+    .sort((a,b)=>(_eq(b)+(b.mf||0))-(_eq(a)+(a.mf||0)));
 
   return (
     <div style={{paddingBottom:24}}>
@@ -22228,7 +22228,7 @@ function NetWorthReportTab() {
           <tbody>
             {memberData.map((m,i)=>{
               const bank=BANK.filter(b=>b.n===m.n).reduce((s,b)=>s+(b.b||0),0);
-              const total=(m.stocks||0)+(m.mf||0)+bank;
+              const total=_eq(m)+(m.mf||0)+bank;
               const grandTotal=totalEquity+totalMF+totalBank;
               return (
                 <tr key={m.n} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
@@ -22877,7 +22877,7 @@ function AccountSummaryTab() {
   /* Member-level rollup, straight from MEMBERS (includes bank + MF, not just stocks) */
   const memberRows = (typeof SAFE_MEMBERS!=="undefined"?SAFE_MEMBERS:MEMBERS)
     .filter(m=>m && !m._isFamily)
-    .map(m=>({name:m.n, stocks:m.stocks||0, mf:m.mf||0, bank:m.bank||0, total:m.total||0}))
+    .map(m=>{ var eq=_eq(m); return {name:m.n, stocks:eq, mf:m.mf||0, bank:m.bank||0, total:eq+(m.mf||0)+(m.bank||0)}; })
     .sort((a,b)=>b.total-a.total);
   const memberGrandTotal = memberRows.reduce((s,m)=>s+m.total,0);
 
