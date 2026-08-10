@@ -20000,7 +20000,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
               }} style={{background:"#0d1a2e",border:"1px solid #1e3a5f",color:"#7eb8ff",borderRadius:6,padding:"4px 12px",cursor:"pointer",fontSize:10,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                 ⬇ Export All
               </button>
-              <button onClick={function(){setSelectedStocks({});}}
+              <button onClick={function(){setSelectedStocks({});setSelectionMode(false);}}
                 style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:10,marginLeft:"auto",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                 Deselect All
               </button>
@@ -20047,7 +20047,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                 <tr style={{background:"#0a0e1e"}}>
                   <th style={{width:36,padding:"4px 8px",background:"#0a0e1e",borderBottom:"1px solid #1e2540",textAlign:"center",verticalAlign:"middle"}}>
                     {selectionMode&&(
-                      <div onClick={function(e){e.stopPropagation();var allSel=stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length;if(allSel){setSelectedStocks({});}else{var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}}}
+                      <div onClick={function(e){e.stopPropagation();var allSel=stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length;if(allSel){setSelectedStocks({});setSelectionMode(false);}else{var a={};stockGroups.forEach(function(g){a[g.sym]=true;});setSelectedStocks(a);}}}
                         style={{width:16,height:16,border:"2px solid "+(stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length?"#3b82f6":"#4a5a7a"),borderRadius:4,background:stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0}}>
                         {stockGroups.length>0&&Object.keys(selectedStocks).length===stockGroups.length&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1}}>✓</span>}
                       </div>
@@ -20096,10 +20096,12 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                         transition:"background 0.15s cubic-bezier(.4,0,.2,1), box-shadow 0.15s cubic-bezier(.4,0,.2,1)"}}
                       onMouseEnter={function(e){if(!isOpen&&!selectedStocks[g.sym])e.currentTarget.style.background="#0d1320";}}
                       onMouseLeave={function(e){if(!isOpen&&!selectedStocks[g.sym])e.currentTarget.style.background=gi%2===0?"transparent":"#080a12";}}>
-                      <td className="no-hover" style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle"}} onClick={function(e){e.stopPropagation();if(!selectionMode)setSelectionMode(true);setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;return n;});}}>
-                      <div style={{width:16,height:16,border:"2px solid "+(selectedStocks[g.sym]?"#3b82f6":selectionMode?"#4a5a7a":"#232d45"),borderRadius:4,background:selectedStocks[g.sym]?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)",opacity:selectionMode||selectedStocks[g.sym]?1:0.35}}>
-                        {selectedStocks[g.sym]&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1,animation:"checkPop 0.25s cubic-bezier(.34,1.56,.64,1)"}}>✓</span>}
-                      </div>
+                      <td className="no-hover" style={{width:36,padding:"4px 8px",textAlign:"center",verticalAlign:"middle"}} onClick={function(e){e.stopPropagation();if(!selectionMode)setSelectionMode(true);setSelectedStocks(function(p){var n=Object.assign({},p);if(n[g.sym])delete n[g.sym];else n[g.sym]=true;if(Object.keys(n).length===0)setSelectionMode(false);return n;});}}>
+                      {selectionMode&&(
+                        <div style={{width:16,height:16,border:"2px solid "+(selectedStocks[g.sym]?"#3b82f6":"#4a5a7a"),borderRadius:4,background:selectedStocks[g.sym]?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto",flexShrink:0,pointerEvents:"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                          {selectedStocks[g.sym]&&<span style={{color:"#fff",fontSize:11,fontWeight:900,lineHeight:1,animation:"checkPop 0.25s cubic-bezier(.34,1.56,.64,1)"}}>✓</span>}
+                        </div>
+                      )}
                     </td>
                       <td style={{padding:"7px 10px",overflow:"hidden"}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,overflow:"hidden"}}>
