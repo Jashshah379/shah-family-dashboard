@@ -870,7 +870,7 @@ function LivePriceBar({ prices, status, lastUpdate, updatedCount, onRefresh, cou
 
 
 function EstatePlanningTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
   const profiles = typeof FAMILY_PROFILES!=="undefined"?FAMILY_PROFILES:{};
   const grandTotal = realMembers.reduce((s,m)=>s+_eq(m)+(m.mf||0),0);
@@ -960,7 +960,7 @@ function XIRRTab() {
   ]);
   const [xirr, setXirr] = React.useState(null);
   const [member, setMember] = React.useState("Custom");
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* Newton-Raphson XIRR solver */
   const calcXIRR = (flows) => {
@@ -1540,7 +1540,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
       .then(function(d){setHistReturns(d||{});setHistLoading(false);})
       .catch(function(){setHistLoading(false);});
   }, []);
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH  = MEMBER_HOLDINGS["ALL_FAMILY"].filter(h=>h&&h.val>0);
   const mems  = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
@@ -6658,7 +6658,7 @@ const LEDGER_SEED_DATA = [
 ];
 
 function LedgerTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const ENTRY_TYPES = [
     {k:"fund_in",   l:"Fund In",        dr_cr:"CR", color:"#34d399"},
@@ -7132,7 +7132,7 @@ function BankStatementTab() {
   const [parsed, setParsed] = React.useState([]);
   const [processing, setProcessing] = React.useState(false);
   const [activeStatement, setActiveStatement] = React.useState(0);
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Detect bank from content ── */
   const detectBank = (text) => {
@@ -8188,7 +8188,7 @@ const DEFAULT_TAGS = [
 ];
 
 function AdvisorTrackerTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   /* ── Persistent state ── */
   const [tagSortCol, setTagSortCol] = React.useState("stock");
@@ -8718,7 +8718,7 @@ function AdvisorTrackerTab() {
 }
 
 function PPFTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const ppf = typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[];
   const total = ppf.reduce((s,p)=>s+p.bal,0);
   const RATE = 0.071; // 7.1% current PPF rate
@@ -8809,7 +8809,7 @@ function PPFTab() {
 }
 
 function MutualFundsTab() {
-  var cr = function(v) { if(!v&&v!==0)return"--";var a=Math.abs(v),si=v<0?"-":"";return a>=1e7?si+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?si+"₹"+(a/1e5).toFixed(1)+" L":si+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  var cr = function(v) { if(!v&&v!==0)return"--";var a=Math.abs(v),si=v<0?"-":"";return a>=1e7?si+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?si+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?si+"₹"+(a/1e3).toFixed(1)+"K":si+"₹"+Math.round(a).toLocaleString("en-IN"); };
   var reg  = typeof MF_REGISTRY!=="undefined"?MF_REGISTRY:{};
   var fols = typeof MEMBER_MF_FOLIOS!=="undefined"?MEMBER_MF_FOLIOS:{};
   var members = Object.keys(reg).sort();
@@ -9240,7 +9240,7 @@ function MembersTab({onStockClick}) {
   const [hSortDir, setHSortDir] = React.useState(-1);
   var onHSort = function(k){ setHSortCol(k); setHSortDir(function(d){return hSortCol===k?-d:-1;}); };
 
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
 
@@ -11988,7 +11988,7 @@ window.FamilyApp = FamilyApp;
    price chart (from available data)
 ═══════════════════════════════════════════════════════════ */
 function StockDetailPage({ sym, onBack }) {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
   const allH = (typeof MEMBER_HOLDINGS!=="undefined"?MEMBER_HOLDINGS["ALL_FAMILY"]:[]) || [];
 
@@ -22182,7 +22182,7 @@ function ProfilesTab() {
 
 /* ═══════════════════════════════════════════════ FY NET WORTH REPORT */
 function NetWorthReportTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const familyM = MEMBERS.find(m=>m._isFamily);
   const trend = (familyM||{}).casTrend||[];
 
@@ -22343,7 +22343,7 @@ function NetWorthReportTab() {
 
 /* ═══════════════════════════════════════════════ CHARGES ANALYSIS */
 function ChargesTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const ct5294 = typeof JASH_SUMMARY!=="undefined"?JASH_SUMMARY:{totalCharges:464958,totalSellVal:0,realisedPL:5202771};
   const chargeData = [
     {broker:"Zerodha (CT5294)",member:"Jash Shah",charges:ct5294.totalCharges,turnover:ct5294.totalSellVal||0,pl:ct5294.realisedPL,pct_of_pl:ct5294.realisedPL>0?(ct5294.totalCharges/ct5294.realisedPL*100):null},
@@ -22396,7 +22396,7 @@ function ChargesTab() {
 
 /* ═══════════════════════════════════════════════ DIVIDEND YIELD ON COST */
 function DivYieldTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0) return "--"; const a=Math.abs(v),s=v<0?"-":""; return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const r75Divs = typeof R75_DIVIDENDS!=="undefined"?R75_DIVIDENDS:{byStock:{},total:0};
   const v129Divs = typeof V129_DIVIDENDS!=="undefined"?V129_DIVIDENDS:{byStock:{},total:0};
   const allH = typeof MEMBER_HOLDINGS!=="undefined"?(MEMBER_HOLDINGS["ALL_FAMILY"]||[]):[];
@@ -22473,7 +22473,7 @@ function DivYieldTab() {
 
 /* ═══════════════════════════ CORPORATE ACTIONS REGISTER */
 function CorporateActionsTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [filter, setFilter] = React.useState("all");
 
   /* Corporate actions — manually maintained, auto-cross-referenced with holdings */
@@ -22591,7 +22591,7 @@ function CorporateActionsTab() {
 
 /* ═══════════════════════════ HOLDING PERIOD ANALYSIS */
 function HoldingPeriodTab() {
-  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
+  const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const allH = (typeof MEMBER_HOLDINGS!=="undefined" ? MEMBER_HOLDINGS["ALL_FAMILY"] : null) || [];
   const [selMem, setSelMem] = React.useState("All");
   const realMembers = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(function(m){return m&&m.n&&!m._isFamily;});
