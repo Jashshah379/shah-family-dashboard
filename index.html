@@ -7781,11 +7781,12 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                 <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
                   <div style={{padding:"10px 14px",borderBottom:"1px solid #1d2545",fontSize:10,fontWeight:700,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em"}}>Family Holdings</div>
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-                    <thead><tr style={{background:"#080a12"}}>{["Member","Custodian","Qty","Avg","CMP","Value","P&L","Return"].map(h=><th key={h} style={{padding:"6px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
+                    <thead><tr style={{background:"#080a12"}}>{["Member","Custodian","Qty","Avg","CMP","Value","Day P&L","P&L","Return"].map(h=><th key={h} style={{padding:"6px 12px",textAlign:h==="Member"||h==="Custodian"?"left":"right",color:"#3a4a6a",fontSize:9,fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
                     <tbody>
                       {holdings.map((h,i)=>{
                         const pl = h.val - h.inv;
                         const ret = h.inv>0?(pl/h.inv*100):0;
+                        const dayPL = (h.chg||0) * (h.qty||0);
                         const mem = (typeof MEMBERS!=="undefined"?MEMBERS:[]).filter(Boolean).find(function(m){return m.n===h._member;});
                         return (
                           <tr key={i} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
@@ -7800,6 +7801,7 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                             <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#3a4a6a",fontSize:10}}>{h.avg?"₹"+h.avg:"—"}</td>
                             <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#7eb8ff"}}>{h.cmp?"₹"+h.cmp:"—"}</td>
                             <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:"#e8eaf0"}}>{cr(h.val)}</td>
+                            <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:600,fontSize:10,color:h.isLive?(dayPL>=0?"#34d399":"#f87171"):"#3a4a6a"}}>{h.isLive?(dayPL!==0?cr(dayPL):"—"):"—"}</td>
                             <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:600,color:pl>=0?"#34d399":"#f87171"}}>{cr(pl)}</td>
                             <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:ret>=0?"#34d399":"#f87171"}}>{(ret>=0?"+":"")+ret.toFixed(1)}%</td>
                           </tr>
@@ -7813,6 +7815,7 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#8a6a20",fontSize:10}}>{totalInv>0&&totalQty>0?"₹"+(totalInv/totalQty).toFixed(2):"—"}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",color:"#3a5a7a",fontWeight:600}}>{cmp>0?"₹"+cmp.toLocaleString("en-IN"):"—"}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:"#7eb8ff"}}>{cr(totalVal)}</td>
+                        <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,fontSize:10,color:(function(){var t=holdings.reduce(function(s,h){return s+(h.isLive?(h.chg||0)*(h.qty||0):0);},0);return t>=0?"#34d399":"#f87171";})()}}>{(function(){var t=holdings.reduce(function(s,h){return s+(h.isLive?(h.chg||0)*(h.qty||0):0);},0);return t!==0?cr(t):"—";})()}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:totalPL>=0?"#34d399":"#f87171"}}>{cr(totalPL)}</td>
                         <td style={{padding:"7px 12px",textAlign:"right",fontFamily:"monospace",fontWeight:800,color:retPct>=0?"#34d399":"#f87171"}}>{(retPct>=0?"+":"")+retPct.toFixed(1)}%</td>
                       </tr></tfoot>
