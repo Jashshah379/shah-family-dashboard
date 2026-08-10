@@ -7508,6 +7508,26 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
     if(!h.val || h.val<=0) return false;
     return h.s===sym || h.s===_symToName || h.sym===sym || h.sym===_ticker || h._nseSym===sym || h._nseSym===_ticker;
   });
+
+  /* ── Advisor recommendations for this stock ── */
+  const advisorTags = React.useMemo(function(){
+    var advisors = DEFAULT_ADVISORS;
+    try{ var sA=localStorage.getItem(ADVISOR_STORAGE); if(sA) advisors=JSON.parse(sA); }catch(e){}
+    var tags = DEFAULT_TAGS;
+    try{ var sT=localStorage.getItem(ADVISOR_TAGS_STORAGE); if(sT) tags=JSON.parse(sT); }catch(e){}
+    var byId = {};
+    advisors.forEach(function(a){ byId[a.id]=a; });
+    var matches = tags.filter(function(t){ return t.stock===sym || t.stock===_symToName; });
+    return matches.map(function(t){ return Object.assign({}, t, {advisor: byId[t.advisorId]}); }).filter(function(t){ return t.advisor; });
+  }, [sym, _symToName]);
+
+  /* ── MTF (margin-funded) status across family holdings of this stock ── */
+  const mtfInfo = React.useMemo(function(){
+    var mtfHoldings = holdings.filter(function(h){ return h.mtf; });
+    if(mtfHoldings.length===0) return null;
+    var totalMtfQty = mtfHoldings.reduce(function(s,h){ return s+(h.mtfQty||h.qty||0); }, 0);
+    return { count: mtfHoldings.length, qty: totalMtfQty };
+  }, [holdings]);
   /* Sparkline renderer */
   var SparkLine = function(props) {
     var pts = props.data || [];
@@ -7623,6 +7643,29 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                 {(typeof DISPLAY_NAME_MAP!=="undefined"&&DISPLAY_NAME_MAP[sym])||sym}
               </div>
               <div style={{fontSize:9,color:"#2a3a5a",fontFamily:"'JetBrains Mono',monospace",marginTop:2,letterSpacing:"0.08em"}}>{sym}</div>
+              {(mtfInfo||advisorTags.length>0)&&(
+                <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:6}}>
+                  {mtfInfo&&(
+                    <span title={mtfInfo.qty.toLocaleString("en-IN")+" shares pledged for margin across "+mtfInfo.count+" account"+(mtfInfo.count>1?"s":"")}
+                      style={{fontSize:9,fontWeight:800,padding:"2px 8px",borderRadius:20,background:"rgba(251,146,60,0.15)",color:"#fb923c",border:"1px solid rgba(251,146,60,0.35)",letterSpacing:"0.05em"}}>
+                      MTF {mtfInfo.qty.toLocaleString("en-IN")}
+                    </span>
+                  )}
+                  {[...new Map(advisorTags.map(function(t){return [t.advisorId,t.advisor];})).values()].map(function(a){
+                    var initials=(a.name||"?").split(" ").map(function(w){return w[0];}).join("").slice(0,2).toUpperCase();
+                    var count=advisorTags.filter(function(t){return t.advisorId===a.id;}).length;
+                    return (
+                      <span key={a.id} title={a.name+(a.firm?" · "+a.firm:"")+" · "+count+" recommendation"+(count>1?"s":"")}
+                        style={{display:"inline-flex",alignItems:"center",gap:4,background:(a.color||"#3a4a6a")+"22",
+                          border:"1px solid "+(a.color||"#3a4a6a")+"55",borderRadius:20,padding:"2px 8px 2px 2px",fontSize:9,fontWeight:700,color:a.color||"#8a9bc4"}}>
+                        <span style={{width:16,height:16,borderRadius:"50%",background:a.color||"#3a4a6a",color:"#070a16",
+                          display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900}}>{initials}</span>
+                        {a.name}{count>1?" ×"+count:""}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div style={{display:"flex",alignItems:"flex-start",gap:6,flexShrink:0}}>
               <button onClick={function(){
@@ -20131,7 +20174,10 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
                   <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:800,color:"#6499ff",fontSize:12}}> 
                     {cr(stockGroups.reduce((s,g)=>s+g.totalVal,0))}
                   </td>
-                  <td style={{padding:"7px 8px"}}/>
+                  <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:10,
+                    color:(function(){var dpl=stockGroups.reduce((s,g)=>s+g.totalDayPL,0);return dpl>0?"#10b981":dpl<0?"#ef4444":"#3a4a6a";}())}}>
+                    {(function(){var dpl=stockGroups.reduce((s,g)=>s+g.totalDayPL,0);return dpl!==0?(dpl>0?"+":"")+cr(Math.abs(dpl)):"—";})()}
+                  </td>
                   <td style={{padding:"7px 8px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:10,
                     color:(function(){var pl=stockGroups.reduce((s,g)=>s+g.totalPL,0);return pl>=0?"#34d399":"#f87171";}())}}>
                     {(function(){var pl=stockGroups.reduce((s,g)=>s+g.totalPL,0),inv=stockGroups.reduce((s,g)=>s+g.totalInv,0);return inv>0?(pl>=0?"+":"")+cr(Math.abs(pl)):"—";})()}
