@@ -10764,9 +10764,9 @@ function FamilyApp() {
 
       {/* Live Price Coverage Panel */}
 {showCoverage&&(
-  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"max(8px,min(24px,3vw)) max(8px,min(24px,3vw)) calc(max(8px,min(24px,3vw)) + env(safe-area-inset-bottom)) max(8px,min(24px,3vw))",overscrollBehavior:"contain"}}
+  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
     onClick={function(e){if(e.target===e.currentTarget)setShowCoverage(false);}}>
-    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
+    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
       onClick={function(e){e.stopPropagation();}}>
       <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
