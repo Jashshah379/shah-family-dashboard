@@ -7692,10 +7692,10 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                   XLSX.utils.book_append_sheet(wb,ws,"Holdings");
                   XLSX.writeFile(wb,fname+".xlsx");
                 }} title={holdings.length?"Export this stock's holdings":"No active holdings to export"}
-                style={{background:"#11162e",border:"1px solid #1d2545",borderRadius:8,cursor:holdings.length?"pointer":"default",color:holdings.length?"#7eb8ff":"#2a3550",fontSize:14,padding:8,minWidth:34,minHeight:34,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>
+                style={{background:"#11162e",border:"1px solid #1d2545",borderRadius:6,cursor:holdings.length?"pointer":"default",color:holdings.length?"#7eb8ff":"#2a3550",fontSize:11,padding:6,minWidth:28,minHeight:28,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                 ⬇
               </button>
-              <button onClick={function(){onClose();}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:22,padding:"0 0 0 4px",flexShrink:0,lineHeight:1}}>✕</button>
+              <button onClick={function(){onClose();}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:"0 0 0 4px",flexShrink:0,lineHeight:1}}>✕</button>
             </div>
           </div>
           {/* Row 2: CMP + live badge + day change + Total Qty + Avg */}
@@ -9239,6 +9239,9 @@ function MembersTab({onStockClick}) {
   const [hSortCol, setHSortCol] = React.useState("val");
   const [hSortDir, setHSortDir] = React.useState(-1);
   var onHSort = function(k){ setHSortCol(k); setHSortDir(function(d){return hSortCol===k?-d:-1;}); };
+  const [mfSortCol, setMfSortCol] = React.useState(null);
+  const [mfSortDir, setMfSortDir] = React.useState(-1);
+  var onMfSort = function(k){ setMfSortDir(function(d){return mfSortCol===k?-d:-1;}); setMfSortCol(k); };
 
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
 
@@ -9459,17 +9462,46 @@ function MembersTab({onStockClick}) {
                           </div>
                           <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                             <thead><tr style={{background:"#0a0e1e"}}>
-                              {["Scheme","Invested","Current Value","P&L","XIRR"].map(function(h){return(
-                                <th key={h} style={{padding:"6px 12px",textAlign:h==="Scheme"?"left":"right",fontSize:8,color:"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase"}}>{h}</th>
+                              {[["Scheme","scheme",false],["Invested","invested",true],["Current Value","value",true],["P&L","pl",true],["XIRR","xirr",true]].map(function(hc){
+                                var label=hc[0],key=hc[1],isNum=hc[2];
+                                var active=mfSortCol===key;
+                                return(
+                                <th key={label} onClick={function(){onMfSort(key);}} style={{padding:"6px 12px",textAlign:isNum?"right":"left",fontSize:8,color:active?"#7eb8ff":"#3a4a6a",fontWeight:700,borderBottom:"1px solid #1d2545",textTransform:"uppercase",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}>
+                                  {label}{active?(mfSortDir>0?" ▲":" ▼"):""}
+                                </th>
                               );})}
                             </tr></thead>
                             <tbody>
-                              {mfData.schemes.map(function(s,i){
-                                var schemeKey = m.n+"|"+(s.folio||s.scheme||i);
+                              {(function(){
+                                var rows=mfData.schemes.map(function(s,i){
+                                  var invested=s.invested||s.inv||0;
+                                  var curVal=s.value||s.currentValue||0;
+                                  var pl2=s.gain!==undefined?s.gain:curVal-invested;
+                                  var retPct2=invested>0?(pl2/invested*100):null;
+                                  return Object.assign({}, s, {_i:i, _invested:invested, _curVal:curVal, _pl:pl2, _xirr:s.xirr!=null?s.xirr:null});
+                                });
+                                if(mfSortCol){
+                                  var extract={
+                                    scheme:function(r){return (r.scheme||r.folio||"").toLowerCase();},
+                                    invested:function(r){return r._invested;},
+                                    value:function(r){return r._curVal;},
+                                    pl:function(r){return r._pl;},
+                                    xirr:function(r){return r._xirr!=null?r._xirr:-999999;},
+                                  }[mfSortCol];
+                                  if(extract){
+                                    rows=rows.slice().sort(function(a,b){
+                                      var av=extract(a),bv=extract(b);
+                                      if(typeof av==="string") return av.localeCompare(bv)*mfSortDir*-1;
+                                      return (av-bv)*mfSortDir*-1;
+                                    });
+                                  }
+                                }
+                                return rows.map(function(s,i){
+                                var schemeKey = m.n+"|"+(s.folio||s.scheme||s._i);
                                 var isExpanded = expandedScheme===schemeKey;
-                                var invested = s.invested||s.inv||0;
-                                var curVal = s.value||s.currentValue||0;
-                                var pl2 = s.gain!==undefined ? s.gain : curVal-invested;
+                                var invested = s._invested;
+                                var curVal = s._curVal;
+                                var pl2 = s._pl;
                                 var retPct2 = invested>0 ? (pl2/invested*100) : null;
                                 return [
                                   <tr key={i} onClick={function(){setExpandedScheme(isExpanded?null:schemeKey);}}
@@ -9501,7 +9533,8 @@ function MembersTab({onStockClick}) {
                                     </tr>
                                   )
                                 ];
-                              })}
+                              });
+                              })()}
                             </tbody>
                           </table>
                         </div>
@@ -9749,6 +9782,33 @@ function FamilyApp() {
     return syms;
   }, []);
   const { actions: corpActions, caStatus, refresh: refreshCA } = useCorporateActions(Array.from(_allNSESymsCA));
+
+  /* ── High-priority corporate action alerts — Rights Issues, Splits, Bonus, Mergers,
+     Delisting, Buybacks. These are the ones that actually require a decision or can
+     silently change a holding's value if missed (e.g. the Genesys rights entitlement),
+     unlike routine dividend/AGM announcements. Feeds both the bell badge and the panel. */
+  const highPriorityCA = React.useMemo(function(){
+    var HIGH_PRIORITY_TYPES = {RTS:1, SPL:1, BON:1, MRG:1, DEL:1, BYB:1};
+    var now = new Date();
+    function parseNSEDateCA(s) {
+      if(!s) return null;
+      var m = s.match(/(\d{2})-([A-Za-z]{3})-(\d{4})/);
+      if(m) return new Date(m[1]+" "+m[2]+" "+m[3]);
+      var d = new Date(s);
+      return isNaN(d) ? null : d;
+    }
+    return (corpActions||[]).filter(function(a){
+      if(!HIGH_PRIORITY_TYPES[a._type]) return false;
+      var d = parseNSEDateCA(a.exDate||a.recordDate||"");
+      if(!d) return false;
+      var diffDays = (d-now)/(1000*86400);
+      return diffDays >= -14 && diffDays <= 30; /* recent (14d back) through upcoming (30d out) */
+    }).sort(function(a,b){
+      var da = parseNSEDateCA(a.exDate||a.recordDate||"") || 0;
+      var db = parseNSEDateCA(b.exDate||b.recordDate||"") || 0;
+      return da - db;
+    });
+  }, [corpActions]);
   const { pulling, pullY, refreshing, THRESHOLD } = usePullToRefresh(React.useCallback(function() {
     return fetchPrices ? fetchPrices() : Promise.resolve();
   }, [fetchPrices]));
@@ -10092,6 +10152,8 @@ function FamilyApp() {
   const [schDir,setSchDir]=React.useState(-1);
   const [bDir,setBDir]=React.useState(-1);
   const [bFilter,setBFilter]=React.useState("All");
+  const [bSelMode,setBSelMode]=React.useState(false);
+  const [bSelected,setBSelected]=React.useState({});
   const [plDir,setPlDir]=React.useState(-1);
   const [plView,setPlView]=React.useState("table");
   const [plFilter,setPlFilter]=React.useState("all");
@@ -10576,17 +10638,17 @@ function FamilyApp() {
             
             <div style={{marginLeft:"auto",paddingRight:4,flexShrink:0}}><LiveClock/></div>
             <button onClick={function(){setShowFreshness(function(v){return !v;});}}
-              title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(staleCount>0?staleCount+" stale account(s)":"All data up to date")}
+              title={dataIntegrityWarnings.length>0?(dataIntegrityWarnings.length+" item(s) need attention · "+staleCount+" stale account(s)"):(highPriorityCA.length>0?highPriorityCA.length+" corporate action(s) need attention":staleCount>0?staleCount+" stale account(s)":"All data up to date")}
               style={{position:"relative",flexShrink:0,marginLeft:8,background:"none",border:"none",
                 cursor:"pointer",padding:11,display:"flex",alignItems:"center",justifyContent:"center",
                 minWidth:40,minHeight:40,borderRadius:8,transition:"background 0.15s cubic-bezier(.4,0,.2,1)"}}
               onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
               onMouseLeave={function(e){e.currentTarget.style.background="none";}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={(dataIntegrityWarnings.length>0||staleCount>0)?"#f0b429":"#5a6a8a"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={(dataIntegrityWarnings.length>0||staleCount>0||highPriorityCA.length>0)?"#f0b429":"#5a6a8a"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
-              {(dataIntegrityWarnings.length+staleCount)>0&&(
+              {(dataIntegrityWarnings.length+staleCount+highPriorityCA.length)>0&&(
                 <span style={{position:"absolute",top:6,right:6,width:7,height:7,borderRadius:"50%",
                   background:"#f0b429",border:"1.5px solid #070a16",boxShadow:"0 0 4px #f0b429"}}/>
               )}
@@ -10611,12 +10673,47 @@ function FamilyApp() {
     <div style={{padding:"16px 18px",borderBottom:"1px solid #1d2545",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
       <div>
         <div style={{fontSize:13,fontWeight:800,color:"#e8eaf0"}}>🔔 Notifications</div>
-        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Data integrity & freshness</div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Corporate actions, data integrity & freshness</div>
       </div>
       <button onClick={function(){setShowFreshness(false);}} style={{background:"#1d2545",border:"none",color:"#7eb8ff",borderRadius:6,padding:"8px 14px",minHeight:36,cursor:"pointer",fontSize:11}}>✕ Close</button>
     </div>
 
     <div style={{flex:1,overflowY:"auto",padding:"10px 16px"}}>
+      {highPriorityCA.length>0&&(
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:9,color:"#f472b6",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,fontWeight:700}}>
+            🗓 Corporate Actions Needing Attention ({highPriorityCA.length})
+          </div>
+          {(function(){
+            var CA_TYPE_LABEL = {RTS:"Rights Issue",SPL:"Split",BON:"Bonus",MRG:"Merger",DEL:"Delisting",BYB:"Buyback"};
+            var CA_TYPE_COLOR = {RTS:"#f472b6",SPL:"#f0b429",BON:"#fb923c",MRG:"#22d3ee",DEL:"#f87171",BYB:"#7eb8ff"};
+            function fmtCADate(s){
+              if(!s) return "–";
+              var m=s.match(/(\d{2})-([A-Za-z]{3})-(\d{4})/);
+              var d=m?new Date(m[1]+" "+m[2]+" "+m[3]):new Date(s);
+              if(isNaN(d)) return s;
+              return d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"2-digit"});
+            }
+            return highPriorityCA.map(function(a,i){
+              var color=CA_TYPE_COLOR[a._type]||"#8899bb";
+              return (
+                <div key={i} style={{padding:"9px 10px",marginBottom:4,background:color+"11",borderRadius:8,border:"1px solid "+color+"40"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+                    <div style={{minWidth:0,flex:1}}>
+                      <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0"}}>{a.symbol||"—"}</div>
+                      <div style={{fontSize:9,color:"#8a9ab5",marginTop:2,lineHeight:1.4}}>{a._purpose}</div>
+                    </div>
+                    <div style={{flexShrink:0,textAlign:"right"}}>
+                      <span style={{fontSize:8,fontWeight:800,padding:"2px 7px",borderRadius:5,background:color+"22",color:color}}>{CA_TYPE_LABEL[a._type]||a._type}</span>
+                      <div style={{fontSize:9,color:"#5a6a8a",marginTop:3}}>{fmtCADate(a.exDate||a.recordDate)}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            });
+          })()}
+        </div>
+      )}
       {dataIntegrityWarnings.length>0&&(
         <div style={{marginBottom:14}}>
           <div style={{fontSize:9,color:"#f87171",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,fontWeight:700}}>
@@ -11665,6 +11762,12 @@ function FamilyApp() {
           <div style={{background:"#0f1220",border:"1px solid #1a2035",borderRadius:10,overflow:"hidden"}}>
             {/* Table controls */}
             <div style={{padding:"12px 14px",borderBottom:"1px solid #1a2035",display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+              <button onClick={function(){setBSelMode(function(v){if(v){setBSelected({});}return !v;});}}
+                style={{background:bSelMode?"#1e3a5f":"#111827",border:"1px solid "+(bSelMode?"#3b82f6":"#1d2545"),
+                  borderRadius:5,padding:"3px 10px",color:bSelMode?"#7eb8ff":"#6a7a9a",
+                  cursor:"pointer",fontSize:10,fontWeight:700,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                {bSelMode?"✕ Exit Select":"☑ Select"}
+              </button>
               <span style={{fontSize:10,color:"#3a4a6a",fontWeight:600,textTransform:"uppercase"}}>Filter:</span>
               <button onClick={()=>setBFilter("All")} style={{padding:"3px 10px",borderRadius:5,border:"none",cursor:"pointer",fontSize:10,fontWeight:600,background:bFilter==="All"?"#1e3a5f":"#111827",color:bFilter==="All"?"#60a5fa":"#3a4a6a"}}>All ({BANK.length})</button>
               {banks.map(b=>{const bc=BC[b]||{bg:"#1a2035",tx:"#6a7a9a"};return(
@@ -11675,10 +11778,36 @@ function FamilyApp() {
               ))}
               <span style={{marginLeft:"auto",fontSize:10,color:"#3a4a6a"}}>{sorted.length} accounts · {cr(sorted.reduce((s,r)=>s+r.b,0))}</span>
             </div>
+            {/* Selection toolbar + live summary */}
+            <div style={{maxHeight:bSelMode?60:0,opacity:bSelMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+              {(()=>{
+                var selRows=sorted.filter(function(r){return bSelected[r.n+"|"+r.bank+"|"+r.t];});
+                var selCount=selRows.length;
+                var selTotal=selRows.reduce(function(s,r){return s+(r.b||0);},0);
+                return (
+                <div style={{display:"flex",alignItems:"center",gap:14,padding:"8px 14px",background:"#0a1628",borderBottom:"1px solid #1e3a5f",flexWrap:"wrap"}}>
+                  <span style={{fontSize:10,fontWeight:700,color:selCount>0?"#7eb8ff":"#4a5a7a"}}>{selCount>0?selCount+" selected":"None selected"}</span>
+                  <button onClick={function(){var all={};sorted.forEach(function(r){all[r.n+"|"+r.bank+"|"+r.t]=true;});setBSelected(all);}}
+                    style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,fontWeight:600}}>
+                    Select All ({sorted.length})
+                  </button>
+                  {selCount>0&&(<>
+                    <span style={{fontSize:9,color:"#3a4a6a"}}>TOTAL BALANCE</span>
+                    <span style={{fontSize:13,fontWeight:800,color:"#f0b429",fontFamily:"'JetBrains Mono',monospace"}}>{cr(selTotal)}</span>
+                    <button onClick={function(){setBSelected({});setBSelMode(false);}}
+                      style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto"}}>
+                      Deselect All
+                    </button>
+                  </>)}
+                </div>
+                );
+              })()}
+            </div>
             <div style={{overflowX:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                 <thead>
                   <tr style={{background:"#080a12"}}>
+                    {bSelMode&&<th style={{width:30,padding:"8px 6px",borderBottom:"1px solid #1e2540"}}/>}
                     <SH col="n"    label="Account Holder" right={false}/>
                     <SH col="bank" label="Bank"           right={false}/>
                     <SH col="t"    label="Type"           right={false}/>
@@ -11693,8 +11822,17 @@ function FamilyApp() {
                     const barW=Math.min(100,pct*3);
                     const mem=MEMBERS.find(function(m){return m.n&&(m.n===r.n||((m.n||"").split(" ").slice(0,2).join(" ")===r.n.split(" ").slice(0,2).join(" ")));});
                     const memCol=mem?mem.c:"#4a5a80";
+                    const rKey=r.n+"|"+r.bank+"|"+r.t;
+                    const isSel=!!bSelected[rKey];
                     return (
-                      <tr key={r.n+r.bank} style={{borderBottom:"1px solid #0d1020",background:i%2===0?"transparent":"#080a12"}}>
+                      <tr key={r.n+r.bank} style={{borderBottom:"1px solid #0d1020",background:isSel?"#0d1a2e":i%2===0?"transparent":"#080a12",boxShadow:isSel?"inset 3px 0 0 #3b82f6":"none",transition:"background 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                        {bSelMode&&(
+                          <td style={{width:30,padding:"8px 6px",textAlign:"center"}} onClick={function(){setBSelected(function(p){var n=Object.assign({},p);if(n[rKey])delete n[rKey];else n[rKey]=true;if(Object.keys(n).length===0)setBSelMode(false);return n;});}}>
+                            <div style={{width:14,height:14,border:"2px solid "+(isSel?"#3b82f6":"#4a5a7a"),borderRadius:4,background:isSel?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto"}}>
+                              {isSel&&<span style={{color:"#fff",fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
+                            </div>
+                          </td>
+                        )}
                         <td style={{padding:"8px 11px"}}>
                           <div style={{display:"flex",alignItems:"center",gap:8}}>
                             <div style={{width:8,height:8,borderRadius:"50%",background:memCol,flexShrink:0}}/>
@@ -11719,6 +11857,7 @@ function FamilyApp() {
                 </tbody>
                 <tfoot>
                   <tr style={{background:"#090c18",borderTop:"2px solid #1e2540"}}>
+                    {bSelMode&&<td/>}
                     <td colSpan={3} style={{padding:"8px 11px",color:"#3a4a6a",fontWeight:700,fontSize:10}}>TOTAL ({sorted.length} accounts)</td>
                     <td style={{padding:"8px 11px",textAlign:"right",fontFamily:"monospace",fontWeight:700,color:"#f0b429",fontSize:13}}>{cr(sorted.reduce((s,r)=>s+r.b,0))}</td>
                     <td/>
@@ -19958,10 +20097,19 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
           </div>
           {/* ── Selection Toolbar — visible for the whole time selection mode is on, so
                "Select All" is reachable immediately without picking a row by hand first ── */}
-          <div className="anim-fade" style={{maxHeight:selectionMode?60:0,opacity:selectionMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+          <div className="anim-fade" style={{maxHeight:selectionMode?140:0,opacity:selectionMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+            {(()=>{
+              var selGroups=(groupBy==="stock"?stockGroups:sorted).filter(function(g){return selectedStocks[g.sym];});
+              var selCount=selGroups.length;
+              var selInv=selGroups.reduce(function(s,g){return s+(g.totalInv||0);},0);
+              var selVal=selGroups.reduce(function(s,g){return s+(g.totalVal||0);},0);
+              var selPL=selGroups.reduce(function(s,g){return s+(g.totalPL||0);},0);
+              var selDayPL=selGroups.reduce(function(s,g){return s+(g.totalDayPL||0);},0);
+              var selRet=selInv>0?(selPL/selInv*100):0;
+              return (<>
             <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",margin:"0 0 8px",background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,flexWrap:"wrap"}}>
-              <span style={{fontSize:10,fontWeight:700,color:Object.keys(selectedStocks).length>0?"#7eb8ff":"#4a5a7a",minWidth:64}}>
-                {Object.keys(selectedStocks).length>0?Object.keys(selectedStocks).length+" selected":"None selected"}
+              <span style={{fontSize:10,fontWeight:700,color:selCount>0?"#7eb8ff":"#4a5a7a",minWidth:64}}>
+                {selCount>0?selCount+" selected":"None selected"}
               </span>
               <button onClick={function(){
                 var all={};
@@ -19970,7 +20118,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
               }} style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:10,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                 Select All ({(groupBy==="stock"?stockGroups:sorted).length})
               </button>
-              {Object.keys(selectedStocks).length>0&&(<>
+              {selCount>0&&(<>
               <button onClick={function(){
                 var rows=[];
                 (groupBy==="stock"?stockGroups:sorted).forEach(function(g){
@@ -20006,6 +20154,25 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
               </button>
               </>)}
             </div>
+            {/* ── Live totals for the current selection ── */}
+            {selCount>0&&(
+              <div style={{display:"flex",gap:0,padding:"10px 14px",margin:"0 0 8px",background:"linear-gradient(155deg,#0d1830,#0a1220)",border:"1px solid #1e3a5f",borderRadius:10,flexWrap:"wrap"}}>
+                {[
+                  {l:"Invested",v:cr(selInv),c:"#8a9ab5"},
+                  {l:"Current Value",v:cr(selVal),c:"#7eb8ff"},
+                  {l:"Day P&L",v:(selDayPL!==0?(selDayPL>=0?"+":"")+cr(selDayPL):"—"),c:selDayPL>=0?"#34d399":"#f87171"},
+                  {l:"P&L",v:(selPL>=0?"+":"")+cr(selPL),c:selPL>=0?"#34d399":"#f87171"},
+                  {l:"Return",v:(selRet>=0?"+":"")+selRet.toFixed(1)+"%",c:selRet>=0?"#34d399":"#f87171"},
+                ].map(function(k,ki){return(
+                  <div key={k.l} style={{padding:"0 18px",borderLeft:ki>0?"1px solid #1e2a45":"none",flex:"1 1 auto",minWidth:100}}>
+                    <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:2}}>{k.l}</div>
+                    <div style={{fontSize:13,fontWeight:800,color:k.c,fontFamily:"'JetBrains Mono',monospace"}}>{k.v}</div>
+                  </div>
+                );})}
+              </div>
+            )}
+            </>);
+            })()}
           </div>
 
           {/* ── A-Z Alphabet Sidebar — fixed right overlay ── */}
@@ -20360,6 +20527,8 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
 }
 
 function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFilter}) {
+  const [plSelMode,setPlSelMode]=React.useState(false);
+  const [plSelected,setPlSelected]=React.useState({});
   const fC = n => {
     if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••";
     if(n==null) return "—";
@@ -20536,6 +20705,15 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
           </button>
         ))}
         <div style={{marginLeft:"auto",display:"flex",gap:6}}>
+          {plView==="table"&&(
+            <button onClick={function(){setPlSelMode(function(v){if(v){setPlSelected({});}return !v;});}}
+              style={{padding:"5px 12px",borderRadius:8,cursor:"pointer",
+                border:"1px solid "+(plSelMode?"#3b82f6":"#1d2545"),
+                background:plSelMode?"#1e3a5f":"transparent",
+                color:plSelMode?"#7eb8ff":"#46557a",fontSize:11,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+              {plSelMode?"✕ Exit Select":"☑ Select"}
+            </button>
+          )}
           {[{k:"table",l:"Table"},{k:"bar",l:"Bar Chart"}].map(v=>(
             <button key={v.k} onClick={()=>setPlView(v.k)}
               style={{padding:"5px 12px",borderRadius:8,cursor:"pointer",
@@ -20574,10 +20752,43 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
       {plView==="table"&&(
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",
           border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
+          {/* Selection toolbar + live summary */}
+          <div style={{maxHeight:plSelMode?60:0,opacity:plSelMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+            {(()=>{
+              var selRows=sorted.filter(function(r){return plSelected[r.s];});
+              var selCount=selRows.length;
+              var selInv=selRows.reduce(function(s,r){return s+(r.inv||0);},0);
+              var selVal=selRows.reduce(function(s,r){return s+(r.val||0);},0);
+              var selPL=selRows.reduce(function(s,r){return s+(r.pl||0);},0);
+              var selRet=selInv>0?(selPL/selInv*100):0;
+              return (
+              <div style={{display:"flex",alignItems:"center",gap:14,padding:"8px 14px",background:"#0a1628",borderBottom:"1px solid #1e3a5f",flexWrap:"wrap"}}>
+                <span style={{fontSize:10,fontWeight:700,color:selCount>0?"#7eb8ff":"#4a5a7a"}}>{selCount>0?selCount+" selected":"None selected"}</span>
+                <button onClick={function(){var all={};sorted.forEach(function(r){all[r.s]=true;});setPlSelected(all);}}
+                  style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,fontWeight:600}}>
+                  Select All ({sorted.length})
+                </button>
+                {selCount>0&&(<>
+                  <span style={{fontSize:9,color:"#3a4a6a"}}>INVESTED</span>
+                  <span style={{fontSize:11,fontWeight:700,color:"#8a9ab5",fontFamily:"'JetBrains Mono',monospace"}}>{fC(selInv)}</span>
+                  <span style={{fontSize:9,color:"#3a4a6a"}}>VALUE</span>
+                  <span style={{fontSize:11,fontWeight:700,color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>{fC(selVal)}</span>
+                  <span style={{fontSize:9,color:"#3a4a6a"}}>P/L</span>
+                  <span style={{fontSize:13,fontWeight:800,color:selPL>=0?"#34d399":"#f87171",fontFamily:"'JetBrains Mono',monospace"}}>{(selPL>=0?"+":"")+fC(Math.abs(selPL))} ({(selRet>=0?"+":"")+selRet.toFixed(1)}%)</span>
+                  <button onClick={function(){setPlSelected({});setPlSelMode(false);}}
+                    style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto"}}>
+                    Deselect All
+                  </button>
+                </>)}
+              </div>
+              );
+            })()}
+          </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{background:"#0a0e1e"}}>
+                  {plSelMode&&<th style={{width:30,padding:"7px 6px"}}/>}
                   <TH col="s"      label="Stock"     r={false}/>
                   {activeSource!=="unrealised"&&<TH col="sell_qty" label="Sold Qty"/>}
                   {activeSource!=="unrealised"&&<TH col="avg_buy"  label="Avg Buy"/>}
@@ -20592,9 +20803,19 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
                 {sorted.map((r,i)=>{
                   const isG=r.pl>=0;
                   const plPct=r.plPct!=null?r.plPct:(r.inv>0?r.pl/r.inv*100:null);
+                  const isSel=!!plSelected[r.s];
                   return (
                     <tr key={r.s+i} style={{borderBottom:"1px solid #0d1020",
-                      background:i%2?"#0c0f20":"transparent"}}>
+                      background:isSel?"#0d1a2e":i%2?"#0c0f20":"transparent",
+                      boxShadow:isSel?"inset 3px 0 0 #3b82f6":"none",
+                      transition:"background 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                      {plSelMode&&(
+                        <td style={{width:30,padding:"7px 6px",textAlign:"center"}} onClick={function(){setPlSelected(function(p){var n=Object.assign({},p);if(n[r.s])delete n[r.s];else n[r.s]=true;if(Object.keys(n).length===0)setPlSelMode(false);return n;});}}>
+                          <div style={{width:14,height:14,border:"2px solid "+(isSel?"#3b82f6":"#4a5a7a"),borderRadius:4,background:isSel?"#3b82f6":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",margin:"auto"}}>
+                            {isSel&&<span style={{color:"#fff",fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
+                          </div>
+                        </td>
+                      )}
                       <td style={{padding:"7px 10px",color:"#c8d0e8",fontWeight:600}}>{r.s}</td>
                       {activeSource!=="unrealised"&&
                         <td style={{padding:"7px 10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:"#a0b0c8",fontSize:10}}>
@@ -20624,6 +20845,7 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
               </tbody>
               <tfoot>
                 <tr style={{background:"#0a0e1e",borderTop:"2px solid #1d2545"}}>
+                  {plSelMode&&<td/>}
                   <td colSpan={activeSource==="unrealised"?1:4}
                     style={{padding:"8px 10px",fontWeight:700,color:"#3a4a6a",fontSize:10}}>
                     TOTAL · {filtered.length} stocks
