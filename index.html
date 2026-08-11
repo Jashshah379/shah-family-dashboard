@@ -10189,6 +10189,92 @@ function FamilyApp() {
         if(!sym) return null;
         return <StockDetailPanel key={sym} sym={sym} livePrices={livePrices} onClose={function(){setStockDetail(null);}}/>;
     })()}
+    {/* ── LIVE PRICE COVERAGE PANEL (fixed, must be outside overflow/pull-to-refresh container
+         so position:fixed stays glued to the viewport during scroll — was previously
+         nested inside the pull-to-refresh wrapper, which breaks position:fixed while
+         its transform is active) ── */}
+      {/* Live Price Coverage Panel */}
+{showCoverage&&(
+  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
+    onClick={function(e){if(e.target===e.currentTarget)setShowCoverage(false);}}>
+    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
+      onClick={function(e){e.stopPropagation();}}>
+      <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📡 Live Price Coverage</div>
+          <div style={{fontSize:10,color:"#3a4a6a",marginTop:3}}>How many of your stocks have a live NSE feed</div>
+        </div>
+        <button onClick={function(){setShowCoverage(false);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12}}>✕ Close</button>
+      </div>
+      <div style={{padding:"18px 22px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
+          <div onClick={function(){setCoverageView("live");}}
+            style={{background:"#0a1a0f",border:"1px solid "+(coverageView==="live"?"#34d399":"#1a3a20"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
+              boxShadow:coverageView==="live"?"0 0 0 2px #34d39933":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+            <div style={{fontSize:20,fontWeight:900,color:"#34d399",fontFamily:"monospace"}}>{priceCoverage.liveCount}</div>
+            <div style={{fontSize:9,color:coverageView==="live"?"#34d399":"#3a4a6a",marginTop:2,fontWeight:coverageView==="live"?700:400}}>Live</div>
+          </div>
+          <div onClick={function(){setCoverageView("stale");}}
+            style={{background:"#1a1500",border:"1px solid "+(coverageView==="stale"?"#f0b429":"#3a2a00"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
+              boxShadow:coverageView==="stale"?"0 0 0 2px #f0b42933":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+            <div style={{fontSize:20,fontWeight:900,color:"#f0b429",fontFamily:"monospace"}}>{priceCoverage.staleCount}</div>
+            <div style={{fontSize:9,color:coverageView==="stale"?"#f0b429":"#3a4a6a",marginTop:2,fontWeight:coverageView==="stale"?700:400}}>Stale / No Feed</div>
+          </div>
+          <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px",textAlign:"center"}}>
+            <div style={{fontSize:20,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace"}}>{priceCoverage.pct}%</div>
+            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Coverage</div>
+          </div>
+        </div>
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>
+            {coverageView==="live"?"Live stocks by value":"Stale stocks by value"} ({coverageView==="live"?priceCoverage.liveList.length:priceCoverage.staleList.length})
+          </div>
+          {coverageView==="live"&&(
+            <div style={{fontSize:9,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>
+              Total: {cr(priceCoverage.liveList.reduce(function(s,x){return s+x.val;},0))}
+            </div>
+          )}
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:4,fontSize:8,color:"#2a3a50",padding:"0 10px 4px",textTransform:"uppercase",fontWeight:700}}>
+          <span>Stock</span><span style={{textAlign:"right",minWidth:90}}>{coverageView==="live"?"CMP":"Last CMP"}</span><span style={{textAlign:"right",minWidth:90}}>Value</span>
+        </div>
+
+        <div style={{maxHeight:340,overflowY:"auto"}}>
+          {(coverageView==="live"?priceCoverage.liveList:priceCoverage.staleList).map(function(s,i){return(
+            <div key={i} onClick={function(){setShowCoverage(false);setStockDetail(s.sym);}}
+              style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:4,alignItems:"center",padding:"8px 10px",
+                marginBottom:4,background:"#0d1020",borderRadius:8,cursor:"pointer"}}
+              onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
+              onMouseLeave={function(e){e.currentTarget.style.background="#0d1020";}}>
+              <span style={{fontSize:11,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sym}</span>
+              <span style={{fontSize:10,fontFamily:"monospace",textAlign:"right",minWidth:90,color:s.cmp>0?(coverageView==="live"?"#34d399":"#8899bb"):"#3a4a6a"}}>
+                {s.cmp>0?"₹"+s.cmp.toLocaleString("en-IN",{maximumFractionDigits:2}):"—"}
+                {coverageView==="live"&&s.chgPct!=null&&(
+                  <span style={{marginLeft:4,fontSize:8,color:s.chgPct>=0?"#34d399":"#ef4444"}}>{s.chgPct>=0?"▲":"▼"}{Math.abs(s.chgPct).toFixed(1)}%</span>
+                )}
+              </span>
+              <span style={{fontSize:11,fontFamily:"monospace",textAlign:"right",minWidth:90,color:"#3a4a6a"}}>{cr(s.val)}</span>
+            </div>
+          );})}
+          {coverageView==="stale"&&priceCoverage.staleList.length===0&&(
+            <div style={{textAlign:"center",padding:20,fontSize:11,color:"#34d399"}}>✓ All stocks have live prices</div>
+          )}
+          {coverageView==="live"&&priceCoverage.liveList.length===0&&(
+            <div style={{textAlign:"center",padding:20,fontSize:11,color:"#f0b429"}}>No live prices yet — check connection</div>
+          )}
+        </div>
+        <div style={{fontSize:9,color:"#3a4a6a",marginTop:12,lineHeight:1.5}}>
+          {coverageView==="stale"
+            ? "Stale stocks either aren't actively traded on NSE, are delisted/suspended, or aren't yet mapped in our symbol database. Use the ✏ CMP override button to manually set a price for any stock."
+            : "These stocks are receiving real-time price updates from the NSE feed, refreshed every few minutes during market hours."}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     {/* ── SIDEBAR OVERLAY (fixed, must be outside overflow container) ── */}
     {sidebarOpen&&<div onClick={function(){setSidebarOpen(false);}} style={{position:"fixed",inset:0,background:"#00000066",zIndex:999}}/>}
     {sidebarOpen&&(
@@ -10762,87 +10848,6 @@ function FamilyApp() {
   </div>
 )}
 
-      {/* Live Price Coverage Panel */}
-{showCoverage&&(
-  <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
-    onClick={function(e){if(e.target===e.currentTarget)setShowCoverage(false);}}>
-    <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:560,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
-      onClick={function(e){e.stopPropagation();}}>
-      <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div>
-          <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📡 Live Price Coverage</div>
-          <div style={{fontSize:10,color:"#3a4a6a",marginTop:3}}>How many of your stocks have a live NSE feed</div>
-        </div>
-        <button onClick={function(){setShowCoverage(false);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12}}>✕ Close</button>
-      </div>
-      <div style={{padding:"18px 22px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
-          <div onClick={function(){setCoverageView("live");}}
-            style={{background:"#0a1a0f",border:"1px solid "+(coverageView==="live"?"#34d399":"#1a3a20"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
-              boxShadow:coverageView==="live"?"0 0 0 2px #34d39933":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
-            <div style={{fontSize:20,fontWeight:900,color:"#34d399",fontFamily:"monospace"}}>{priceCoverage.liveCount}</div>
-            <div style={{fontSize:9,color:coverageView==="live"?"#34d399":"#3a4a6a",marginTop:2,fontWeight:coverageView==="live"?700:400}}>Live</div>
-          </div>
-          <div onClick={function(){setCoverageView("stale");}}
-            style={{background:"#1a1500",border:"1px solid "+(coverageView==="stale"?"#f0b429":"#3a2a00"),borderRadius:10,padding:"12px",textAlign:"center",cursor:"pointer",
-              boxShadow:coverageView==="stale"?"0 0 0 2px #f0b42933":"none",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
-            <div style={{fontSize:20,fontWeight:900,color:"#f0b429",fontFamily:"monospace"}}>{priceCoverage.staleCount}</div>
-            <div style={{fontSize:9,color:coverageView==="stale"?"#f0b429":"#3a4a6a",marginTop:2,fontWeight:coverageView==="stale"?700:400}}>Stale / No Feed</div>
-          </div>
-          <div style={{background:"#0d1020",border:"1px solid #1d2545",borderRadius:10,padding:"12px",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:900,color:"#7eb8ff",fontFamily:"monospace"}}>{priceCoverage.pct}%</div>
-            <div style={{fontSize:9,color:"#3a4a6a",marginTop:2}}>Coverage</div>
-          </div>
-        </div>
-
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <div style={{fontSize:9,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>
-            {coverageView==="live"?"Live stocks by value":"Stale stocks by value"} ({coverageView==="live"?priceCoverage.liveList.length:priceCoverage.staleList.length})
-          </div>
-          {coverageView==="live"&&(
-            <div style={{fontSize:9,color:"#34d399",fontFamily:"monospace",fontWeight:700}}>
-              Total: {cr(priceCoverage.liveList.reduce(function(s,x){return s+x.val;},0))}
-            </div>
-          )}
-        </div>
-
-        <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:4,fontSize:8,color:"#2a3a50",padding:"0 10px 4px",textTransform:"uppercase",fontWeight:700}}>
-          <span>Stock</span><span style={{textAlign:"right",minWidth:90}}>{coverageView==="live"?"CMP":"Last CMP"}</span><span style={{textAlign:"right",minWidth:90}}>Value</span>
-        </div>
-
-        <div style={{maxHeight:340,overflowY:"auto"}}>
-          {(coverageView==="live"?priceCoverage.liveList:priceCoverage.staleList).map(function(s,i){return(
-            <div key={i} onClick={function(){setShowCoverage(false);setStockDetail(s.sym);}}
-              style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:4,alignItems:"center",padding:"8px 10px",
-                marginBottom:4,background:"#0d1020",borderRadius:8,cursor:"pointer"}}
-              onMouseEnter={function(e){e.currentTarget.style.background="#11152c";}}
-              onMouseLeave={function(e){e.currentTarget.style.background="#0d1020";}}>
-              <span style={{fontSize:11,color:"#c8d0e8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sym}</span>
-              <span style={{fontSize:10,fontFamily:"monospace",textAlign:"right",minWidth:90,color:s.cmp>0?(coverageView==="live"?"#34d399":"#8899bb"):"#3a4a6a"}}>
-                {s.cmp>0?"₹"+s.cmp.toLocaleString("en-IN",{maximumFractionDigits:2}):"—"}
-                {coverageView==="live"&&s.chgPct!=null&&(
-                  <span style={{marginLeft:4,fontSize:8,color:s.chgPct>=0?"#34d399":"#ef4444"}}>{s.chgPct>=0?"▲":"▼"}{Math.abs(s.chgPct).toFixed(1)}%</span>
-                )}
-              </span>
-              <span style={{fontSize:11,fontFamily:"monospace",textAlign:"right",minWidth:90,color:"#3a4a6a"}}>{cr(s.val)}</span>
-            </div>
-          );})}
-          {coverageView==="stale"&&priceCoverage.staleList.length===0&&(
-            <div style={{textAlign:"center",padding:20,fontSize:11,color:"#34d399"}}>✓ All stocks have live prices</div>
-          )}
-          {coverageView==="live"&&priceCoverage.liveList.length===0&&(
-            <div style={{textAlign:"center",padding:20,fontSize:11,color:"#f0b429"}}>No live prices yet — check connection</div>
-          )}
-        </div>
-        <div style={{fontSize:9,color:"#3a4a6a",marginTop:12,lineHeight:1.5}}>
-          {coverageView==="stale"
-            ? "Stale stocks either aren't actively traded on NSE, are delisted/suspended, or aren't yet mapped in our symbol database. Use the ✏ CMP override button to manually set a price for any stock."
-            : "These stocks are receiving real-time price updates from the NSE feed, refreshed every few minutes during market hours."}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
 
       {/* ── Manual CMP Floating Action Button ── */}
       
