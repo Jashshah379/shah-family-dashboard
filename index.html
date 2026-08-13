@@ -194,6 +194,10 @@ input:focus {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Very subtle "live" breathing pulse — used on live-data badges, much gentler than .anim-fade's pulse ── */
+@keyframes liveBreathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.82; } }
+.live-breathe { animation: liveBreathe 2.2s cubic-bezier(.4,0,.2,1) infinite; }
+
 /* ── Sidebar slide animation — applied via className on the actual drawer panels ── */
 .anim-slide-left{animation:slideInLeft 0.22s cubic-bezier(.16,1,.3,1) both;}
 @keyframes slideInLeft {
@@ -7709,7 +7713,7 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                   <span style={{fontSize:17,fontWeight:800,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace"}}>
                     ₹{cmp.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
                   </span>
-                  <span style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:4,
+                  <span className={isLive?"live-breathe":""} style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:4,
                     background:isLive?"rgba(52,211,153,0.15)":"rgba(251,191,36,0.12)",
                     color:isLive?"#34d399":"#f0b429",letterSpacing:"0.05em"}}>
                     {isLive?"● LIVE":"◌ STORED"}
@@ -10530,7 +10534,7 @@ function FamilyApp() {
                 </svg>
               </button>
             </div>
-          <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}><span style={{color:"#34d399",marginRight:4}}>●</span>Live · {new Date().getFullYear()} · {MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).length} members · ₹{(grandTotal/1e7).toFixed(1)} Cr</div>
+          <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}><span style={{color:"#34d399",marginRight:4}}>●</span>Live · {new Date().getFullYear()} · {MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).length} members</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           {/* Global search */}
