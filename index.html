@@ -10017,7 +10017,7 @@ function FamilyApp() {
   var _usingLive = _liveEq > _staticEq * 0.5; /* sanity: live must be at least half of static */
   const totalStocks = _usingLive ? _liveEq : _staticEq;
   const totalMFAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0), 0);
-  const totalBankAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.bank||0), 0);
+  const totalBankAll = (typeof BANK!=="undefined"?BANK:[]).reduce((s,b)=>s+(b.b||0), 0);
   const totalPPFAll = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]).reduce((s,p)=>s+(p.bal||0), 0);
   /* grandTotal = FULL GROSS: equity at market + MF + Bank + PPF (includes MTF-funded positions) */
   const grandTotal = totalStocks + totalMFAll + totalBankAll + totalPPFAll;
