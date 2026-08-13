@@ -11597,7 +11597,7 @@ function FamilyApp() {
           const sec = h.sector||"Other";
           sectorMap[sec] = (sectorMap[sec]||0) + (h.val||0);
         });
-        (V129_SUSHIL_HOLDINGS_NEW||[]).forEach(h=>{
+        (typeof V129_SUSHIL_HOLDINGS!=="undefined"?V129_SUSHIL_HOLDINGS:[]).forEach(h=>{
           if(h.sector){sectorMap[h.sector]=(sectorMap[h.sector]||0)+(h.val||0);}
         });
         const sectorData = Object.entries(sectorMap)
@@ -22913,6 +22913,7 @@ function DivYieldTab() {
 function CorporateActionsTab() {
   const cr = v => { if(typeof window!=="undefined"&&window.HIDE_VALUES) return "••••••"; if(!v&&v!==0)return"--";const a=Math.abs(v),s=v<0?"-":"";return a>=1e7?s+"₹"+(a/1e7).toFixed(2)+" Cr":a>=1e5?s+"₹"+(a/1e5).toFixed(1)+" L":a>=1e3?s+"₹"+(a/1e3).toFixed(1)+"K":s+"₹"+Math.round(a).toLocaleString("en-IN"); };
   const [filter, setFilter] = React.useState("all");
+  const [selectedCA, setSelectedCA] = React.useState(null);
 
   /* Corporate actions — manually maintained, auto-cross-referenced with holdings */
   const ACTIONS = [
@@ -22981,7 +22982,10 @@ function CorporateActionsTab() {
         {filtered.map((a,i)=>{
           const c = TYPE_C[a.type]||"#94a3b8";
           return (
-            <div key={i} style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:`1px solid ${a.held?"#1d2545":"#0f1020"}`,borderLeft:`3px solid ${a.held?c:"#1d2545"}`,borderRadius:10,padding:"12px 16px",opacity:a.held?1:0.6}}>
+            <div key={i} onClick={function(){setSelectedCA(a);}}
+              style={{background:"linear-gradient(155deg,#11152c,#0d1122)",border:`1px solid ${a.held?"#1d2545":"#0f1020"}`,borderLeft:`3px solid ${a.held?c:"#1d2545"}`,borderRadius:10,padding:"12px 16px",opacity:a.held?1:0.6,cursor:"pointer",transition:"background 0.15s cubic-bezier(.4,0,.2,1), border-color 0.15s cubic-bezier(.4,0,.2,1)"}}
+              onMouseEnter={function(e){e.currentTarget.style.background="linear-gradient(155deg,#161b38,#101428)";}}
+              onMouseLeave={function(e){e.currentTarget.style.background="linear-gradient(155deg,#11152c,#0d1122)";}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:20}}>{TYPE_ICON[a.type]}</span>
@@ -23023,6 +23027,142 @@ function CorporateActionsTab() {
       <div style={{marginTop:14,padding:"10px 14px",background:"#080b18",borderRadius:8,fontSize:10,color:"#3a4a6a"}}>
         Corporate actions are manually maintained. Update the ACTIONS array in the code to add new events.
       </div>
+
+      {/* ── Impact Calculator Popup — rendered via portal directly into document.body,
+           so it can never get trapped inside a transformed ancestor (e.g. the app's
+           pull-to-refresh wrapper) regardless of where this tab sits in the tree ── */}
+      {selectedCA && typeof ReactDOM!=="undefined" && ReactDOM.createPortal(
+        (function(){
+          var a = selectedCA;
+          var c = TYPE_C[a.type]||"#94a3b8";
+          var totalQty = (a.holders||[]).reduce(function(s,h){return s+(h.qty||0);},0);
+          function parseRatio(r){
+            if(!r) return null;
+            var m = String(r).split(":").map(function(n){return parseFloat(n);});
+            if(m.length!==2||isNaN(m[0])||isNaN(m[1])) return null;
+            return {a:m[0], b:m[1]};
+          }
+          var ratio = parseRatio(a.ratio);
+          return (
+            <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
+              onClick={function(e){if(e.target===e.currentTarget)setSelectedCA(null);}}>
+              <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:520,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
+                onClick={function(e){e.stopPropagation();}}>
+                <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                  <div>
+                    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                      <span style={{fontSize:18}}>{TYPE_ICON[a.type]}</span>
+                      <span style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>{a.stock}</span>
+                      <span style={{fontSize:9,background:c+"22",color:c,padding:"2px 7px",borderRadius:4,fontWeight:700,textTransform:"uppercase"}}>{a.type}</span>
+                    </div>
+                    <div style={{fontSize:10,color:"#3a4a6a",marginTop:4}}>{a.note} · {a.date}</div>
+                  </div>
+                  <button onClick={function(){setSelectedCA(null);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
+                </div>
+                <div style={{padding:"16px 22px 22px"}}>
+                  {!a.held && (
+                    <div style={{padding:14,textAlign:"center",color:"#3a4a6a",fontSize:11,background:"#0d1122",borderRadius:10}}>
+                      No family member currently holds {a.stock} — nothing to calculate.
+                    </div>
+                  )}
+                  {a.held && a.holders.length===0 && (
+                    <div style={{padding:14,textAlign:"center",color:"#3a4a6a",fontSize:11,background:"#0d1122",borderRadius:10}}>
+                      Marked as held, but no specific holding quantities found to calculate against.
+                    </div>
+                  )}
+                  {a.held && a.holders.length>0 && a.type==="dividend" && (
+                    <>
+                      <div style={{fontSize:10,color:"#3a4a6a",marginBottom:8}}>Dividend of <b style={{color:c}}>₹{a.amount}/share</b> × shares held, per member:</div>
+                      {a.holders.map(function(h,hi){
+                        var amt=(h.qty||0)*(a.amount||0);
+                        return (
+                          <div key={hi} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:"1px solid #0d1122"}}>
+                            <span style={{fontSize:11,color:"#c8d0e8"}}>{h.member}</span>
+                            <span style={{fontSize:10,color:"#5a6a8a",fontFamily:"'JetBrains Mono',monospace"}}>{(h.qty||0).toLocaleString("en-IN")} sh</span>
+                            <span style={{fontSize:13,fontWeight:800,color:"#34d399",fontFamily:"'JetBrains Mono',monospace"}}>+{cr(amt)}</span>
+                          </div>
+                        );
+                      })}
+                      <div style={{display:"flex",justifyContent:"space-between",padding:"10px 12px",marginTop:6,background:"#0d1a2e",borderRadius:8}}>
+                        <span style={{fontSize:11,fontWeight:700,color:"#7eb8ff"}}>Family total ({totalQty.toLocaleString("en-IN")} shares)</span>
+                        <span style={{fontSize:14,fontWeight:800,color:"#34d399",fontFamily:"'JetBrains Mono',monospace"}}>+{cr(totalQty*(a.amount||0))}</span>
+                      </div>
+                    </>
+                  )}
+                  {a.held && a.holders.length>0 && a.type==="bonus" && ratio && (
+                    <>
+                      <div style={{fontSize:10,color:"#3a4a6a",marginBottom:8}}>Bonus ratio <b style={{color:c}}>{a.ratio}</b> ({ratio.a} new share{ratio.a!==1?"s":""} for every {ratio.b} held):</div>
+                      {a.holders.map(function(h,hi){
+                        var bonusShares=Math.floor((h.qty||0)*ratio.a/ratio.b);
+                        return (
+                          <div key={hi} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:"1px solid #0d1122"}}>
+                            <span style={{fontSize:11,color:"#c8d0e8"}}>{h.member}</span>
+                            <span style={{fontSize:10,color:"#5a6a8a",fontFamily:"'JetBrains Mono',monospace"}}>{(h.qty||0).toLocaleString("en-IN")} → {(( h.qty||0)+bonusShares).toLocaleString("en-IN")} sh</span>
+                            <span style={{fontSize:13,fontWeight:800,color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>+{bonusShares.toLocaleString("en-IN")}</span>
+                          </div>
+                        );
+                      })}
+                      <div style={{display:"flex",justifyContent:"space-between",padding:"10px 12px",marginTop:6,background:"#0d1a2e",borderRadius:8}}>
+                        <span style={{fontSize:11,fontWeight:700,color:"#7eb8ff"}}>Family total new shares</span>
+                        <span style={{fontSize:14,fontWeight:800,color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>+{Math.floor(totalQty*ratio.a/ratio.b).toLocaleString("en-IN")}</span>
+                      </div>
+                    </>
+                  )}
+                  {a.held && a.holders.length>0 && a.type==="split" && ratio && (
+                    <>
+                      <div style={{fontSize:10,color:"#3a4a6a",marginBottom:8}}>Split ratio <b style={{color:c}}>{a.ratio}</b> — each share becomes {(ratio.b/ratio.a).toFixed(2)}x:</div>
+                      {a.holders.map(function(h,hi){
+                        var newQty=Math.round((h.qty||0)*ratio.b/ratio.a);
+                        return (
+                          <div key={hi} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:"1px solid #0d1122"}}>
+                            <span style={{fontSize:11,color:"#c8d0e8"}}>{h.member}</span>
+                            <span style={{fontSize:13,fontWeight:800,color:"#a78bfa",fontFamily:"'JetBrains Mono',monospace"}}>{(h.qty||0).toLocaleString("en-IN")} → {newQty.toLocaleString("en-IN")} sh</span>
+                          </div>
+                        );
+                      })}
+                      <div style={{display:"flex",justifyContent:"space-between",padding:"10px 12px",marginTop:6,background:"#0d1a2e",borderRadius:8}}>
+                        <span style={{fontSize:11,fontWeight:700,color:"#7eb8ff"}}>Family total after split</span>
+                        <span style={{fontSize:14,fontWeight:800,color:"#a78bfa",fontFamily:"'JetBrains Mono',monospace"}}>{Math.round(totalQty*ratio.b/ratio.a).toLocaleString("en-IN")} sh</span>
+                      </div>
+                    </>
+                  )}
+                  {a.held && a.holders.length>0 && a.type==="rights" && ratio && (
+                    <>
+                      <div style={{fontSize:10,color:"#3a4a6a",marginBottom:8}}>
+                        Rights ratio <b style={{color:c}}>{a.ratio}</b> ({ratio.a} new share{ratio.a!==1?"s":""} for every {ratio.b} held){a.price?<> at <b style={{color:c}}>₹{a.price}</b>/share if you subscribe</>:null}:
+                      </div>
+                      {a.holders.map(function(h,hi){
+                        var entitled=Math.floor((h.qty||0)*ratio.a/ratio.b);
+                        var cost=entitled*(a.price||0);
+                        return (
+                          <div key={hi} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:"1px solid #0d1122",flexWrap:"wrap",gap:4}}>
+                            <span style={{fontSize:11,color:"#c8d0e8"}}>{h.member}</span>
+                            <span style={{fontSize:10,color:"#5a6a8a",fontFamily:"'JetBrains Mono',monospace"}}>{entitled.toLocaleString("en-IN")} entitled</span>
+                            {a.price?<span style={{fontSize:13,fontWeight:800,color:"#f0b429",fontFamily:"'JetBrains Mono',monospace"}}>{cr(cost)} to subscribe</span>:null}
+                          </div>
+                        );
+                      })}
+                      <div style={{display:"flex",justifyContent:"space-between",padding:"10px 12px",marginTop:6,background:"#0d1a2e",borderRadius:8}}>
+                        <span style={{fontSize:11,fontWeight:700,color:"#7eb8ff"}}>Family total{a.price?" to fully subscribe":" entitlement"}</span>
+                        <span style={{fontSize:14,fontWeight:800,color:"#f0b429",fontFamily:"'JetBrains Mono',monospace"}}>
+                          {a.price?cr(Math.floor(totalQty*ratio.a/ratio.b)*a.price):Math.floor(totalQty*ratio.a/ratio.b).toLocaleString("en-IN")+" sh"}
+                        </span>
+                      </div>
+                      <div style={{marginTop:10,fontSize:9,color:"#3a4a6a"}}>Entitlement is a right, not an obligation — you can subscribe, renounce, or let it lapse.</div>
+                    </>
+                  )}
+                  {a.held && a.holders.length>0 && (a.type==="agm"||(!ratio && (a.type==="bonus"||a.type==="split"||a.type==="rights"))) && (
+                    <div style={{fontSize:11,color:"#8899bb"}}>
+                      {a.type==="agm" ? "AGM events don't have a direct financial calculation — check the note above for what's on the agenda." : "Couldn't parse a ratio for this action to calculate — check the note above for details."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })(),
+        document.body
+      )}
     </div>
   );
 }
