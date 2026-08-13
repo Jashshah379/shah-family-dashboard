@@ -10023,6 +10023,8 @@ function FamilyApp() {
   /* ── Live Price Coverage ── */
   const [showCoverage, setShowCoverage] = React.useState(false);
   const [showAccountBreakdown, setShowAccountBreakdown] = React.useState(false);
+  const [abSelected, setAbSelected] = React.useState({});
+  const [abCustodianFilter, setAbCustodianFilter] = React.useState("All");
   const [coverageView, setCoverageView] = React.useState("stale"); /* "live" | "stale" */
   /* Lock background scroll while the popup is open — simple overflow:hidden only,
      no position/top offset trick, so there's no visual snap when it closes. */
@@ -10255,12 +10257,14 @@ function FamilyApp() {
           var entries = (arr||[]).filter(function(h){return h&&h.mtf;});
           return entries.reduce(function(s,h){return s+((h.avg||0)*(h.mtfQty||h.qty||0));},0);
         };
-        var rows = ACCOUNT_SUMMARY_DEFS.map(function(def){
+        var allRows = ACCOUNT_SUMMARY_DEFS.map(function(def){
           var arr = def.getArr();
           var val = (arr||[]).reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
           var pledged = pledgedValByAccount(arr);
           return Object.assign({}, def, {val:val, pledged:pledged, exMtf: pledged>0 ? val-pledged : null});
         });
+        var custodians = [].concat(Array.from(new Set(allRows.map(function(r){return r.custodian;})))).sort();
+        var rows = abCustodianFilter==="All" ? allRows : allRows.filter(function(r){return r.custodian===abCustodianFilter;});
         var byMember = {};
         rows.forEach(function(r){ (byMember[r.member]=byMember[r.member]||[]).push(r); });
         var memberNames = Object.keys(byMember).sort(function(a,b){
@@ -10269,17 +10273,57 @@ function FamilyApp() {
           return tb-ta;
         });
         var grandVal = rows.reduce(function(s,r){return s+r.val;},0);
+        var selRows = rows.filter(function(r){return abSelected[r.code];});
+        var selCount = selRows.length;
+        var selVal = selRows.reduce(function(s,r){return s+r.val;},0);
         return (
         <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
           onClick={function(e){if(e.target===e.currentTarget)setShowAccountBreakdown(false);}}>
           <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:640,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
             onClick={function(e){e.stopPropagation();}}>
-            <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"sticky",top:0,background:"#0a0d1c",zIndex:1}}>
-              <div>
-                <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📂 Account-by-Account Breakdown</div>
-                <div style={{fontSize:10,color:"#3a4a6a",marginTop:2}}>Every tracked account, grouped by member · {cr(grandVal)} total equity</div>
+            <div style={{padding:"18px 22px 12px",borderBottom:"1px solid #1a2035",position:"sticky",top:0,background:"#0a0d1c",zIndex:1}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div>
+                  <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📂 Account-by-Account Breakdown</div>
+                  <div style={{fontSize:10,color:"#3a4a6a",marginTop:2}}>Every tracked account, grouped by member · {cr(grandVal)} total equity{abCustodianFilter!=="All"?" · filtered":""}</div>
+                </div>
+                <button onClick={function(){setShowAccountBreakdown(false);setAbSelected({});setAbCustodianFilter("All");}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
               </div>
-              <button onClick={function(){setShowAccountBreakdown(false);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
+              {/* Custodian filter chips */}
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
+                <button onClick={function(){setAbCustodianFilter("All");}}
+                  style={{padding:"3px 10px",borderRadius:20,border:"1px solid "+(abCustodianFilter==="All"?"#3b82f6":"#1e2845"),
+                    background:abCustodianFilter==="All"?"#1e3a5f":"transparent",color:abCustodianFilter==="All"?"#7eb8ff":"#5a6a8a",
+                    cursor:"pointer",fontSize:9,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                  All ({allRows.length})
+                </button>
+                {custodians.map(function(c){
+                  var count=allRows.filter(function(r){return r.custodian===c;}).length;
+                  var active=abCustodianFilter===c;
+                  return (
+                    <button key={c} onClick={function(){setAbCustodianFilter(c);}}
+                      style={{padding:"3px 10px",borderRadius:20,border:"1px solid "+(active?"#3b82f6":"#1e2845"),
+                        background:active?"#1e3a5f":"transparent",color:active?"#7eb8ff":"#5a6a8a",
+                        cursor:"pointer",fontSize:9,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                      {c} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Selection summary — animates in via the same grid technique used for the other ribbons */}
+              <div style={{display:"grid",gridTemplateRows:selCount>0?"1fr":"0fr",transition:"grid-template-rows 0.28s cubic-bezier(.16,1,.3,1)"}}>
+                <div style={{overflow:"hidden",minHeight:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginTop:10,padding:"7px 12px",background:"#0d1a2e",border:"1px solid #1e3a5f",borderRadius:8,
+                    opacity:selCount>0?1:0,transform:selCount>0?"translateY(0)":"translateY(-4px)",transition:"opacity 0.2s cubic-bezier(.4,0,.2,1) 0.05s, transform 0.2s cubic-bezier(.4,0,.2,1) 0.05s"}}>
+                    <span style={{fontSize:10,fontWeight:700,color:"#7eb8ff"}}>{selCount} selected</span>
+                    <span style={{fontSize:13,fontWeight:800,color:"#f0b429",fontFamily:"'JetBrains Mono',monospace"}}>{cr(selVal)}</span>
+                    <button onClick={function(){setAbSelected({});}}
+                      style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div style={{padding:"12px 18px 18px"}}>
               {memberNames.map(function(member){
@@ -10291,9 +10335,19 @@ function FamilyApp() {
                       <span style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{member}</span>
                       <span style={{fontSize:12,fontWeight:800,color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>{cr(memberTotal)}</span>
                     </div>
-                    {accs.map(function(r){return(
-                      <div key={r.code} style={{padding:"7px 14px",borderTop:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:4}}>
-                        <span style={{fontSize:10,color:"#8a9ab5"}}>{r.custodian}</span>
+                    {accs.map(function(r){
+                      var isSel = !!abSelected[r.code];
+                      return(
+                      <div key={r.code} onClick={function(){setAbSelected(function(p){var n=Object.assign({},p);if(n[r.code])delete n[r.code];else n[r.code]=true;return n;});}}
+                        style={{padding:"7px 14px",borderTop:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8,
+                          cursor:"pointer",background:isSel?"#0d1a2e":"transparent",boxShadow:isSel?"inset 3px 0 0 #3b82f6":"none",transition:"background 0.15s cubic-bezier(.4,0,.2,1), box-shadow 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                          <div style={{width:14,height:14,border:"2px solid "+(isSel?"#3b82f6":"#3a4a6a"),borderRadius:4,background:isSel?"#3b82f6":"transparent",
+                            display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                            {isSel&&<span style={{color:"#fff",fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
+                          </div>
+                          <span style={{fontSize:10,color:"#8a9ab5"}}>{r.custodian}</span>
+                        </div>
                         <div style={{display:"flex",gap:14,alignItems:"baseline"}}>
                           {r.exMtf!=null&&(
                             <span style={{fontSize:9,color:"#f0b429"}} title="Value excluding pledged/MTF-funded portion">
@@ -10307,6 +10361,9 @@ function FamilyApp() {
                   </div>
                 );
               })}
+              {memberNames.length===0&&(
+                <div style={{padding:24,textAlign:"center",color:"#3a4a6a",fontSize:11}}>No accounts match this filter.</div>
+              )}
             </div>
           </div>
         </div>
