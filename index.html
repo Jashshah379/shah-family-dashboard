@@ -1716,36 +1716,19 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
   return (
     <div style={{display:"flex",flexDirection:"column",gap:12,paddingBottom:8}}>
 
-      {/* ══ HERO ══ */}
-      <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63,#24243e)",borderRadius:20,padding:"22px 24px",position:"relative",overflow:"hidden",border:"1px solid #2a2a5a"}}>
-        <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:"radial-gradient(circle,#6366f133,transparent 70%)",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",bottom:-50,left:10,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,#10b98122,transparent 70%)",pointerEvents:"none"}}/>
-
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:14,position:"relative"}}>
-          <div>
-            <div style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:4}}>Shah Family Office</div>
-            <div style={{fontSize:11,color:"#a0aabb",marginBottom:3}}>Net Family Wealth <span style={{fontSize:9,opacity:0.6}}>(ex-MTF borrowing)</span></div>
-            <div style={{fontSize:"clamp(22px,5vw,38px)",fontWeight:900,letterSpacing:"-0.02em",background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontFamily:"'JetBrains Mono',monospace",transform:shown?"translateY(0)":"translateY(8px)",opacity:shown?1:0,transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)"}}>
-              {cr(totalWealth)}
-              <span style={{fontSize:11,color:"#3a4a6a",fontWeight:500,marginLeft:8,fontFamily:"monospace"}}>
-                · gross {cr(grossWealth)}
-              </span>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginTop:7,flexWrap:"wrap"}}>
-              <span style={{fontSize:12,color:retPct>=0?"#10b981":"#ef4444",fontWeight:700,fontFamily:"monospace"}}>
-                {retPct>=0?"▲":"▼"} {Math.abs(retPct).toFixed(2)}% unrealised
-              </span>
-              {hasLive&&(
-                <span style={{display:"flex",alignItems:"center",gap:4,background:totalDayPL>=0?"#10b98115":"#ef444415",borderRadius:6,padding:"3px 10px",border:`1px solid ${totalDayPL>=0?"#10b98133":"#ef444433"}`}}>
-                  <span style={{fontSize:8,color:"#8899bb"}}>Today</span>
-                  <span style={{fontSize:11,fontWeight:800,color:totalDayPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalDayPL>=0?"+":""}{cr(totalDayPL)}</span>
-                  </span>
-              )}
-            </div>
-          </div>
-
-        <DonutChart/>
+      {/* ══ ASSET ALLOCATION (wealth headline now lives in the top header) ══ */}
+      <div style={{background:"linear-gradient(135deg,#0f0c29,#302b63,#24243e)",borderRadius:16,padding:"14px 20px",position:"relative",overflow:"hidden",border:"1px solid #2a2a5a"}}>
+        <div style={{position:"absolute",top:-40,right:-40,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,#6366f133,transparent 70%)",pointerEvents:"none"}}/>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,position:"relative"}}>
+          <div style={{fontSize:10,color:"#6366f1",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase"}}>Asset Allocation</div>
+          {hasLive&&(
+            <span style={{display:"flex",alignItems:"center",gap:4,background:totalDayPL>=0?"#10b98115":"#ef444415",borderRadius:6,padding:"3px 10px",border:`1px solid ${totalDayPL>=0?"#10b98133":"#ef444433"}`}}>
+              <span style={{fontSize:8,color:"#8899bb"}}>Today</span>
+              <span style={{fontSize:11,fontWeight:800,color:totalDayPL>=0?"#10b981":"#ef4444",fontFamily:"monospace"}}>{totalDayPL>=0?"+":""}{cr(totalDayPL)}</span>
+            </span>
+          )}
         </div>
+        <DonutChart/>
       </div>
 
       {/* ══ PERFORMERS + MEMBERS (side by side) ══ */}
@@ -10535,6 +10518,26 @@ function FamilyApp() {
               </button>
             </div>
           <div style={{fontSize:11,color:"#3a4a6a",marginTop:2}}><span style={{color:"#34d399",marginRight:4}}>●</span>Live · {new Date().getFullYear()} · {MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).length} members</div>
+          <div style={{display:"flex",alignItems:"baseline",gap:10,marginTop:8,flexWrap:"wrap"}}>
+            <span style={{fontSize:"clamp(20px,4vw,28px)",fontWeight:900,letterSpacing:"-0.02em",
+              background:"linear-gradient(135deg,#fff 0%,#a5b4fc 50%,#10b981 100%)",
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+              fontFamily:"'JetBrains Mono',monospace"}}>
+              {cr(netWealth)}
+            </span>
+            <span style={{fontSize:10,color:"#3a4a6a",fontFamily:"monospace"}}>· gross {cr(grandTotal)}</span>
+            {(()=>{
+              var _fh=(typeof FAMILY_TOP!=="undefined"?FAMILY_TOP:[]);
+              var _inv=_fh.reduce(function(s,h){return s+(h.inv||0);},0);
+              var _val=_fh.reduce(function(s,h){return s+(h.val||0);},0);
+              var _ret=_inv>0?((_val-_inv)/_inv*100):0;
+              return (
+                <span style={{fontSize:11,color:_ret>=0?"#10b981":"#ef4444",fontWeight:700,fontFamily:"monospace"}}>
+                  {_ret>=0?"▲":"▼"} {Math.abs(_ret).toFixed(2)}% unrealised
+                </span>
+              );
+            })()}
+          </div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           {/* Global search */}
