@@ -1735,7 +1735,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                     })}
                   </span>
                 </span></span></div>
-          {top5.map((h,i)=>{
+          <div key={gainMode+"g"} style={{animation:"fadeUp 0.3s cubic-bezier(.4,0,.2,1) both"}}>{top5.map((h,i)=>{
             var _histR = (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? getHistRet(h,gainMode) : null;
             var dispPct = _histR!=null ? _histR : (hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0));
             var dispLabel = _histR!=null ? gainMode : (hasLivePct ? "today" : "overall");
@@ -1773,12 +1773,13 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* Losers */}
         <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:14,overflow:"hidden",display:"flex",flexDirection:"column"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>{gainMode==="1W"?"📉 1-Week Losers":gainMode==="1M"?"📉 1-Month Losers":gainMode==="52W"?"📉 52-Week Losers":hasLivePct?"📉 Today's Losers":"📉 Under Pressure"}</div>
-          <div key={gainMode+"l"} style={{animation:"fadeUp 0.3s ease"}}>{bot5.map((h,i)=>{
+          <div key={gainMode+"l"} style={{animation:"fadeUp 0.3s cubic-bezier(.4,0,.2,1) both"}}>{bot5.map((h,i)=>{
             var _histR = (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? getHistRet(h,gainMode) : null;
             var dispPct = _histR!=null ? _histR : (hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0));
             var dispLabel = _histR!=null ? gainMode : (hasLivePct ? "today" : "overall");
@@ -10013,7 +10014,7 @@ function FamilyApp() {
   const totalStocks = _usingLive ? _liveEq : _staticEq;
   const totalMFAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.mf||0), 0);
   const totalBankAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.bank||0), 0);
-  const totalPPFAll = MEMBERS.filter(function(m){return m&&m.n&&!m._isFamily;}).reduce((s,m)=>s+(m.ppf||0), 0);
+  const totalPPFAll = (typeof PPF_ACCOUNTS!=="undefined"?PPF_ACCOUNTS:[]).reduce((s,p)=>s+(p.bal||0), 0);
   /* grandTotal = FULL GROSS: equity at market + MF + Bank + PPF (includes MTF-funded positions) */
   const grandTotal = totalStocks + totalMFAll + totalBankAll + totalPPFAll;
   /* netWealth = equity minus broker's MTF loan + MF + Bank + PPF (what the family truly owns) */
@@ -11890,29 +11891,32 @@ function FamilyApp() {
               <span style={{marginLeft:"auto",fontSize:10,color:"#3a4a6a"}}>{sorted.length} accounts · {cr(sorted.reduce((s,r)=>s+r.b,0))}</span>
             </div>
             {/* Selection toolbar + live summary */}
-            <div style={{maxHeight:bSelMode?60:0,opacity:bSelMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+            <div style={{display:"grid",gridTemplateRows:bSelMode?"1fr":"0fr",transition:"grid-template-rows 0.32s cubic-bezier(.16,1,.3,1)"}}>
+              <div style={{overflow:"hidden",minHeight:0}}>
               {(()=>{
                 var selRows=sorted.filter(function(r){return bSelected[r.n+"|"+r.bank+"|"+r.t];});
                 var selCount=selRows.length;
                 var selTotal=selRows.reduce(function(s,r){return s+(r.b||0);},0);
                 return (
-                <div style={{display:"flex",alignItems:"center",gap:14,padding:"8px 14px",background:"#0a1628",borderBottom:"1px solid #1e3a5f",flexWrap:"wrap"}}>
+                <div style={{display:"flex",alignItems:"center",gap:14,padding:"8px 14px",background:"#0a1628",borderBottom:"1px solid #1e3a5f",flexWrap:"wrap",
+                  opacity:bSelMode?1:0,transform:bSelMode?"translateY(0)":"translateY(-6px)",transition:"opacity 0.25s cubic-bezier(.4,0,.2,1) 0.05s, transform 0.25s cubic-bezier(.4,0,.2,1) 0.05s"}}>
                   <span style={{fontSize:10,fontWeight:700,color:selCount>0?"#7eb8ff":"#4a5a7a"}}>{selCount>0?selCount+" selected":"None selected"}</span>
                   <button onClick={function(){var all={};sorted.forEach(function(r){all[r.n+"|"+r.bank+"|"+r.t]=true;});setBSelected(all);}}
-                    style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,fontWeight:600}}>
+                    style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                     Select All ({sorted.length})
                   </button>
                   {selCount>0&&(<>
                     <span style={{fontSize:9,color:"#3a4a6a"}}>TOTAL BALANCE</span>
                     <span style={{fontSize:13,fontWeight:800,color:"#f0b429",fontFamily:"'JetBrains Mono',monospace"}}>{cr(selTotal)}</span>
                     <button onClick={function(){setBSelected({});setBSelMode(false);}}
-                      style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto"}}>
+                      style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                       Deselect All
                     </button>
                   </>)}
                 </div>
                 );
               })()}
+              </div>
             </div>
             <div style={{overflowX:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
@@ -12505,6 +12509,15 @@ const BANK = [
 ];
 
 
+const PPF_ACCOUNTS = [
+  {member:'Vasumati Shah',acc:'000418272354',bal:1293608,opened:'29/06/2020',matures:'31/03/2036'},
+  {member:'Chetan Shah',acc:'000418186924',bal:1529269,opened:'04/09/2019',matures:'31/03/2035'},
+  {member:'Rasiklal Shah',acc:'000418520066',bal:1278777,opened:'02/12/2020',matures:'31/03/2036'},
+  {member:'Maya Shah',acc:'000418199528',bal:1404669,opened:'01/11/2019',matures:'31/03/2035'},
+  {member:'Aarya Shah',acc:'000418519906',bal:309763,opened:'21/04/2025',matures:'31/03/2041'},
+  {member:'Asha Shah',acc:'000418272298',bal:1297158,opened:'29/06/2020',matures:'31/03/2036'},
+];
+
 const MEMBERS = [
   {n:"All Family",     i:"AF",c:"#e8eaf0",stocks:619940000, mf:21900000,  bank:27700000, _isFamily:true,
    cas:"All Family",broker:null,icici:null,holdingsRef:"ALL_FAMILY",custodian:["All accounts"],
@@ -12570,7 +12583,7 @@ const MEMBERS = [
    casTrend:[], casApr26:0,
    ppf:0}
 ].filter(m=>m&&m.n!==undefined).map(m=>({...m,
-  total:(m.stocks||0)+(m.mf||0)+(m.bank||0)+(m.ppf||0),
+  total:(m.stocks||0)+(m.mf||0)+(m.bank||0)+(PPF_ACCOUNTS.filter(p=>p.member===m.n).reduce((s,p)=>s+(p.bal||0),0)),
   html: m.n,
 }));
 
@@ -13507,7 +13520,7 @@ const VS_TXN_YEARLY = [
 ];
 
 const HTML_MEMBER_SUMMARY = MEMBERS.filter(m=>!m._isFamily&&m.n).map(m=>({
-  n:m.n, stocks:_eq(m), mf:m.mf, bank:m.bank, total:_eq(m)+(m.mf||0)+(m.bank||0)+(m.ppf||0), c:m.c, i:m.i,
+  n:m.n, stocks:_eq(m), mf:m.mf, bank:m.bank, total:_eq(m)+(m.mf||0)+(m.bank||0)+(PPF_ACCOUNTS.filter(p=>p.member===m.n).reduce((s,p)=>s+(p.bal||0),0)), c:m.c, i:m.i,
 }));
 
 const JASH_SUMMARY = {
@@ -20224,7 +20237,8 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
           </div>
           {/* ── Selection Toolbar — visible for the whole time selection mode is on, so
                "Select All" is reachable immediately without picking a row by hand first ── */}
-          <div className="anim-fade" style={{maxHeight:selectionMode?140:0,opacity:selectionMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+          <div style={{display:"grid",gridTemplateRows:selectionMode?"1fr":"0fr",transition:"grid-template-rows 0.32s cubic-bezier(.16,1,.3,1)"}}>
+            <div style={{overflow:"hidden",minHeight:0}}>
             {(()=>{
               var selGroups=(groupBy==="stock"?stockGroups:sorted).filter(function(g){return selectedStocks[g.sym];});
               var selCount=selGroups.length;
@@ -20234,7 +20248,8 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
               var selDayPL=selGroups.reduce(function(s,g){return s+(g.totalDayPL||0);},0);
               var selRet=selInv>0?(selPL/selInv*100):0;
               return (<>
-            <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",margin:"0 0 8px",background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,flexWrap:"wrap"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",margin:"0 0 8px",background:"#0a1628",border:"1px solid #1e3a5f",borderRadius:10,flexWrap:"wrap",
+              opacity:selectionMode?1:0,transform:selectionMode?"translateY(0)":"translateY(-6px)",transition:"opacity 0.25s cubic-bezier(.4,0,.2,1) 0.05s, transform 0.25s cubic-bezier(.4,0,.2,1) 0.05s"}}>
               <span style={{fontSize:10,fontWeight:700,color:selCount>0?"#7eb8ff":"#4a5a7a",minWidth:64}}>
                 {selCount>0?selCount+" selected":"None selected"}
               </span>
@@ -20300,6 +20315,7 @@ function AllHoldingsTab({livePrices, priceStatus, jumpStock, onJumpConsumed, onS
             )}
             </>);
             })()}
+            </div>
           </div>
 
           {/* ── A-Z Alphabet Sidebar — fixed right overlay ── */}
@@ -20880,7 +20896,8 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
         <div style={{background:"linear-gradient(155deg,#11152c,#0d1122)",
           border:"1px solid #1d2545",borderRadius:12,overflow:"hidden"}}>
           {/* Selection toolbar + live summary */}
-          <div style={{maxHeight:plSelMode?60:0,opacity:plSelMode?1:0,overflow:"hidden",transition:"max-height 0.2s cubic-bezier(.4,0,.2,1), opacity 0.15s cubic-bezier(.4,0,.2,1)"}}>
+          <div style={{display:"grid",gridTemplateRows:plSelMode?"1fr":"0fr",transition:"grid-template-rows 0.32s cubic-bezier(.16,1,.3,1)"}}>
+            <div style={{overflow:"hidden",minHeight:0}}>
             {(()=>{
               var selRows=sorted.filter(function(r){return plSelected[r.s];});
               var selCount=selRows.length;
@@ -20889,10 +20906,11 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
               var selPL=selRows.reduce(function(s,r){return s+(r.pl||0);},0);
               var selRet=selInv>0?(selPL/selInv*100):0;
               return (
-              <div style={{display:"flex",alignItems:"center",gap:14,padding:"8px 14px",background:"#0a1628",borderBottom:"1px solid #1e3a5f",flexWrap:"wrap"}}>
+              <div style={{display:"flex",alignItems:"center",gap:14,padding:"8px 14px",background:"#0a1628",borderBottom:"1px solid #1e3a5f",flexWrap:"wrap",
+                opacity:plSelMode?1:0,transform:plSelMode?"translateY(0)":"translateY(-6px)",transition:"opacity 0.25s cubic-bezier(.4,0,.2,1) 0.05s, transform 0.25s cubic-bezier(.4,0,.2,1) 0.05s"}}>
                 <span style={{fontSize:10,fontWeight:700,color:selCount>0?"#7eb8ff":"#4a5a7a"}}>{selCount>0?selCount+" selected":"None selected"}</span>
                 <button onClick={function(){var all={};sorted.forEach(function(r){all[r.s]=true;});setPlSelected(all);}}
-                  style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,fontWeight:600}}>
+                  style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                   Select All ({sorted.length})
                 </button>
                 {selCount>0&&(<>
@@ -20903,13 +20921,14 @@ function PLTab({plCol,setPlCol,plDir,setPlDir,plView,setPlView,plFilter,setPlFil
                   <span style={{fontSize:9,color:"#3a4a6a"}}>P/L</span>
                   <span style={{fontSize:13,fontWeight:800,color:selPL>=0?"#34d399":"#f87171",fontFamily:"'JetBrains Mono',monospace"}}>{(selPL>=0?"+":"")+fC(Math.abs(selPL))} ({(selRet>=0?"+":"")+selRet.toFixed(1)}%)</span>
                   <button onClick={function(){setPlSelected({});setPlSelMode(false);}}
-                    style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto"}}>
+                    style={{background:"none",border:"1px solid #3a4a6a",color:"#3a4a6a",borderRadius:6,padding:"3px 9px",cursor:"pointer",fontSize:9,marginLeft:"auto",transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                     Deselect All
                   </button>
                 </>)}
               </div>
               );
             })()}
+            </div>
           </div>
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
@@ -23172,14 +23191,7 @@ const MF_HIST = [];
 
 
 
-const PPF_ACCOUNTS = [
-  {member:'Vasumati Shah',acc:'000418272354',bal:1293608,opened:'29/06/2020',matures:'31/03/2036'},
-  {member:'Chetan Shah',acc:'000418186924',bal:1529269,opened:'04/09/2019',matures:'31/03/2035'},
-  {member:'Rasiklal Shah',acc:'000418520066',bal:1278777,opened:'02/12/2020',matures:'31/03/2036'},
-  {member:'Maya Shah',acc:'000418199528',bal:1404669,opened:'01/11/2019',matures:'31/03/2035'},
-  {member:'Aarya Shah',acc:'000418519906',bal:309763,opened:'21/04/2025',matures:'31/03/2041'},
-  {member:'Asha Shah',acc:'000418272298',bal:1297158,opened:'29/06/2020',matures:'31/03/2036'},
-];
+
 
 const ULIP_POLICIES = {
   "Praful Shah":  {"policy":"LIC ULIP","value":2500000,"invested":2000000},
