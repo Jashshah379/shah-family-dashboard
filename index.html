@@ -7718,6 +7718,35 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
             )}
             {holdings.length===0&&<span style={{fontSize:9,background:"#1a1020",color:"#9a5a7a",padding:"2px 9px",borderRadius:5,fontWeight:600}}>Not currently held</span>}
           </div>
+          {/* Row 3: Market metrics — Open, Day High/Low, 52-wk High/Low, Market Cap, P/E */}
+          {_lpData && (function(){
+            var fmtCr = function(v){
+              if(v==null) return null;
+              if(v>=1e7) return "₹"+(v/1e7).toFixed(2)+"Cr";
+              if(v>=1e5) return "₹"+(v/1e5).toFixed(1)+"L";
+              return "₹"+v.toLocaleString("en-IN");
+            };
+            var metrics = [
+              {l:"Open", v:_lpData.open!=null?"₹"+_lpData.open.toLocaleString("en-IN"):null},
+              {l:"High", v:_lpData.dayHigh!=null?"₹"+_lpData.dayHigh.toLocaleString("en-IN"):null},
+              {l:"Low", v:_lpData.dayLow!=null?"₹"+_lpData.dayLow.toLocaleString("en-IN"):null},
+              {l:"52-wk High", v:_lpData.wk52High!=null?"₹"+_lpData.wk52High.toLocaleString("en-IN"):null},
+              {l:"52-wk Low", v:_lpData.wk52Low!=null?"₹"+_lpData.wk52Low.toLocaleString("en-IN"):null},
+              {l:"Mkt Cap", v:fmtCr(_lpData.marketCap)},
+              {l:"P/E Ratio", v:_lpData.pe!=null?_lpData.pe.toFixed(2):null},
+            ].filter(function(m){return m.v!=null;});
+            if(metrics.length===0) return null;
+            return (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(84px,1fr))",gap:8,marginTop:12,paddingTop:12,borderTop:"1px solid #1a2035"}}>
+                {metrics.map(function(m,i){return(
+                  <div key={i}>
+                    <div style={{fontSize:8,color:"#3a4a6a",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:2}}>{m.l}</div>
+                    <div style={{fontSize:12,fontWeight:700,color:"#c8d0e8",fontFamily:"'JetBrains Mono',monospace"}}>{m.v}</div>
+                  </div>
+                );})}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Sub-nav */}
