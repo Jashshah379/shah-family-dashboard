@@ -10785,36 +10785,6 @@ function FamilyApp() {
               );
             })()}
           </div>
-          {/* ── Asset Allocation strip (merged into header, styled to visually continue it regardless of exact nesting) ── */}
-          {(()=>{
-            var _assets=[
-              {l:"Equity",v:totalStocks,c:"#6366f1"},
-              {l:"Mutual Funds",v:totalMFAll,c:"#10b981"},
-              {l:"Bank",v:totalBankAll,c:"#f0b429"},
-              {l:"PPF",v:totalPPFAll,c:"#3b82f6"},
-            ].filter(function(a){return a.v>0;});
-            var _assetTotal=_assets.reduce(function(s,a){return s+a.v;},0)||1;
-            return (
-              <div style={{marginTop:-1,marginBottom:20,padding:"12px 20px 16px",background:"linear-gradient(135deg,#0e1328 0%,#0a0e1f 60%,#0d1126 100%)",
-                border:"1px solid #1c2440",borderTop:"1px solid #1a2035",borderRadius:"0 0 18px 18px"}}>
-                <div style={{height:6,borderRadius:3,overflow:"hidden",display:"flex",gap:1,marginBottom:8}}>
-                  {_assets.map(function(a,i){
-                    return <div key={i} style={{width:(a.v/_assetTotal*100)+"%",background:a.c,transition:"width 0.6s cubic-bezier(.16,1,.3,1)"}}/>;
-                  })}
-                </div>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {_assets.map(function(a,i){return(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:20,
-                      background:"rgba(255,255,255,0.04)",border:"1px solid "+a.c+"44"}}>
-                      <div style={{width:6,height:6,borderRadius:"50%",background:a.c,flexShrink:0}}/>
-                      <span style={{fontSize:9,color:"#8899bb"}}>{a.l}</span>
-                      <span style={{fontSize:9,fontWeight:700,color:"#c8d0e8",fontFamily:"'JetBrains Mono',monospace"}}>{cr(a.v)}</span>
-                    </div>
-                  );})}
-                </div>
-              </div>
-            );
-          })()}
           {/* Primary Tabs + Sidebar Toggle */}
           <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",msOverflowStyle:"none",scrollbarWidth:"none",position:"fixed",top:0,left:0,right:0,zIndex:500,background:"rgba(7,10,22,0.97)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid rgba(255,255,255,0.06)",transform:navVisible?"translateY(0)":"translateY(-110%)",transition:"transform 0.2s cubic-bezier(0.4,0,0.2,1)",willChange:"transform",padding:"5px 18px 6px 18px",boxSizing:"border-box"}}>
             <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
@@ -10856,6 +10826,37 @@ function FamilyApp() {
           </div>
         </div>
       </div>
+
+          {/* ── Asset Allocation strip (merged into header, styled to visually continue it regardless of exact nesting) ── */}
+          {(()=>{
+            var _assets=[
+              {l:"Equity",v:totalStocks,c:"#6366f1"},
+              {l:"Mutual Funds",v:totalMFAll,c:"#10b981"},
+              {l:"Bank",v:totalBankAll,c:"#f0b429"},
+              {l:"PPF",v:totalPPFAll,c:"#3b82f6"},
+            ].filter(function(a){return a.v>0;});
+            var _assetTotal=_assets.reduce(function(s,a){return s+a.v;},0)||1;
+            return (
+              <div style={{marginTop:-1,marginBottom:20,padding:"12px 20px 16px",background:"linear-gradient(135deg,#0e1328 0%,#0a0e1f 60%,#0d1126 100%)",
+                border:"1px solid #1c2440",borderTop:"1px solid #1a2035",borderRadius:"0 0 18px 18px"}}>
+                <div style={{height:6,borderRadius:3,overflow:"hidden",display:"flex",gap:1,marginBottom:8}}>
+                  {_assets.map(function(a,i){
+                    return <div key={i} style={{width:(a.v/_assetTotal*100)+"%",background:a.c,transition:"width 0.6s cubic-bezier(.16,1,.3,1)"}}/>;
+                  })}
+                </div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  {_assets.map(function(a,i){return(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:20,
+                      background:"rgba(255,255,255,0.04)",border:"1px solid "+a.c+"44"}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:a.c,flexShrink:0}}/>
+                      <span style={{fontSize:9,color:"#8899bb"}}>{a.l}</span>
+                      <span style={{fontSize:9,fontWeight:700,color:"#c8d0e8",fontFamily:"'JetBrains Mono',monospace"}}>{cr(a.v)}</span>
+                    </div>
+                  );})}
+                </div>
+              </div>
+            );
+          })()}
 
       
       {/* Notifications Panel */}
