@@ -7526,6 +7526,11 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   };
   const totalVal = holdings.reduce((s,h)=>s+(h.val||0),0);
   var chgPct   = holdings.length > 0 ? (holdings[0].chgPct!=null?holdings[0].chgPct:null) : null;
+  /* Use live price if available, fall back to stored CMP.
+     NOTE: _liveSym must be computed before _lpData below — it's used there. */
+  var _liveSym = typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[sym] ? SYMBOL_MAP[sym] : sym;
+  var _livePrice = livePrices&&livePrices[_liveSym] ? livePrices[_liveSym].p : null;
+  const cmp = _livePrice || (holdings[0] ? (holdings[0].cmp||0) : 0);
   /* Read chgAmt from live prices first (most reliable source) */
   var _lpData = livePrices && livePrices[_liveSym];
   var chgAmt = (_lpData && _lpData.c != null) ? _lpData.c : null;
@@ -7544,10 +7549,6 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
   const totalQty = holdings.reduce((s,h)=>s+(h.qty||0),0);
   const totalPL  = totalVal - totalInv;
   const retPct   = totalInv > 0 ? (totalPL/totalInv*100) : 0;
-  /* Use live price if available, fall back to stored CMP */
-  var _liveSym = typeof SYMBOL_MAP!=="undefined"&&SYMBOL_MAP[sym] ? SYMBOL_MAP[sym] : sym;
-  var _livePrice = livePrices&&livePrices[_liveSym] ? livePrices[_liveSym].p : null;
-  const cmp = _livePrice || (holdings[0] ? (holdings[0].cmp||0) : 0);
 
   /* ── All dividends received for this stock ── */
   const ALL_DIVS = [
