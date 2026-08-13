@@ -14898,6 +14898,7 @@ const MEMBER_HOLDINGS = {
   "A46":       _tag(ASHA_SUSHIL_HOLDINGS,        "Asha Shah",       "Sushil Financial"),
   "MAYA_SUSHIL":[
     ..._tag(typeof M34_SUSHIL_HOLDINGS!=="undefined"?M34_SUSHIL_HOLDINGS:MAYA_SUSHIL_HOLDINGS,       "Maya Shah",       "Sushil Financial"),
+    ..._tag(typeof M34_BOND_HOLDINGS!=="undefined"?M34_BOND_HOLDINGS:[],       "Maya Shah",       "Sushil Financial"),
     ..._tag(typeof MAYA_ICICI_HOLDINGS!=="undefined"?MAYA_ICICI_HOLDINGS:[],       "Maya Shah",       "ICICI Direct"),
     ..._tag(typeof MAYA_ZERODHA_HOLDINGS!=="undefined"?MAYA_ZERODHA_HOLDINGS:[],   "Maya Shah",       "Zerodha"),
   ],
@@ -14905,7 +14906,10 @@ const MEMBER_HOLDINGS = {
     ..._tag(CHETAN_HOLDINGS,            "Chetan Shah", "Zerodha"),
     ..._tag(typeof V60_SUSHIL_HOLDINGS!=="undefined"?V60_SUSHIL_HOLDINGS:[], "Chetan Shah", "Sushil Financial"),
   ],
-  "JASH":  _tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah",      "Zerodha"),
+  "JASH":  [
+    ..._tag(JASH_PORTFOLIO_HOLDINGS, "Jash Shah", "Zerodha"),
+    ..._tag(typeof JASH_ICICI_HOLDINGS!=="undefined"?JASH_ICICI_HOLDINGS:[], "Jash Shah", "ICICI Direct"),
+  ],
   
   "AARYA_NEW": [
     ..._tag(AARYA_HOLDINGS, "Aarya Shah", "ICICI Direct"),
