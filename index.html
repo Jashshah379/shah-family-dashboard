@@ -1735,7 +1735,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                     })}
                   </span>
                 </span></span></div>
-          <div key={gainMode+"g"} style={{animation:"fadeUp 0.3s cubic-bezier(.4,0,.2,1) both"}}>{top5.map((h,i)=>{
+          <div key={gainMode+"g"}>{top5.map((h,i)=>{
             var _histR = (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? getHistRet(h,gainMode) : null;
             var dispPct = _histR!=null ? _histR : (hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0));
             var dispLabel = _histR!=null ? gainMode : (hasLivePct ? "today" : "overall");
@@ -1747,7 +1747,9 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                   padding:"8px 14px",
                   borderBottom:i<9?"1px solid rgba(16,185,129,0.08)":"none",
                   display:"flex",justifyContent:"space-between",alignItems:"center",
-                  cursor:"pointer",transition:"background 0.12s cubic-bezier(.4,0,.2,1)"
+                  cursor:"pointer",transition:"background 0.12s cubic-bezier(.4,0,.2,1)",
+                  animation:"fadeUp 0.35s cubic-bezier(.4,0,.2,1) both",
+                  animationDelay:(i*0.035)+"s"
                 }}
                 onMouseEnter={function(e){e.currentTarget.style.background="rgba(16,185,129,0.06)"}}
                 onMouseLeave={function(e){e.currentTarget.style.background="transparent"}}>
@@ -1779,7 +1781,7 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
         {/* Losers */}
         <div style={{background:"linear-gradient(155deg,#1a0a0a,#0d1020)",border:"1px solid #3a1a1a",borderRadius:14,overflow:"hidden",display:"flex",flexDirection:"column"}}>
           <div style={{padding:"10px 14px",borderBottom:"1px solid #3a1a1a",fontSize:10,fontWeight:700,color:"#ef4444"}}>{gainMode==="1W"?"📉 1-Week Losers":gainMode==="1M"?"📉 1-Month Losers":gainMode==="52W"?"📉 52-Week Losers":hasLivePct?"📉 Today's Losers":"📉 Under Pressure"}</div>
-          <div key={gainMode+"l"} style={{animation:"fadeUp 0.3s cubic-bezier(.4,0,.2,1) both"}}>{bot5.map((h,i)=>{
+          <div key={gainMode+"l"}>{bot5.map((h,i)=>{
             var _histR = (gainMode==="1W"||gainMode==="1M"||gainMode==="52W") ? getHistRet(h,gainMode) : null;
             var dispPct = _histR!=null ? _histR : (hasLivePct ? h.chgPct : (h.inv>0?((h.val-h.inv)/h.inv*100):0));
             var dispLabel = _histR!=null ? gainMode : (hasLivePct ? "today" : "overall");
@@ -1791,7 +1793,9 @@ function DailyDigest({priceVersion, livePrices, onStockClick}) {
                   padding:"8px 14px",
                   borderBottom:i<9?"1px solid rgba(248,113,113,0.08)":"none",
                   display:"flex",justifyContent:"space-between",alignItems:"center",
-                  cursor:"pointer",transition:"background 0.12s cubic-bezier(.4,0,.2,1)"
+                  cursor:"pointer",transition:"background 0.12s cubic-bezier(.4,0,.2,1)",
+                  animation:"fadeUp 0.35s cubic-bezier(.4,0,.2,1) both",
+                  animationDelay:(i*0.035)+"s"
                 }}
                 onMouseEnter={function(e){e.currentTarget.style.background="rgba(248,113,113,0.06)"}}
                 onMouseLeave={function(e){e.currentTarget.style.background="transparent"}}>
@@ -10310,6 +10314,15 @@ function FamilyApp() {
                   );
                 })}
               </div>
+              {/* Select All — always available, selects whatever the current custodian filter shows */}
+              <div style={{marginTop:8}}>
+                <button onClick={function(){
+                    var all={}; rows.forEach(function(r){all[r.code]=true;}); setAbSelected(all);
+                  }}
+                  style={{background:"none",border:"1px solid #3a4a6a",color:"#8a9ab5",borderRadius:6,padding:"3px 10px",cursor:"pointer",fontSize:9,fontWeight:600,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
+                  Select All ({rows.length})
+                </button>
+              </div>
               {/* Selection summary — animates in via the same grid technique used for the other ribbons */}
               <div style={{display:"grid",gridTemplateRows:selCount>0?"1fr":"0fr",transition:"grid-template-rows 0.28s cubic-bezier(.16,1,.3,1)"}}>
                 <div style={{overflow:"hidden",minHeight:0}}>
@@ -10342,7 +10355,7 @@ function FamilyApp() {
                         style={{padding:"7px 14px",borderTop:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8,
                           cursor:"pointer",background:isSel?"#0d1a2e":"transparent",boxShadow:isSel?"inset 3px 0 0 #3b82f6":"none",transition:"background 0.15s cubic-bezier(.4,0,.2,1), box-shadow 0.15s cubic-bezier(.4,0,.2,1)"}}>
                         <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                          <div style={{width:14,height:14,border:"2px solid "+(isSel?"#3b82f6":"#3a4a6a"),borderRadius:4,background:isSel?"#3b82f6":"transparent",
+                          <div style={{width:14,height:14,border:"2px solid "+(isSel?"#3b82f6":"transparent"),borderRadius:4,background:isSel?"#3b82f6":"transparent",
                             display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                             {isSel&&<span style={{color:"#fff",fontSize:9,fontWeight:900,lineHeight:1}}>✓</span>}
                           </div>
