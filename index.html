@@ -10276,6 +10276,71 @@ function FamilyApp() {
   </div>
 )}
 
+      {/* ── ACCOUNT BREAKDOWN PANEL (fixed, top-level — outside pull-to-refresh wrapper) ── */}
+      {showAccountBreakdown&&(()=>{
+        var pledgedValByAccount = function(arr){
+          var entries = (arr||[]).filter(function(h){return h&&h.mtf;});
+          return entries.reduce(function(s,h){return s+((h.avg||0)*(h.mtfQty||h.qty||0));},0);
+        };
+        var rows = ACCOUNT_SUMMARY_DEFS.map(function(def){
+          var arr = def.getArr();
+          var val = (arr||[]).reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
+          var pledged = pledgedValByAccount(arr);
+          return Object.assign({}, def, {val:val, pledged:pledged, exMtf: pledged>0 ? val-pledged : null});
+        });
+        var byMember = {};
+        rows.forEach(function(r){ (byMember[r.member]=byMember[r.member]||[]).push(r); });
+        var memberNames = Object.keys(byMember).sort(function(a,b){
+          var ta=byMember[a].reduce(function(s,r){return s+r.val;},0);
+          var tb=byMember[b].reduce(function(s,r){return s+r.val;},0);
+          return tb-ta;
+        });
+        var grandVal = rows.reduce(function(s,r){return s+r.val;},0);
+        return (
+        <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
+          onClick={function(e){if(e.target===e.currentTarget)setShowAccountBreakdown(false);}}>
+          <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:640,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
+            onClick={function(e){e.stopPropagation();}}>
+            <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"sticky",top:0,background:"#0a0d1c",zIndex:1}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📂 Account-by-Account Breakdown</div>
+                <div style={{fontSize:10,color:"#3a4a6a",marginTop:2}}>Every tracked account, grouped by member · {cr(grandVal)} total equity</div>
+              </div>
+              <button onClick={function(){setShowAccountBreakdown(false);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
+            </div>
+            <div style={{padding:"12px 18px 18px"}}>
+              {memberNames.map(function(member){
+                var accs = byMember[member];
+                var memberTotal = accs.reduce(function(s,r){return s+r.val;},0);
+                return (
+                  <div key={member} style={{marginBottom:12,background:"#0d1122",border:"1px solid #1a2035",borderRadius:10,overflow:"hidden"}}>
+                    <div style={{padding:"8px 14px",background:"#111527",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <span style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{member}</span>
+                      <span style={{fontSize:12,fontWeight:800,color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>{cr(memberTotal)}</span>
+                    </div>
+                    {accs.map(function(r){return(
+                      <div key={r.code} style={{padding:"7px 14px",borderTop:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:4}}>
+                        <span style={{fontSize:10,color:"#8a9ab5"}}>{r.custodian}</span>
+                        <div style={{display:"flex",gap:14,alignItems:"baseline"}}>
+                          {r.exMtf!=null&&(
+                            <span style={{fontSize:9,color:"#f0b429"}} title="Value excluding pledged/MTF-funded portion">
+                              ex-MTF: <b style={{fontFamily:"'JetBrains Mono',monospace"}}>{cr(r.exMtf)}</b>
+                            </span>
+                          )}
+                          <span style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace"}}>{cr(r.val)}</span>
+                        </div>
+                      </div>
+                    );})}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
+
     {/* ── SIDEBAR OVERLAY (fixed, must be outside overflow container) ── */}
     {sidebarOpen&&<div onClick={function(){setSidebarOpen(false);}} style={{position:"fixed",inset:0,background:"#00000066",zIndex:999}}/>}
     {sidebarOpen&&(
@@ -10310,7 +10375,7 @@ function FamilyApp() {
           );})}
       </div>
     )}
-    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"translateY(0)",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
+    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"none",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
       {/* ── PULL TO REFRESH INDICATOR ── */}
       {(pulling||refreshing)&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",zIndex:600,display:"flex",alignItems:"center",gap:8,background:"rgba(15,20,40,0.95)",border:"1px solid rgba(99,102,241,0.3)",borderRadius:20,padding:"6px 14px",fontSize:11,color:"#7eb8ff",backdropFilter:"blur(8px)",transition:"opacity 0.2s cubic-bezier(.4,0,.2,1)"}}>
         {refreshing
@@ -10858,70 +10923,6 @@ function FamilyApp() {
   </div>
 )}
 
-
-      {/* ── ACCOUNT BREAKDOWN PANEL (fixed, top-level — outside pull-to-refresh wrapper) ── */}
-      {showAccountBreakdown&&(()=>{
-        var pledgedValByAccount = function(arr){
-          var entries = (arr||[]).filter(function(h){return h&&h.mtf;});
-          return entries.reduce(function(s,h){return s+((h.avg||0)*(h.mtfQty||h.qty||0));},0);
-        };
-        var rows = ACCOUNT_SUMMARY_DEFS.map(function(def){
-          var arr = def.getArr();
-          var val = (arr||[]).reduce(function(s,h){return s+(h&&h.val?h.val:0);},0);
-          var pledged = pledgedValByAccount(arr);
-          return Object.assign({}, def, {val:val, pledged:pledged, exMtf: pledged>0 ? val-pledged : null});
-        });
-        var byMember = {};
-        rows.forEach(function(r){ (byMember[r.member]=byMember[r.member]||[]).push(r); });
-        var memberNames = Object.keys(byMember).sort(function(a,b){
-          var ta=byMember[a].reduce(function(s,r){return s+r.val;},0);
-          var tb=byMember[b].reduce(function(s,r){return s+r.val;},0);
-          return tb-ta;
-        });
-        var grandVal = rows.reduce(function(s,r){return s+r.val;},0);
-        return (
-        <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:16,paddingLeft:16,paddingRight:16,paddingBottom:16,overscrollBehavior:"contain",boxSizing:"border-box"}}
-          onClick={function(e){if(e.target===e.currentTarget)setShowAccountBreakdown(false);}}>
-          <div style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:640,maxHeight:"calc(90vh - 32px)",minHeight:0,overflowY:"auto",boxShadow:"0 24px 80px #00000099"}}
-            onClick={function(e){e.stopPropagation();}}>
-            <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"flex-start",position:"sticky",top:0,background:"#0a0d1c",zIndex:1}}>
-              <div>
-                <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📂 Account-by-Account Breakdown</div>
-                <div style={{fontSize:10,color:"#3a4a6a",marginTop:2}}>Every tracked account, grouped by member · {cr(grandVal)} total equity</div>
-              </div>
-              <button onClick={function(){setShowAccountBreakdown(false);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
-            </div>
-            <div style={{padding:"12px 18px 18px"}}>
-              {memberNames.map(function(member){
-                var accs = byMember[member];
-                var memberTotal = accs.reduce(function(s,r){return s+r.val;},0);
-                return (
-                  <div key={member} style={{marginBottom:12,background:"#0d1122",border:"1px solid #1a2035",borderRadius:10,overflow:"hidden"}}>
-                    <div style={{padding:"8px 14px",background:"#111527",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <span style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>{member}</span>
-                      <span style={{fontSize:12,fontWeight:800,color:"#7eb8ff",fontFamily:"'JetBrains Mono',monospace"}}>{cr(memberTotal)}</span>
-                    </div>
-                    {accs.map(function(r){return(
-                      <div key={r.code} style={{padding:"7px 14px",borderTop:"1px solid #0d1020",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:4}}>
-                        <span style={{fontSize:10,color:"#8a9ab5"}}>{r.custodian}</span>
-                        <div style={{display:"flex",gap:14,alignItems:"baseline"}}>
-                          {r.exMtf!=null&&(
-                            <span style={{fontSize:9,color:"#f0b429"}} title="Value excluding pledged/MTF-funded portion">
-                              ex-MTF: <b style={{fontFamily:"'JetBrains Mono',monospace"}}>{cr(r.exMtf)}</b>
-                            </span>
-                          )}
-                          <span style={{fontSize:11,fontWeight:700,color:"#e8eaf0",fontFamily:"'JetBrains Mono',monospace"}}>{cr(r.val)}</span>
-                        </div>
-                      </div>
-                    );})}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        );
-      })()}
 
       {/* ── Manual CMP Floating Action Button ── */}
       
