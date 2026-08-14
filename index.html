@@ -240,6 +240,16 @@ th[style*="cursor:"pointer""]:hover {
   background: rgba(126,184,255,0.06) !important;
 }
 
+/* ── Keyboard focus ring — visible only for keyboard nav, not mouse clicks ── */
+button:focus-visible, [role="button"]:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #7eb8ff !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible), [role="button"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* ── Badge pills ── */
 span[style*="borderRadius"] {
   transition: opacity 0.15s cubic-bezier(.4,0,.2,1) !important;
@@ -7031,7 +7041,7 @@ function LedgerTab() {
                     <td style={{padding:"8px 12px",color:"#5a6a8a",fontSize:10,maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.note}</td>
                     <td style={{padding:"8px 12px",whiteSpace:"nowrap"}}>
                       <button onClick={function(){startEdit(e);}} className="btn-press" style={{background:"none",border:"none",color:"#3a5a7a",cursor:"pointer",fontSize:11,marginRight:6}}>✏</button>
-                      <button onClick={function(){deleteEntry(e.id);}} className="btn-press" style={{background:"none",border:"none",color:"#5a2a2a",cursor:"pointer",fontSize:11}}>✕</button>
+                      <button aria-label="Delete entry" onClick={function(){deleteEntry(e.id);}} className="btn-press" style={{background:"none",border:"none",color:"#5a2a2a",cursor:"pointer",fontSize:11}}>✕</button>
                     </td>
                   </tr>
                 );
@@ -7053,7 +7063,7 @@ function LedgerTab() {
           <div className="anim-scale-in" style={{background:"#0a0d1c",border:"1px solid #1e2845",borderRadius:16,width:"100%",maxWidth:420,marginTop:"min(60px,8vh)",boxShadow:"0 24px 80px #00000099"}}>
             <div style={{padding:"18px 22px",borderBottom:"1px solid #1a2035",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{fontSize:14,fontWeight:800,color:"#e8eaf0"}}>{editingId?"Edit Entry":"+ Add Ledger Entry"}</div>
-              <button onClick={function(){setShowForm(false);setEditingId(null);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12}}>✕</button>
+              <button aria-label="Close" onClick={function(){setShowForm(false);setEditingId(null);}} style={{background:"#11152c",border:"1px solid #1d2545",color:"#7eb8ff",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12}}>✕</button>
             </div>
             <div style={{padding:"18px 22px",display:"flex",flexDirection:"column",gap:12}}>
               <div>
@@ -7672,7 +7682,7 @@ function StockDetailPanel({ sym, onClose, livePrices }) {
                 style={{background:"#11162e",border:"1px solid #1d2545",borderRadius:6,cursor:holdings.length?"pointer":"default",color:holdings.length?"#7eb8ff":"#2a3550",fontSize:11,padding:6,minWidth:28,minHeight:28,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,transition:"all 0.15s cubic-bezier(.4,0,.2,1)"}}>
                 ⬇
               </button>
-              <button onClick={function(){onClose();}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:"0 0 0 4px",flexShrink:0,lineHeight:1}}>✕</button>
+              <button aria-label="Close" onClick={function(){onClose();}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:"0 0 0 4px",flexShrink:0,lineHeight:1}}>✕</button>
             </div>
           </div>
           {/* Row 2: CMP + live badge + day change + Total Qty + Avg */}
@@ -10335,7 +10345,7 @@ function FamilyApp() {
                   <div style={{fontSize:15,fontWeight:800,color:"#e8eaf0"}}>📂 Account-by-Account Breakdown</div>
                   <div style={{fontSize:10,color:"#3a4a6a",marginTop:2}}>Every tracked account, grouped by member · {cr(grandVal)} total equity{abCustodianFilter!=="All"?" · filtered":""}</div>
                 </div>
-                <button onClick={function(){setShowAccountBreakdown(false);setAbSelected({});setAbCustodianFilter("All");}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
+                <button aria-label="Close" onClick={function(){setShowAccountBreakdown(false);setAbSelected({});setAbCustodianFilter("All");}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
               </div>
               {/* Custodian filter chips */}
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
@@ -10434,7 +10444,7 @@ function FamilyApp() {
       <div className="anim-slide-left" style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#07090f",borderRight:"1px solid #1d2545",zIndex:1001,overflowY:"auto",padding:"16px 0 calc(16px + env(safe-area-inset-bottom)) 0",boxShadow:"4px 0 24px #00000066"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px 12px",borderBottom:"1px solid #1d2545",marginBottom:8}}>
             <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>More Tabs</div>
-            <button onClick={function(){setSidebarOpen(false);}} style={{background:"none",border:"none",color:"#3a4a6a",fontSize:18,cursor:"pointer",padding:8,minWidth:36,minHeight:36}}>✕</button>
+            <button aria-label="Close" onClick={function(){setSidebarOpen(false);}} style={{background:"none",border:"none",color:"#3a4a6a",fontSize:18,cursor:"pointer",padding:8,minWidth:36,minHeight:36}}>✕</button>
           </div>
           {SIDEBAR_SECTIONS.map(function(sec){return(
             <div key={sec.title} style={{marginBottom:4}}>
@@ -11486,7 +11496,7 @@ function FamilyApp() {
                       </div>
                       <div style={{fontSize:10,color:"#3a4a6a",marginTop:4}}>{purposeText||"–"} · {a.exDate||a.recordDate||"–"}</div>
                     </div>
-                    <button onClick={function(){setSelectedLiveCA(null);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
+                    <button aria-label="Close" onClick={function(){setSelectedLiveCA(null);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
                   </div>
                   <div style={{padding:"16px 22px 22px"}}>
                     {holders.length===0 && (
@@ -17452,7 +17462,7 @@ function Modal({sym,onClose}){
   return(
     <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"20px 12px",overflowY:"auto"}}>
       <div style={{background:"#152130",border:"1px solid #1f3850",borderRadius:12,padding:20,width:660,maxWidth:"100%",position:"relative",margin:"auto"}}>
-        <button onClick={onClose} style={{position:"absolute",top:10,right:10,background:S.bd,border:"none",borderRadius:6,color:S.tx,cursor:"pointer",padding:"3px 10px",fontSize:13}}>✕</button>
+        <button aria-label="Close" onClick={onClose} style={{position:"absolute",top:10,right:10,background:S.bd,border:"none",borderRadius:6,color:S.tx,cursor:"pointer",padding:"3px 10px",fontSize:13}}>✕</button>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
           <div style={{fontSize:22,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{sym}</div>
           <Bd t={(d||{}).status||"—"} c={(d||{}).status==="Open"?"op":"cl"}/>
@@ -17598,7 +17608,7 @@ function PortfolioApp(){
         <div className="anim-slide-right" style={{position:"fixed",top:0,right:0,bottom:0,width:280,background:"#07090f",borderLeft:"1px solid #1d2545",zIndex:1000,overflowY:"auto",padding:"16px 0 calc(16px + env(safe-area-inset-bottom)) 0",boxShadow:"-4px 0 24px #00000066"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px 12px",borderBottom:"1px solid #1d2545",marginBottom:8}}>
             <div style={{fontSize:11,fontWeight:700,color:"#c8d0e8"}}>More Tabs</div>
-            <button onClick={()=>setSidebarOpen(false)} style={{background:"none",border:"none",color:"#3a4a6a",fontSize:18,cursor:"pointer",padding:8,minWidth:36,minHeight:36}}>✕</button>
+            <button aria-label="Close" onClick={()=>setSidebarOpen(false)} style={{background:"none",border:"none",color:"#3a4a6a",fontSize:18,cursor:"pointer",padding:8,minWidth:36,minHeight:36}}>✕</button>
           </div>
           <div style={{flex:1,overflowY:"auto"}}>
           {SIDEBAR_SECTIONS.map(sec=>(
@@ -23238,7 +23248,7 @@ function CorporateActionsTab() {
                     </div>
                     <div style={{fontSize:10,color:"#3a4a6a",marginTop:4}}>{a.note} · {a.date}</div>
                   </div>
-                  <button onClick={function(){setSelectedCA(null);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
+                  <button aria-label="Close" onClick={function(){setSelectedCA(null);}} style={{background:"none",border:"none",cursor:"pointer",color:"#3a5a7a",fontSize:20,padding:6,minWidth:32,minHeight:32,lineHeight:1}}>✕</button>
                 </div>
                 <div style={{padding:"16px 22px 22px"}}>
                   {!a.held && (
