@@ -668,11 +668,17 @@ function useCorporateActions(symbols) {
     Promise.all(batches.map(function(batch) {
       return fetch(WORKER + "?symbols=" + encodeURIComponent(batch.join(",")))
         .then(function(r){ return r.json(); })
-        .catch(function(){ return {actions:[]}; });
+        .catch(function(){ return {actions:[], ok:false}; });
     })).then(function(results) {
       var all = results.reduce(function(acc, d) {
         return acc.concat(d.actions || []);
       }, []);
+      /* If the worker itself confirms it never got a real response from NSE
+         (r1 not ok, handshake failed, cookie jar empty, etc.), don't call it "live" —
+         that previously showed a green LIVE badge even when NSE was fully blocked and
+         the "0 upcoming" was a fetch failure in disguise, not a genuinely quiet calendar. */
+      var anyBatchSucceeded = results.some(function(d){ return d.ok === true; });
+      var allBatchesReported = results.every(function(d){ return typeof d.ok !== "undefined"; });
       /* Deduplicate by symbol+date */
       var seen = {};
       var deduped = all.filter(function(a) {
@@ -688,7 +694,9 @@ function useCorporateActions(symbols) {
         return da - db;
       });
       setActions(classified);
-      setCaStatus(classified.length > 0 ? "live" : "live");
+      /* allBatchesReported guards old cached worker responses (pre-diagnostics) from
+         being misread as failures — treat unknown "ok" as success rather than erroring. */
+      setCaStatus((anyBatchSucceeded || !allBatchesReported) ? "live" : "error");
     }).catch(function(){ setCaStatus("error"); });
   }, [symbols ? symbols.join(",") : ""]);
 
