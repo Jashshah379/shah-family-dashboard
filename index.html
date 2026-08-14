@@ -6,6 +6,12 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Shah Wealth"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#070a16"/>
+<meta name="format-detection" content="telephone=no"/>
 <title>Shah Family Wealth Dashboard</title>
 <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -124,6 +130,20 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
   [style*="repeat(auto-fit"], [style*="repeat(2,1fr)"] { grid-template-columns: 1fr !important; }
   [style*="padding:"18px""], [style*="padding:18px"] { padding: 12px !important; }
 }
+
+/* ── Any touch-primary device (iPhone, iPad in any orientation/size, including iPad Pro
+   landscape at 1366px which sits outside the 769–1024 tablet breakpoint above) —
+   scoped to (hover:none)+(pointer:coarse) so desktop mice/trackpads are never touched ── */
+@media (hover: none) and (pointer: coarse) {
+  button:not(.tb):not(.no-min-tap) { min-height: 40px; }
+  a, [role="button"], [onclick], .card-hover { min-height: 40px; }
+  /* Hover-only affordances are unreachable on touch — don't leave elements stuck
+     mid-hover-state or require a hover the user physically cannot perform */
+  .card-hover:hover { transform: none; }
+  /* Row/element spacing a touch finger needs vs. a mouse pointer */
+  tbody tr td { padding-top: 8px; padding-bottom: 8px; }
+}
+
 
 /* ══════════════════════════════════════
    SMOOTH UI/UX — Global polish layer
@@ -10480,7 +10500,7 @@ function FamilyApp() {
           );})}
       </div>
     )}
-    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"60px",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"none",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
+    <div style={{background:"radial-gradient(ellipse 80% 50% at 50% -10%,#141b3a 0%,#0a0e1f 50%,#070a16 100%)",minHeight:"100vh",padding:"18px",paddingTop:"calc(60px + env(safe-area-inset-top))",paddingLeft:"calc(18px + env(safe-area-inset-left))",paddingRight:"calc(18px + env(safe-area-inset-right))",paddingBottom:"calc(18px + env(safe-area-inset-bottom))",fontFamily:"'Inter',system-ui,sans-serif",color:"#e8eaf0",overflowX:"hidden",maxWidth:"100vw",transform:pulling&&!refreshing?"translateY("+(pullY)+"px)":"none",transition:pulling&&!refreshing?"none":"transform 0.3s cubic-bezier(0.4,0,0.2,1)"}}>
       {/* ── PULL TO REFRESH INDICATOR ── */}
       {(pulling||refreshing)&&<div style={{position:"fixed",top:60,left:"50%",transform:"translateX(-50%)",zIndex:600,display:"flex",alignItems:"center",gap:8,background:"rgba(15,20,40,0.95)",border:"1px solid rgba(99,102,241,0.3)",borderRadius:20,padding:"6px 14px",fontSize:11,color:"#7eb8ff",backdropFilter:"blur(8px)",transition:"opacity 0.2s cubic-bezier(.4,0,.2,1)"}}>
         {refreshing
@@ -10919,8 +10939,8 @@ function FamilyApp() {
             })()}
           </div>
           {/* Primary Tabs + Sidebar Toggle */}
-          <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",msOverflowStyle:"none",scrollbarWidth:"none",position:"fixed",top:0,left:0,right:0,zIndex:500,background:"rgba(7,10,22,0.97)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid rgba(255,255,255,0.06)",transform:navVisible?"translateY(0)":"translateY(-110%)",transition:"transform 0.2s cubic-bezier(0.4,0,0.2,1)",willChange:"transform",padding:"5px 18px 6px 18px",boxSizing:"border-box"}}>
-            <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu"
+          <div className="tab-bar" style={{display:"flex",gap:4,flexWrap:"nowrap",alignItems:"center",overflowX:"auto",WebkitOverflowScrolling:"touch",msOverflowStyle:"none",scrollbarWidth:"none",position:"fixed",top:0,left:0,right:0,zIndex:500,background:"rgba(7,10,22,0.97)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid rgba(255,255,255,0.06)",transform:navVisible?"translateY(0)":"translateY(-110%)",transition:"transform 0.2s cubic-bezier(0.4,0,0.2,1)",willChange:"transform",padding:"calc(5px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) 6px calc(18px + env(safe-area-inset-left))",boxSizing:"border-box"}}>
+            <button onClick={()=>setSidebarOpen(s=>!s)} title="Menu" aria-label={sidebarOpen?"Close menu":"Open menu"}
               style={{background:"none",border:"none",color:sidebarOpen?"#7eb8ff":"#3a4a6a",
                 cursor:"pointer",padding:"9px 11px",borderRadius:7,fontSize:18,lineHeight:1,flexShrink:0,
                 minWidth:40,minHeight:40,display:"flex",alignItems:"center",justifyContent:"center"}}>
