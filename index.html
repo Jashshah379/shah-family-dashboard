@@ -11085,12 +11085,6 @@ function FamilyApp() {
         <GlobalIndicesWidget/>
         
         <DailyDigest priceVersion={priceVersion} livePrices={livePrices} onStockClick={function(sym){setStockDetail(sym);}}/>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:9,marginBottom:14}}>
-          <M label="Equity" value={cr(totalStocks)} sub={_usingLive?"Live prices":"Loading…"} color="#7eb8ff" onClick={()=>setTab("Stock List")}/>
-          <M label="Mutual Funds" value={cr(totalMF)} sub="All members" color="#34d399" onClick={()=>setTab("Mutual Funds")}/>
-          <M label="Bank" value={cr(totalBank)} sub="All accounts" color="#fbbf24" onClick={()=>setTab("Bank")}/>
-          <M label="Unrealised P/L" value={cr(FAMILY_EQ_PL)} sub={FAMILY_EQ_PL>=0?"Equity gain":"Equity loss"} color={FAMILY_EQ_PL>=0?"#34d399":"#f87171"}/>
-        </div>
 
         {/* ── Wealth Attribution ── */}
         {(function(){
