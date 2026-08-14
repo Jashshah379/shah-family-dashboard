@@ -1497,9 +1497,9 @@ function GlobalIndicesWidget() {
 
       {/* Scrolling track */}
       <div style={{overflow:"hidden",flex:1}}>
-        <div style={{display:"flex"}}>
-          <div className="ticker-track">{renderItems("a")}</div>
-          <div className="ticker-track">{renderItems("b")}</div>
+        <div className="ticker-track" style={{display:"flex"}}>
+          <div style={{display:"flex"}}>{renderItems("a")}</div>
+          <div style={{display:"flex"}}>{renderItems("b")}</div>
         </div>
       </div>
     </div>
@@ -11243,11 +11243,11 @@ function FamilyApp() {
               };
 
               return (
-                <div style={{display:"flex"}}>
-                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 50s linear infinite",backfaceVisibility:"hidden"}}>
+                <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 50s linear infinite",backfaceVisibility:"hidden",willChange:"transform"}}>
+                  <div style={{display:"flex"}}>
                     {displayStocks.map((h,i)=>renderCard(h,"a"))}
                   </div>
-                  <div className="pulse-track" style={{display:"flex",animation:"pulseMarquee 50s linear infinite",backfaceVisibility:"hidden"}}>
+                  <div style={{display:"flex"}}>
                     {displayStocks.map((h,i)=>renderCard(h,"b"))}
                   </div>
                 </div>
