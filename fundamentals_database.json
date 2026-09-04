@@ -1,0 +1,799 @@
+{
+  "_meta": {
+    "description": "Manually-researched, curated fundamentals data with qualitative flags (promoter holding trends, red/green flags, etc). Takes priority over the app's live /fundamentals worker endpoint when a stock exists here. Fetched by the app at runtime from GitHub, so updates to this file don't require rebuilding/redeploying the app itself.",
+    "lastUpdated": "2026-09-04",
+    "stockCount": 27,
+    "schema": {
+      "name": "Display name",
+      "tier": "full | partial",
+      "source": "Where the data came from (e.g. tijorifinance.com, screener.in)",
+      "asOfDate": "ISO date when this was researched",
+      "pe": "Price/Earnings ratio (valuation, not scored)",
+      "roe": "Return on Equity %, or null if unavailable",
+      "roce": "Return on Capital Employed %, or null if unavailable",
+      "de": "Debt/Equity ratio (decimal, e.g. 0.28), or null",
+      "opm": "Operating Profit Margin %, or null",
+      "roe3yr": "3-year average ROE % for trend comparison, or null",
+      "promoterHolding": "Promoter holding %, or omitted if unknown",
+      "flags": "Array of {text, positive} qualitative signals"
+    }
+  },
+  "stocks": {
+    "FLUOROCHEM": {
+      "name": "Gujarat Fluorochemicals",
+      "tier": "full",
+      "source": "screener.in / tijorifinance.com",
+      "asOfDate": "2026-08-15",
+      "pe": 69.95,
+      "roe": 7.85,
+      "roce": null,
+      "de": 0.28,
+      "opm": 25.84,
+      "roe3yr": null,
+      "flags": []
+    },
+    "PTCIL": {
+      "name": "PTC Industries",
+      "tier": "full",
+      "source": "screener.in / simplywall.st",
+      "asOfDate": "2026-08-15",
+      "pe": 341,
+      "roe": 6.99,
+      "roce": null,
+      "de": 0.04,
+      "opm": 17.61,
+      "roe3yr": null,
+      "flags": []
+    },
+    "NELCO": {
+      "name": "Nelco",
+      "tier": "full",
+      "source": "stockanalysis.com / simplywall.st",
+      "asOfDate": "2026-08-15",
+      "pe": 241,
+      "roe": 7.58,
+      "roce": null,
+      "de": 0.41,
+      "opm": null,
+      "roe3yr": null,
+      "flags": []
+    },
+    "GENESYS": {
+      "name": "Genesys International",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 23.36,
+      "roe": 10.12,
+      "roce": null,
+      "de": 0.2,
+      "opm": 39.34,
+      "roe3yr": null,
+      "flags": []
+    },
+    "LINDEINDIA": {
+      "name": "Linde India",
+      "tier": "full",
+      "source": "tijorifinance.com / gurufocus.com",
+      "asOfDate": "2026-09-03",
+      "pe": 109,
+      "roe": 11.91,
+      "roce": 12.74,
+      "de": 0.02,
+      "opm": 35.92,
+      "roe3yr": 13,
+      "flags": [
+        {
+          "text": "Almost debt free",
+          "positive": true
+        },
+        {
+          "text": "Healthy dividend payout 21.8%",
+          "positive": true
+        },
+        {
+          "text": "Poor sales growth (11.5% over 5yrs)",
+          "positive": false
+        },
+        {
+          "text": "Low ROE vs history (13.0% 3yr avg)",
+          "positive": false
+        }
+      ]
+    },
+    "SYRMA": {
+      "name": "Syrma SGS Technology",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 75.16,
+      "roe": 9.71,
+      "roce": 14.97,
+      "de": 0.35,
+      "opm": 11.11,
+      "roe3yr": 10.4,
+      "flags": [
+        {
+          "text": "Debt reduced over past 5yrs (33.5% → 9.8%)",
+          "positive": true
+        },
+        {
+          "text": "Low ROE (10.4% 3yr avg)",
+          "positive": false
+        }
+      ]
+    },
+    "FORCEMOT": {
+      "name": "Force Motors",
+      "tier": "full",
+      "source": "tijorifinance.com / simplywall.st",
+      "asOfDate": "2026-09-03",
+      "pe": 18.5,
+      "roe": 28.89,
+      "roce": 29.1,
+      "de": 0.006,
+      "opm": 16.08,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "Almost debt free",
+          "positive": true
+        },
+        {
+          "text": "Good profit growth (62.4% CAGR over 5yrs)",
+          "positive": true
+        },
+        {
+          "text": "Piotroski F-Score 9 (Above Average)",
+          "positive": true
+        }
+      ]
+    },
+    "MTARTECH": {
+      "name": "MTAR Technologies",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 169,
+      "roe": 7.26,
+      "roce": 11.16,
+      "de": 0.24,
+      "opm": 19.54,
+      "roe3yr": 9.63,
+      "flags": [
+        {
+          "text": "Low ROE (9.63% 3yr avg)",
+          "positive": false
+        },
+        {
+          "text": "Debtor days increased 115→140",
+          "positive": false
+        },
+        {
+          "text": "Promoters selling shares in open market",
+          "positive": false
+        },
+        {
+          "text": "Trading at premium to 3yr avg valuation",
+          "positive": false
+        }
+      ]
+    },
+    "SANSERA": {
+      "name": "Sansera Engineering",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 56.97,
+      "roe": 7.82,
+      "roce": 10.15,
+      "de": 0.11,
+      "opm": 18.07,
+      "roe3yr": 11.3,
+      "flags": [
+        {
+          "text": "Strong balance sheet, no solvency/liquidity concerns",
+          "positive": true
+        },
+        {
+          "text": "Low ROE (11.3% 3yr avg)",
+          "positive": false
+        }
+      ]
+    },
+    "INOXWIND": {
+      "name": "Inox Wind",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 34.05,
+      "roe": 8.88,
+      "roce": 13.35,
+      "de": 0.3,
+      "opm": 21.4,
+      "roe3yr": 7.03,
+      "flags": [
+        {
+          "text": "High debtor days (353 days)",
+          "positive": false
+        },
+        {
+          "text": "Promoter holding decreased -27.8% over 3yrs",
+          "positive": false
+        },
+        {
+          "text": "Working capital days rising (168→267)",
+          "positive": false
+        }
+      ]
+    },
+    "CDSL": {
+      "name": "CDSL",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in",
+      "asOfDate": "2026-09-03",
+      "pe": 61.05,
+      "roe": 29.92,
+      "roce": 34.82,
+      "de": 0.02,
+      "opm": 51.17,
+      "roe3yr": 29.2,
+      "flags": [
+        {
+          "text": "Almost debt free",
+          "positive": true
+        },
+        {
+          "text": "Strong 3yr ROE track record (29.2%)",
+          "positive": true
+        },
+        {
+          "text": "Healthy dividend payout 54.3%",
+          "positive": true
+        }
+      ]
+    },
+    "DREDGECORP": {
+      "name": "Dredging Corporation of India",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 83.11,
+      "roe": null,
+      "roce": -0.32,
+      "de": 0.76,
+      "opm": 19.88,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "ROE unavailable/negative — earnings have been volatile in recent years",
+          "positive": false
+        },
+        {
+          "text": "Negative ROCE — poor recent capital efficiency",
+          "positive": false
+        },
+        {
+          "text": "Net debt increasing (₹326Cr → ₹875Cr YoY)",
+          "positive": false
+        }
+      ]
+    },
+    "HAPPYFORGE": {
+      "name": "Happy Forgings",
+      "tier": "full",
+      "source": "tijorifinance.com / simplywall.st",
+      "asOfDate": "2026-09-03",
+      "pe": 43.42,
+      "roe": 14.46,
+      "roce": 19.43,
+      "de": 0.12,
+      "opm": 30.44,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "Revenue CAGR 20.35% vs industry median 10.29%",
+          "positive": true
+        },
+        {
+          "text": "No promoter pledge",
+          "positive": true
+        },
+        {
+          "text": "Independently rated \"good quality\" (MoneyWorks4Me)",
+          "positive": true
+        },
+        {
+          "text": "Receivables rising faster than sales — watch cash conversion",
+          "positive": false
+        }
+      ]
+    },
+    "ATGL": {
+      "name": "Adani Total Gas",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 121,
+      "roe": 13.48,
+      "roce": 14.75,
+      "de": 0.45,
+      "opm": null,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "Promoter has not sold any shares in last 90 days",
+          "positive": true
+        },
+        {
+          "text": "Trading at a discount to 3yr historic valuations",
+          "positive": true
+        },
+        {
+          "text": "Profit declining YoY (₹668Cr→₹654Cr→₹626Cr TTM)",
+          "positive": false
+        },
+        {
+          "text": "Net debt increasing (₹809Cr→₹1,437Cr)",
+          "positive": false
+        }
+      ]
+    },
+    "TIMETECHNO": {
+      "name": "Time Technoplast",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 19.7,
+      "roe": 13.41,
+      "roce": 18.71,
+      "de": 0.22,
+      "opm": 14.66,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "Profit accelerating (₹310Cr→₹388Cr→₹477Cr TTM)",
+          "positive": true
+        },
+        {
+          "text": "Net debt sharply down (₹310Cr→₹60Cr)",
+          "positive": true
+        },
+        {
+          "text": "ROCE increased over last 3 years",
+          "positive": true
+        }
+      ]
+    },
+    "JSWSTEEL": {
+      "name": "JSW Steel",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-03",
+      "pe": 14.11,
+      "roe": 4.41,
+      "roce": 7.95,
+      "de": 1.21,
+      "opm": 16.08,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "Low ROE for the industry (~11% metals/mining avg)",
+          "positive": false
+        },
+        {
+          "text": "Sharp recent profit turnaround (₹3,504Cr→₹28,468Cr TTM)",
+          "positive": true
+        },
+        {
+          "text": "Net debt cut dramatically (₹69,398Cr→₹13,774Cr)",
+          "positive": true
+        },
+        {
+          "text": "Elevated leverage (D/E 1.21)",
+          "positive": false
+        }
+      ]
+    },
+    "JUSTDIAL": {
+      "name": "Just Dial",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in",
+      "asOfDate": "2026-09-04",
+      "pe": 11.99,
+      "roe": 12.68,
+      "roce": 13.86,
+      "de": 0,
+      "opm": 29.45,
+      "roe3yr": 3.71,
+      "promoterHolding": 74.1,
+      "flags": [
+        {
+          "text": "Promoter has not sold any shares in last 90 days",
+          "positive": true
+        },
+        {
+          "text": "Promoter holding high and stable at ~74%",
+          "positive": true
+        },
+        {
+          "text": "Debt free",
+          "positive": true
+        },
+        {
+          "text": "Other income component makes ratios look optically better — check earnings quality",
+          "positive": false
+        },
+        {
+          "text": "Retail buying heavily — can be a sign of exuberance",
+          "positive": false
+        }
+      ]
+    },
+    "HFCL": {
+      "name": "HFCL",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in",
+      "asOfDate": "2026-09-04",
+      "pe": 54.88,
+      "roe": 4.25,
+      "roce": 8.61,
+      "de": 0.37,
+      "opm": 19.14,
+      "roe3yr": null,
+      "promoterHolding": 28.29,
+      "flags": [
+        {
+          "text": "Promoter holding stable quarter-on-quarter",
+          "positive": true
+        },
+        {
+          "text": "Mutual fund holding increasing (6.68%→6.92%)",
+          "positive": true
+        },
+        {
+          "text": "Promoter holding down 11 percentage points over 3 years",
+          "positive": false
+        },
+        {
+          "text": "Possible aggressive revenue recognition — receivables rising faster than sales",
+          "positive": false
+        },
+        {
+          "text": "Poor sales growth, just 2.27% over 5 years",
+          "positive": false
+        },
+        {
+          "text": "Trading at 6.9x book value — rich valuation",
+          "positive": false
+        }
+      ]
+    },
+    "ASTRAZEN": {
+      "name": "AstraZeneca Pharma India",
+      "tier": "full",
+      "source": "tijorifinance.com / simplywall.st",
+      "asOfDate": "2026-09-04",
+      "pe": 101.54,
+      "roe": 15.02,
+      "roce": 27.39,
+      "de": 0.025,
+      "opm": 16.01,
+      "roe3yr": null,
+      "promoterHolding": 75,
+      "flags": [
+        {
+          "text": "ROCE has increased over the last 3 years",
+          "positive": true
+        },
+        {
+          "text": "Promoter holding high and stable at 75% (AstraZeneca plc parent)",
+          "positive": true
+        },
+        {
+          "text": "Working capital under control",
+          "positive": true
+        },
+        {
+          "text": "Earnings considered a poor guide for underlying profitability (SimplyWall.st)",
+          "positive": false
+        },
+        {
+          "text": "Trading at a premium to its own 3yr historic valuations",
+          "positive": false
+        }
+      ]
+    },
+    "3MINDIA": {
+      "name": "3M India",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-04",
+      "pe": 67.31,
+      "roe": 25.78,
+      "roce": 40.19,
+      "de": 0,
+      "opm": 19.54,
+      "roe3yr": null,
+      "promoterHolding": 75,
+      "flags": [
+        {
+          "text": "Debt free",
+          "positive": true
+        },
+        {
+          "text": "ROCE has increased over the last 3 years",
+          "positive": true
+        },
+        {
+          "text": "Trading at a discount to its own 3yr historic valuations",
+          "positive": true
+        },
+        {
+          "text": "Working capital under control",
+          "positive": true
+        },
+        {
+          "text": "Promoter holding high and stable at 75% (3M Company, USA parent)",
+          "positive": true
+        }
+      ]
+    },
+    "JPPOWER": {
+      "name": "Jaiprakash Power Ventures",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in / moneyworks4me.com",
+      "asOfDate": "2026-09-04",
+      "pe": 29.11,
+      "roe": 6.62,
+      "roce": 10.06,
+      "de": 0.31,
+      "opm": 24.57,
+      "roe3yr": null,
+      "promoterHolding": 24,
+      "flags": [
+        {
+          "text": "Revenue CAGR 10.71% vs industry median 0% — gaining share",
+          "positive": true
+        },
+        {
+          "text": "Promoter holding is low at just 24%",
+          "positive": false
+        },
+        {
+          "text": "~73-79% of promoter's stake is pledged — significant financial-distress risk signal",
+          "positive": false
+        },
+        {
+          "text": "Net debt rising sharply (₹644Cr→₹1,351Cr)",
+          "positive": false
+        },
+        {
+          "text": "Profit declining (₹1,022Cr→₹814Cr→₹743Cr TTM)",
+          "positive": false
+        },
+        {
+          "text": "Pays no dividend despite reporting repeated profits",
+          "positive": false
+        }
+      ]
+    },
+    "ARE&M": {
+      "name": "Amara Raja Energy & Mobility",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in",
+      "asOfDate": "2026-09-04",
+      "pe": 18.93,
+      "roe": 11.06,
+      "roce": 11.51,
+      "de": 0.03,
+      "opm": null,
+      "roe3yr": 11.1,
+      "promoterHolding": 32.86,
+      "flags": [
+        {
+          "text": "Zero promoter pledge",
+          "positive": true
+        },
+        {
+          "text": "Promoter has not sold any shares in last 90 days",
+          "positive": true
+        },
+        {
+          "text": "Revenue CAGR 12.65% vs industry median 5.68% — gaining share",
+          "positive": true
+        },
+        {
+          "text": "Balance sheet strong, minimal solvency/liquidity risk",
+          "positive": true
+        },
+        {
+          "text": "Possible aggressive revenue recognition — receivables rising faster than sales",
+          "positive": false
+        },
+        {
+          "text": "ROCE has decreased even without significant new capex",
+          "positive": false
+        },
+        {
+          "text": "Trading at a premium to its own 3yr historic valuations",
+          "positive": false
+        }
+      ]
+    },
+    "ATUL": {
+      "name": "Atul",
+      "tier": "full",
+      "source": "tijorifinance.com / simplywall.st",
+      "asOfDate": "2026-09-04",
+      "pe": 26.28,
+      "roe": 10.9,
+      "roce": 13.51,
+      "de": 0.03,
+      "opm": null,
+      "roe3yr": null,
+      "promoterHolding": 45.22,
+      "flags": [
+        {
+          "text": "ROCE has increased over the last 3 years",
+          "positive": true
+        },
+        {
+          "text": "Trading at a discount to its own 3yr historic valuations",
+          "positive": true
+        },
+        {
+          "text": "Working capital under control",
+          "positive": true
+        },
+        {
+          "text": "Low debt",
+          "positive": true
+        },
+        {
+          "text": "Earnings declined at -9.2%/yr over 5 years, though last year's growth (42.9%) beat that trend",
+          "positive": false
+        },
+        {
+          "text": "Mutual fund holding decreasing (15.96%→14.51%)",
+          "positive": false
+        },
+        {
+          "text": "Poor sales growth, just 11% over 5 years",
+          "positive": false
+        }
+      ]
+    },
+    "RELIGARE": {
+      "name": "Religare Enterprises",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in",
+      "asOfDate": "2026-09-04",
+      "pe": 90.59,
+      "roe": 4.98,
+      "roce": 8.52,
+      "de": 0.06,
+      "opm": 1.47,
+      "roe3yr": null,
+      "promoterHolding": 30.27,
+      "flags": [
+        {
+          "text": "Low leverage (D/E 0.06)",
+          "positive": true
+        },
+        {
+          "text": "Very thin operating margin (1.47%) — weak underlying profitability",
+          "positive": false
+        },
+        {
+          "text": "Reports repeated profits but pays no dividend",
+          "positive": false
+        },
+        {
+          "text": "Mutual fund holding decreasing (8.18%→7.14%)",
+          "positive": false
+        },
+        {
+          "text": "Very expensive on trailing earnings (P/E 90.6)",
+          "positive": false
+        }
+      ]
+    },
+    "JIOFIN": {
+      "name": "Jio Financial Services",
+      "tier": "full",
+      "source": "tijorifinance.com",
+      "asOfDate": "2026-09-04",
+      "pe": 73.25,
+      "roe": 1.17,
+      "roce": 1.72,
+      "de": 0.17,
+      "opm": 66.55,
+      "roe3yr": null,
+      "flags": [
+        {
+          "text": "Very low ROE/ROCE — capital not yet deployed at scale (young NBFC)",
+          "positive": false
+        },
+        {
+          "text": "Low leverage for a financial services company (D/E 0.17)",
+          "positive": true
+        }
+      ]
+    },
+    "EPIGRAL": {
+      "name": "Epigral",
+      "tier": "full",
+      "source": "tijorifinance.com / screener.in",
+      "asOfDate": "2026-09-04",
+      "pe": 17.79,
+      "roe": 14.94,
+      "roce": 14.8,
+      "de": 0.25,
+      "opm": 22.2,
+      "roe3yr": null,
+      "promoterHolding": 68.83,
+      "flags": [
+        {
+          "text": "Promoter has not sold any shares in last 90 days",
+          "positive": true
+        },
+        {
+          "text": "Debt reduced from ₹993Cr to ₹593Cr over 3 years",
+          "positive": true
+        },
+        {
+          "text": "Trading at a discount to its own 3yr historic valuations",
+          "positive": true
+        },
+        {
+          "text": "ROCE has decreased even without significant new capex",
+          "positive": false
+        },
+        {
+          "text": "Debtor days rising (42.4→60.2 days) — cash conversion weakening",
+          "positive": false
+        },
+        {
+          "text": "Recent quarter profit declined 37.9% YoY",
+          "positive": false
+        }
+      ]
+    },
+    "TRENT": {
+      "name": "Trent",
+      "tier": "full",
+      "source": "tijorifinance.com / moneyworks4me.com",
+      "asOfDate": "2026-09-04",
+      "pe": 84.19,
+      "roe": 24.62,
+      "roce": 29.61,
+      "de": 0.07,
+      "opm": null,
+      "roe3yr": null,
+      "promoterHolding": 37.01,
+      "flags": [
+        {
+          "text": "Zero promoter pledge (Tata Group)",
+          "positive": true
+        },
+        {
+          "text": "Revenue CAGR 39.3% vs industry median 28.93% — gaining share",
+          "positive": true
+        },
+        {
+          "text": "Profit accelerating (₹1,547Cr→₹1,830Cr TTM)",
+          "positive": true
+        },
+        {
+          "text": "Low leverage (D/E 0.07)",
+          "positive": true
+        },
+        {
+          "text": "Very expensive on trailing earnings (P/E 84)",
+          "positive": false
+        }
+      ]
+    }
+  }
+}
