@@ -6,7 +6,7 @@
    (React/ReactDOM at pinned versions, Google Fonts) rarely change, so
    those use cache-first for speed.
 */
-const CACHE_NAME = "shah-wealth-v1";
+const CACHE_NAME = "shah-wealth-v2"; // bumped: v1 could serve stale entries cached before the no-store fix below
 const APP_SHELL_URL = self.registration.scope; // the deployed index.html itself
 
 const CDN_HOSTS = ["unpkg.com", "fonts.googleapis.com", "fonts.gstatic.com"];
@@ -80,10 +80,15 @@ self.addEventListener("fetch", function(event) {
   }
 
   // Network-first for the app shell itself and any same-origin request:
-  // always prefer the live, current data. Only serve the cached copy if
-  // the network request genuinely fails (offline, DNS failure, etc).
+  // always prefer the live, current data. cache:"no-store" forces this to
+  // genuinely bypass the browser's own HTTP cache (not just this service
+  // worker's Cache API) — without it, a default fetch() can silently
+  // return a cached response per the server's Cache-Control headers, which
+  // would defeat the whole point of "network-first" here. Only serve the
+  // Cache API copy if the network request genuinely fails (offline, DNS
+  // failure, etc).
   event.respondWith(
-    fetch(event.request).then(function(res){
+    fetch(event.request, {cache: "no-store"}).then(function(res){
       var copy = res.clone();
       caches.open(CACHE_NAME).then(function(c){ c.put(event.request, copy); });
       return res;
