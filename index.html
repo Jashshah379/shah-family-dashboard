@@ -172,7 +172,7 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
    ══════════════════════════════════════ */
 
 /* ── Smooth scroll ── */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: #070a16; }
 
 /* ── Global transitions on interactive elements ── */
 button, [role="button"] {
@@ -1108,8 +1108,25 @@ const memberWealth=function(m){return _eq(m)+(m.mf||0)+BANK.filter(function(b){r
 </script>
 <script>
   if ("serviceWorker" in navigator) {
+    // If a new service worker takes control while this page is open,
+    // reload automatically so the page immediately reflects it — without
+    // this, a PWA can silently keep running an old service worker (and
+    // therefore old cached behaviour) indefinitely, since standalone/
+    // installed apps don't get the same "just refresh" recovery a normal
+    // browser tab does.
+    var swReloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function(){
+      if (swReloaded) return;
+      swReloaded = true;
+      window.location.reload();
+    });
     window.addEventListener("load", function(){
-      navigator.serviceWorker.register("sw.js").catch(function(){
+      navigator.serviceWorker.register("sw.js").then(function(registration){
+        // Force an immediate check for a newer service worker on every
+        // load, rather than relying solely on the browser's own periodic
+        // check (which can be as infrequent as once every 24 hours).
+        registration.update();
+      }).catch(function(){
         /* Offline support is a nice-to-have, not core functionality —
            fail silently if registration doesn't work for any reason
            (unsupported browser, blocked by privacy settings, etc). */
