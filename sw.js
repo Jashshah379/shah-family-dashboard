@@ -26,6 +26,37 @@ self.addEventListener("activate", function(event) {
   );
 });
 
+/* ── Web Push: receive and display incoming notifications ── */
+self.addEventListener("push", function(event) {
+  var data = {};
+  try { data = event.data ? event.data.json() : {}; } catch(e) {}
+  var title = data.title || "Shah Family Dashboard";
+  var options = {
+    body: data.body || "",
+    icon: "icon-192.png",
+    badge: "icon-192.png",
+    tag: data.tag || undefined, // same tag replaces a still-pending notification rather than stacking
+    data: { url: data.url || self.registration.scope },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", function(event) {
+  event.notification.close();
+  var targetUrl = (event.notification.data && event.notification.data.url) || self.registration.scope;
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(function(windowClients){
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if (client.url.indexOf(self.registration.scope) === 0 && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(targetUrl);
+    })
+  );
+});
+
 self.addEventListener("fetch", function(event) {
   var url = new URL(event.request.url);
   if (event.request.method !== "GET") return; // never intercept non-GET
