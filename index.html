@@ -68,6 +68,16 @@ input, select { -webkit-appearance:none; font-size:16px; } /* prevent zoom on iO
 .tab-content { will-change: transform, opacity; }
 [data-price] { min-width: 4em; display: inline-block; }
 
+/* ── Desktop / laptop (1025px+) — no notch or OS status bar to clear here,
+     so the mobile-oriented 50px safe-area floor on .tab-bar's padding-top
+     (needed for iPhone notches/Dynamic Island) is pure wasted header space
+     on a laptop. Cut it down to a normal desktop nav-bar padding instead;
+     the --navh measurement effect picks up the new (smaller) real height
+     automatically, so page content padding shrinks to match. ── */
+@media (min-width: 1025px) {
+  .tab-bar { padding-top: 12px !important; }
+}
+
 /* ── Tablet (iPad portrait/landscape, 769–1024px) ── */
 @media (min-width: 769px) and (max-width: 1024px) {
   html { font-size: 14px; }
