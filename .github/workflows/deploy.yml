@@ -27,8 +27,18 @@ jobs:
       - name: Prepare site folder
         run: |
           mkdir _site
+          # Previously this only copied index.html — every other file
+          # (icons, favicon, manifest.json, sw.js) was silently dropped from
+          # every deployment despite being correctly committed to the repo.
+          # That's the real reason the app icon, favicon, and service worker
+          # never actually updated on the live site all session.
           cp index.html _site/
           cp .nojekyll _site/
+          cp manifest.json _site/ 2>/dev/null || true
+          cp sw.js _site/ 2>/dev/null || true
+          cp *.png _site/ 2>/dev/null || true
+          cp *.ico _site/ 2>/dev/null || true
+          cp *.json _site/ 2>/dev/null || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
